@@ -1,0 +1,54 @@
+name: Generate visuals
+
+on:
+  schedule:
+    # Nightly, before the deploy run; the free tier resets daily.
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated RFC numbers to (re)generate (optional)"
+        required: false
+      max_requests:
+        description: "Request budget for this run"
+        required: false
+        default: "45"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run sync:data
+      - name: Draft visuals with free OpenRouter models
+        run: bun scripts/generate-visuals.ts
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ONLY: ${{ inputs.only }}
+          MAX_REQUESTS: ${{ inputs.max_requests || '45' }}
+      # Nothing is committed unless the whole suite still passes.
+      - run: bun run check
+      - run: bun run test
+      - name: Commit new visuals
+        run: |
+          git config user.name "rfc-visual generator"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/visuals/generated
+          if git diff --cached --quiet; then
+            echo "No new visuals."
+          else
+            git commit -m "chore: generated visuals ($(date -u +%Y-%m-%d))"
+            git push
+          fi

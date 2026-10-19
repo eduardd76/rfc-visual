@@ -14,12 +14,33 @@ import { buildMessages, repairMessage } from "../src/generator/prompt";
 import { pruneModel } from "../src/generator/prune";
 import { pickQueue } from "../src/generator/queue";
 import type { RfcIndex } from "../src/rfc/types";
-import { allVisuals } from "../src/visuals/registry";
 import { rfc792 } from "../src/visuals/rfc792";
 import type { RfcVisualModel } from "../src/visuals/types";
 import { validateModel } from "../src/visuals/validate";
 
 const GENERATED_DIR = "src/visuals/generated";
+
+/** Rewrites generated/index.ts from the rfcN.json files actually on disk. */
+function writeGeneratedIndex() {
+  const nums = readdirSync(GENERATED_DIR)
+    .map((f) => /^rfc(\d+)\.json$/.exec(f)?.[1])
+    .filter((n): n is string => Boolean(n))
+    .map(Number)
+    .sort((a, b) => a - b);
+  const lines = [
+    "// Written by scripts/generate-visuals.ts — do not edit by hand.",
+    ...nums.map((n) => `import rfc${n} from "./rfc${n}.json";`),
+    'import type { RfcVisualModel } from "~/visuals/types";',
+    "",
+    `export const GENERATED: RfcVisualModel[] = [${nums.map((n) => `rfc${n}`).join(", ")}] as RfcVisualModel[];`,
+    "",
+  ];
+  writeFileSync(`${GENERATED_DIR}/index.ts`, lines.join("\n"));
+}
+
+// Before loading the registry: a deleted draft must not break its import.
+writeGeneratedIndex();
+const { allVisuals } = await import("../src/visuals/registry");
 const FAILED_FILE = `${GENERATED_DIR}/failed.json`;
 const TEXT_DIR = "data/rfc-text";
 const RETRY_FAILED_AFTER_DAYS = 30;
@@ -86,7 +107,7 @@ async function generate(num: number): Promise<{ model?: RfcVisualModel; reason: 
   }
   if (!parsed.ok) return { reason: parsed.error };
 
-  const pruned = pruneModel(parsed.model, text);
+  const pruned = pruneModel(parsed.model, text, { proseOnlyTransitions: true });
   if (pruned.withheld) return { reason: `withheld: ${pruned.dropped.length} issue(s), e.g. ${pruned.dropped[0] ?? "nothing usable"}` };
   return {
     model: {
@@ -97,22 +118,6 @@ async function generate(num: number): Promise<{ model?: RfcVisualModel; reason: 
   };
 }
 
-function writeGeneratedIndex() {
-  const nums = readdirSync(GENERATED_DIR)
-    .map((f) => /^rfc(\d+)\.json$/.exec(f)?.[1])
-    .filter((n): n is string => Boolean(n))
-    .map(Number)
-    .sort((a, b) => a - b);
-  const lines = [
-    "// Written by scripts/generate-visuals.ts — do not edit by hand.",
-    ...nums.map((n) => `import rfc${n} from "./rfc${n}.json";`),
-    'import type { RfcVisualModel } from "~/visuals/types";',
-    "",
-    `export const GENERATED: RfcVisualModel[] = [${nums.map((n) => `rfc${n}`).join(", ")}] as RfcVisualModel[];`,
-    "",
-  ];
-  writeFileSync(`${GENERATED_DIR}/index.ts`, lines.join("\n"));
-}
 
 const results: string[] = [];
 for (const num of queue) {

@@ -1,0 +1,279 @@
+{
+  "rfc": 5340,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "neighbor-database-exchange",
+      "title": "Neighbor Discovery and Initial Database Synchronization",
+      "participants": {
+        "a": "Router A",
+        "b": "Router B"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "Initial synchronization is performed through the Database Exchange process, which includes the exchange of Database Description, Link State Request, and Link State Update packets. Thereafter, database synchronization is maintained via flooding, utilizing Link State Update and Link State Acknowledgment packets."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Hello packet",
+          "explain": "Router A sends a Hello on the link. The packet supports neighbor discovery and the maintenance of neighbor relationships.",
+          "cite": {
+            "section": "A.3.2",
+            "quote": "Hello packets are OSPF packet type 1. These packets are sent periodically on all interfaces (including virtual links) in order to establish and maintain neighbor relationships. In addition, Hello packets are multicast on those links having a multicast or broadcast capability, enabling dynamic discovery of neighboring routers."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Hello packet",
+          "explain": "Router B also sends periodic Hellos so that the routers can discover and maintain each other.",
+          "cite": {
+            "section": "A.3.2",
+            "quote": "Hello packets are OSPF packet type 1. These packets are sent periodically on all interfaces (including virtual links) in order to establish and maintain neighbor relationships. In addition, Hello packets are multicast on those links having a multicast or broadcast capability, enabling dynamic discovery of neighboring routers."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Database Description packet",
+          "explain": "In this example, Router A is the master and sends a Database Description poll while the adjacency is being initialized.",
+          "cite": {
+            "section": "A.3.3",
+            "quote": "These packets are exchanged when an adjacency is being initialized. They describe the contents of the link-state database. Multiple packets may be used to describe the database. For this purpose, a poll-response procedure is used. One of the routers is designated to be the master and the other is the slave. The master sends Database Description packets (polls) that are acknowledged by Database Description packets sent by the slave (responses). The responses are linked to the polls via the packets' DD sequence numbers."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Database Description packet",
+          "explain": "Router B acts as the slave and responds to the poll with its own Database Description packet.",
+          "cite": {
+            "section": "A.3.3",
+            "quote": "These packets are exchanged when an adjacency is being initialized. They describe the contents of the link-state database. Multiple packets may be used to describe the database. For this purpose, a poll-response procedure is used. One of the routers is designated to be the master and the other is the slave. The master sends Database Description packets (polls) that are acknowledged by Database Description packets sent by the slave (responses). The responses are linked to the polls via the packets' DD sequence numbers."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Link State Request packet",
+          "explain": "Router A requests newer pieces of Router B's link-state database after discovering that its own database is out of date.",
+          "cite": {
+            "section": "A.3.4",
+            "quote": "After exchanging Database Description packets with a neighboring router, a router may find that parts of its link-state database are out-of-date. The Link State Request packet is used to request the pieces of the neighbor's database that are more up-to-date. Multiple Link State Request packets may need to be used."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Link State Update packet",
+          "explain": "Router B sends an update containing the link-state information needed by Router A. A single update can carry several LSAs.",
+          "cite": {
+            "section": "A.3.5",
+            "quote": "Link State Update packets are OSPF packet type 4. These packets implement the flooding of LSAs. Each Link State Update packet carries a collection of LSAs one hop further from their origin. Several LSAs may be included in a single packet."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Link State Acknowledgment packet",
+          "explain": "Router A explicitly acknowledges the flooded LSA. Such acknowledgments make LSA flooding reliable.",
+          "cite": {
+            "section": "A.3.6",
+            "quote": "Link State Acknowledgment packets are OSPF packet type 5. To make the flooding of LSAs reliable, flooded LSAs are explicitly or implicitly acknowledged. Explicit acknowledgment is accomplished through the sending and receiving of Link State Acknowledgment packets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "link-lsa-flooding",
+      "title": "Link-LSA Flooding on One Link",
+      "participants": {
+        "a": "Originating Router",
+        "b": "Adjacent Router"
+      },
+      "intro": {
+        "section": "4.4.3.8",
+        "quote": "After building a link-LSA for a given link, the router installs the link-LSA into the associated interface data structure and floods the link-LSA on the link. All other routers on the link will receive the link-LSA, but they will not flood the link-LSA on other links."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "link-LSA",
+          "explain": "Router A floods its link-LSA to Router B on the attached link. Router B receives the LSA but does not flood it onto any other link.",
+          "cite": {
+            "section": "4.4.3.8",
+            "quote": "After building a link-LSA for a given link, the router installs the link-LSA into the associated interface data structure and floods the link-LSA on the link. All other routers on the link will receive the link-LSA, but they will not flood the link-LSA on other links."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ospfv3-packet-header",
+      "title": "OSPFv3 Common Packet Header",
+      "intro": {
+        "section": "A.3.1",
+        "quote": "Every OSPF packet starts with a standard 16-byte header. Together with the encapsulating IPv6 headers, the OSPF header contains all the information necessary to determine whether the packet should be accepted for further processing. This determination is described in Section 4.2.2."
+      },
+      "fields": [
+        {
+          "name": "Version #",
+          "bits": 8,
+          "explain": "Identifies the protocol version, which is 3 for OSPFv3.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Version # The OSPF version number. This specification documents version 3 of the OSPF protocol."
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "Identifies the kind of OSPF packet carried by the message.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Type The OSPF packet types are as follows. See Appendix A.3.2 through Appendix A.3.6 for details."
+          }
+        },
+        {
+          "name": "Packet length",
+          "bits": 16,
+          "explain": "Gives the total OSPF packet length in bytes, including the common header.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Packet length The length of the OSPF protocol packet in bytes. This length includes the standard OSPF header."
+          }
+        },
+        {
+          "name": "Router ID",
+          "bits": 32,
+          "explain": "Identifies the router that sourced the packet.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Router ID The Router ID of the packet's source."
+          }
+        },
+        {
+          "name": "Area ID",
+          "bits": 32,
+          "explain": "Identifies the OSPF area to which the packet belongs. A packet traversing a virtual link uses the backbone area identifier.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Area ID A 32-bit number identifying the area to which this packet belongs. All OSPF packets are associated with a single area. Most travel a single hop only. Packets traversing a virtual link are labeled with the backbone Area ID of 0."
+          }
+        },
+        {
+          "name": "Checksum",
+          "bits": 16,
+          "explain": "Protects the OSPF packet and the IPv6 pseudo-header with the IPv6 upper-layer checksum.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Checksum OSPF uses the standard checksum calculation for IPv6 applications: The 16-bit one's complement of the one's complement sum of the entire contents of the packet, starting with the OSPF packet header, and prepending a \"pseudo-header\" of IPv6 header fields, as specified in Section 8.1 of [IPV6]."
+          }
+        },
+        {
+          "name": "Instance ID",
+          "bits": 8,
+          "explain": "Separates OSPF instances sharing a link and is checked against the receiving interface's configured instance.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "Instance ID Enables multiple instances of OSPF to be run over a single link. Each protocol instance would be assigned a separate Instance ID; the Instance ID has link-local significance only. Received packets whose Instance ID is not equal to the receiving interface's Instance ID are discarded."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "These unused bits must be sent as zero and must be ignored when received.",
+          "cite": {
+            "section": "A.3.1",
+            "quote": "0 These fields are reserved. They SHOULD be set to 0 when sending protocol packets and MUST be ignored when receiving protocol packets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ospfv3-lsa-header",
+      "title": "OSPFv3 Common LSA Header",
+      "intro": {
+        "section": "A.4.2",
+        "quote": "All LSAs begin with a common 20-byte header. This header contains enough information to uniquely identify the LSA (LS type, Link State ID, and Advertising Router). Multiple instances of the LSA may exist in the routing domain at the same time. It is then necessary to determine which instance is more recent. This is accomplished by examining the LS age, LS sequence number, and LS checksum fields that are also contained in the LSA header."
+      },
+      "fields": [
+        {
+          "name": "LS Age",
+          "bits": 16,
+          "explain": "Records how many seconds have passed since the LSA was originated.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "LS Age The time in seconds since the LSA was originated."
+          }
+        },
+        {
+          "name": "LS Type",
+          "bits": 16,
+          "explain": "Identifies the LSA function. Its high-order three bits carry generic LSA properties, while the remaining bits carry the function code.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "LS Type The LS type field indicates the function performed by the LSA. The high-order three bits of LS type encode generic properties of the LSA, while the remainder (called LSA function code) indicate the LSA's specific functionality. See Appendix A.4.2.1 for a detailed description of LS type."
+          }
+        },
+        {
+          "name": "Link State ID",
+          "bits": 32,
+          "explain": "Identifies the LSA within the originating router's set of LSAs. Together with LS Type and Advertising Router, it uniquely identifies the LSA.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "Link State ID The originating router's identifier for the LSA. The combination of the Link State ID, LS type, and Advertising Router uniquely identify the LSA in the link-state database."
+          }
+        },
+        {
+          "name": "Advertising Router",
+          "bits": 32,
+          "explain": "Gives the Router ID of the router that originated the LSA.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "Advertising Router The Router ID of the router that originated the LSA. For example, in network-LSAs this field is equal to the Router ID of the network's Designated Router."
+          }
+        },
+        {
+          "name": "LS sequence number",
+          "bits": 32,
+          "explain": "Distinguishes successive instances and helps detect old or duplicate instances.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "LS sequence number Successive instances of an LSA are given successive LS sequence numbers. The sequence number can be used to detect old or duplicate LSA instances. See Section 12.1.6 in [OSPFV2] for more details."
+          }
+        },
+        {
+          "name": "LS checksum",
+          "bits": 16,
+          "explain": "Checks the complete LSA contents except the LS age field.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "LS checksum The Fletcher checksum of the complete contents of the LSA, including the LSA header but excluding the LS age field. See Section 12.1.7 in [OSPFV2] for more details."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the total LSA length in bytes, including the common LSA header.",
+          "cite": {
+            "section": "A.4.2",
+            "quote": "length The length in bytes of the LSA. This includes the 20-byte LSA header."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The full OSPF interface and neighbor state machines inherited from RFC 2328, and the separate Standby interface-state addition specified in RFC 5340",
+    "Detailed layouts of Hello, Database Description, Link State Request, Link State Update, and Link State Acknowledgment packets beyond the common packet header",
+    "Detailed LSA bodies for the eight LSA types beyond the common LSA header and link-LSA behavior",
+    "SPF, next-hop, inter-area, AS-external, and NSSA route calculations",
+    "Virtual links, demand-circuit behavior, and configurable parameters"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-19T13:42:33.805Z",
+    "dropped": 0
+  }
+}

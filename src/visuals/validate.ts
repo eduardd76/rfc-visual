@@ -47,6 +47,73 @@ function sectionsOf(raw: string): Map<string, Section> {
   return sections;
 }
 
+/** Names a field may appear under in a packet diagram: "Foo (FOO)" → Foo, FOO. */
+function diagramKeys(name: string): string[] {
+  const keys = [name, ...name.split("/")];
+  for (const part of [...keys]) {
+    const paren = /\(([^)]+)\)/.exec(part)?.[1];
+    if (paren) keys.push(paren);
+    keys.push(part.replace(/\s*\([^)]*\)/, ""), part.replace(/\s+fields?$/i, ""));
+  }
+  return [...new Set(keys.map((k) => k.trim().toLowerCase()).filter((k) => k.length >= 2))];
+}
+
+/**
+ * Checks that header fields are listed in the order the RFC's ASCII packet
+ * diagram draws them. Uses the diagram block naming the most fields; fields
+ * the diagram does not name (e.g. flag bits drawn as letters) are skipped.
+ */
+function headerOrderIssue(fields: { name: string }[], rfcText: string): string | undefined {
+  const blocks: string[] = [];
+  let current: string[] = [];
+  for (const line of rfcText.split("\n")) {
+    if (/^\s*[|+]/.test(line)) current.push(line);
+    else if (current.length > 0) {
+      blocks.push(current.join("\n").toLowerCase());
+      current = [];
+    }
+  }
+  if (current.length > 0) blocks.push(current.join("\n").toLowerCase());
+
+  // Whole-word search, so "type" does not match inside "Type-Specific".
+  const find = (block: string, key: string, from: number) => {
+    const match = new RegExp(`(?<![a-z0-9])${escapeRegExp(key)}(?![a-z0-9])`, "g");
+    match.lastIndex = from;
+    return match.exec(block)?.index ?? -1;
+  };
+  const named = (block: string) =>
+    fields.filter((f) => diagramKeys(f.name).some((key) => find(block, key, 0) !== -1)).length;
+  // Only real packet diagrams: bit-cell borders such as "+-+-+-+".
+  const block = blocks.filter((b) => b.includes("+-+-+")).reduce<string | undefined>(
+    (best, b) => (named(b) > (best ? named(best) : 0) ? b : best),
+    undefined,
+  );
+  if (!block || named(block) < 2) return undefined;
+
+  // Each repeated name (two "Reserved" fields) takes its next occurrence.
+  const used = new Map<string, number>();
+  let previous: { name: string; at: number } | undefined;
+  for (const field of fields) {
+    let at = -1;
+    let usedKey = "";
+    for (const key of diagramKeys(field.name)) {
+      const from = used.get(key) ?? 0;
+      const found = find(block, key, from);
+      if (found !== -1 && (at === -1 || found < at)) {
+        at = found;
+        usedKey = key;
+      }
+    }
+    if (at === -1) continue;
+    used.set(usedKey, at + usedKey.length);
+    if (previous && at < previous.at) {
+      return `field order differs from the RFC diagram (${field.name} is drawn before ${previous.name})`;
+    }
+    previous = { name: field.name, at };
+  }
+  return undefined;
+}
+
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
@@ -173,6 +240,8 @@ export function validateDetailed(model: RfcVisualModel, rfcText: string): Valida
       else if (fixedPrefix) fixedBits += field.bits;
     });
     path = `headers.${h}`;
+    const order = headerOrderIssue(header.fields, rfcText);
+    if (order) report(`header ${header.id}: ${order}`);
     if (fixedBits % 8 !== 0) {
       report(`header ${header.id}: fixed fields total ${fixedBits} bits, not a whole number of octets`);
     }

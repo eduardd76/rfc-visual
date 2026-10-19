@@ -1,0 +1,302 @@
+{
+  "rfc": 5905,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "on-wire-exchange",
+      "title": "Four-Timestamp On-Wire Exchange",
+      "participants": {
+        "a": "Peer A",
+        "b": "Peer B"
+      },
+      "intro": {
+        "section": "8",
+        "quote": "The on-wire protocol uses four timestamps numbered t1 through t4 and three state variables org, rec, and xmt, as shown in Figure 15."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "first packet transmitted by A",
+          "explain": "Peer A sends a packet whose only timestamp is the origin timestamp t1. Peer B receives it at t2 and records that receive time.",
+          "cite": {
+            "section": "8",
+            "quote": "In the figure, the first packet transmitted by A contains only the origin timestamp t1, which is then copied to T1. B receives the packet at t2 and copies t1 to T1 and the receive timestamp t2 to T2."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "packet to A containing t1 and t2 and the transmit timestamp t3",
+          "explain": "Peer B sends a packet containing the origin time t1, receive time t2, and transmit time t3. Peer A records arrival as t4, and the four timestamps are used to compute the clock offset and delay.",
+          "cite": {
+            "section": "8",
+            "quote": "At this time or some time later at t3, B sends a packet to A containing t1 and t2 and the transmit timestamp t3. All three timestamps are copied to the corresponding state variables. A receives the packet at t4 containing the three timestamps t1, t2, and t3 and the destination timestamp t4. These four timestamps are used to compute the offset and delay of B relative to A, as described below."
+          }
+        }
+      ]
+    },
+    {
+      "id": "manycast-discovery",
+      "title": "Manycast Server Discovery",
+      "participants": {
+        "a": "Manycast client",
+        "b": "Manycast server"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "There are two special associations, manycast client and manycast server, which provide a dynamic server discovery function. There are two types of manycast client associations: persistent and ephemeral."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "client mode packets",
+          "explain": "A manycast client sends client-mode packets to a designated multicast group to discover servers.",
+          "cite": {
+            "section": "13.2",
+            "quote": "If the P_MANY flag is lit in the p.flags word of the association, this is a manycast client association. Manycast client associations send client mode packets to designated multicast group addresses at MINPOLL intervals."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ordinary server (mode 4) packet",
+          "explain": "A valid server with a lower stratum sends an ordinary server packet to the client's unicast address.",
+          "cite": {
+            "section": "9.2",
+            "quote": "If the destination address is a multicast address, the sender is operating in manycast client mode. If the packet is valid and the server stratum is less than the client stratum, the server sends an ordinary server (mode 4) packet, but one which uses its unicast destination address."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ntp-packet",
+      "title": "NTPv4 Packet Format",
+      "intro": {
+        "section": "7.3",
+        "quote": "The NTP packet is a UDP datagram [RFC0768]. Some fields use multiple words and others are packed in smaller fields within a word. The NTP packet header shown in Figure 8 has 12 words followed by optional extension fields and finally an optional message authentication code (MAC) consisting of the Key Identifier field and Message Digest field."
+      },
+      "fields": [
+        {
+          "name": "LI",
+          "bits": 2,
+          "explain": "Warns of an impending leap-second insertion or deletion in the final minute of the current month.",
+          "cite": {
+            "section": "7.3",
+            "quote": "LI Leap Indicator (leap): 2-bit integer warning of an impending leap second to be inserted or deleted in the last minute of the current month with values defined in Figure 9."
+          }
+        },
+        {
+          "name": "VN",
+          "bits": 3,
+          "explain": "Carries the NTP version number, which is currently 4.",
+          "cite": {
+            "section": "7.3",
+            "quote": "VN Version Number (version): 3-bit integer representing the NTP version number, currently 4."
+          }
+        },
+        {
+          "name": "Mode",
+          "bits": 3,
+          "explain": "Carries the protocol mode of the packet.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Mode (mode): 3-bit integer representing the mode, with values defined in Figure 10."
+          }
+        },
+        {
+          "name": "Stratum",
+          "bits": 8,
+          "explain": "Carries the stratum value used to identify the server's synchronization level.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Stratum (stratum): 8-bit integer representing the stratum, with values defined in Figure 11."
+          }
+        },
+        {
+          "name": "Poll",
+          "bits": 8,
+          "explain": "Gives the maximum interval between successive messages in log2 seconds.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Poll: 8-bit signed integer representing the maximum interval between successive messages, in log2 seconds."
+          }
+        },
+        {
+          "name": "Precision",
+          "bits": 8,
+          "explain": "Gives the precision of the system clock in log2 seconds.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Precision: 8-bit signed integer representing the precision of the system clock, in log2 seconds."
+          }
+        },
+        {
+          "name": "Root Delay",
+          "bits": 32,
+          "explain": "Carries the total round-trip delay to the reference clock in NTP short format.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Root Delay (rootdelay): Total round-trip delay to the reference clock, in NTP short format."
+          }
+        },
+        {
+          "name": "Root Dispersion",
+          "bits": 32,
+          "explain": "Carries the total dispersion to the reference clock in NTP short format.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Root Dispersion (rootdisp): Total dispersion to the reference clock, in NTP short format."
+          }
+        },
+        {
+          "name": "Reference ID",
+          "bits": 32,
+          "explain": "Identifies the particular server or reference clock, with its interpretation depending on the stratum.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Reference ID (refid): 32-bit code identifying the particular server or reference clock. The interpretation depends on the value in the stratum field."
+          }
+        },
+        {
+          "name": "Reference Timestamp",
+          "bits": 64,
+          "explain": "Records when the system clock was last set or corrected.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Reference Timestamp: Time when the system clock was last set or corrected, in NTP timestamp format."
+          }
+        },
+        {
+          "name": "Origin Timestamp",
+          "bits": 64,
+          "explain": "Records when the request departed the client for the server.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Origin Timestamp (org): Time at the client when the request departed for the server, in NTP timestamp format."
+          }
+        },
+        {
+          "name": "Receive Timestamp",
+          "bits": 64,
+          "explain": "Records when the server received the client request.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Receive Timestamp (rec): Time at the server when the request arrived from the client, in NTP timestamp format."
+          }
+        },
+        {
+          "name": "Transmit Timestamp",
+          "bits": 64,
+          "explain": "Records when the server response left for the client.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Transmit Timestamp (xmt): Time at the server when the response left for the client, in NTP timestamp format."
+          }
+        },
+        {
+          "name": "Extension Field 1",
+          "bits": "var",
+          "explain": "An optional variable-length extension area shown after the basic header.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Extension Field 1 (variable)"
+          }
+        },
+        {
+          "name": "Extension Field 2",
+          "bits": "var",
+          "explain": "A second optional variable-length extension area shown in the packet diagram.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Extension Field 2 (variable)"
+          }
+        },
+        {
+          "name": "Key Identifier",
+          "bits": 32,
+          "explain": "Designates the secret 128-bit MD5 key used by the client and server.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Key Identifier (keyid): 32-bit unsigned integer used by the client and server to designate a secret 128-bit MD5 key."
+          }
+        },
+        {
+          "name": "Message Digest",
+          "bits": 128,
+          "explain": "Carries an MD5 hash computed over the key, packet header, and extension fields, but not the Key Identifier or Message Digest fields.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Message Digest (digest): 128-bit MD5 hash computed over the key followed by the NTP packet header and extensions fields (but not the Key Identifier or Message Digest fields)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ntp-extension",
+      "title": "NTPv4 Extension Field Format",
+      "intro": {
+        "section": "7.5",
+        "quote": "In NTPv4, one or more extension fields can be inserted after the header and before the MAC, which is always present when an extension field is present. Other than defining the field format, this document makes no use of the field contents. An extension field contains a request or response message in the format shown in Figure 14."
+      },
+      "fields": [
+        {
+          "name": "Field Type",
+          "bits": 16,
+          "explain": "Identifies the specific function of the extension.",
+          "cite": {
+            "section": "7.5",
+            "quote": "The Field Type field is specific to the defined function and is not elaborated here."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the total extension length in octets and includes the padding field.",
+          "cite": {
+            "section": "7.5",
+            "quote": "The Length field is a 16-bit unsigned integer that indicates the length of the entire extension field in octets, including the Padding field."
+          }
+        },
+        {
+          "name": "Value",
+          "bits": "var",
+          "explain": "Carries the request or response message for the extension function.",
+          "cite": {
+            "section": "7.5",
+            "quote": "Value"
+          }
+        },
+        {
+          "name": "Padding",
+          "bits": "var",
+          "explain": "Provides optional zero-padding that brings the extension to a four-octet boundary.",
+          "cite": {
+            "section": "7.5",
+            "quote": "All extension fields are zero-padded to a word (four octets) boundary. The Field Type field is specific to the defined function and is not elaborated here. While the minimum field length containing required fields is four words (16 octets), a maximum field length remains to be established. The Length field is a 16-bit unsigned integer that indicates the length of the entire extension field in octets, including the Padding field."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The clock discipline state machine, including the NSET, FSET, SPIK, FREQ, and SYNC states",
+    "The clock filter, selection, cluster, combine, and clock discipline algorithms",
+    "The peer dispatch table and the symmetric and broadcast exchange variants",
+    "The poll, reachability, and clock-adjust algorithms, including manycast TTL expansion and backoff",
+    "The Kiss-o'-Death code set and its client handling rules",
+    "The complete leap-indicator, mode, stratum, and reference-identifier value tables",
+    "Autokey, access control, and the detailed authentication behavior",
+    "The SNTP-specific stateless-server behavior",
+    "The NTP date, timestamp, and short-format layouts and era conversion",
+    "The destination timestamp, which is captured locally and is not an on-wire header field"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-19T13:50:59.894Z",
+    "dropped": 0
+  }
+}

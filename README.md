@@ -26,6 +26,11 @@ No LLM is involved. State machines and packet-flow diagrams, with every element 
 - Other rfc-editor.org URL shapes (`.txt`, `/info/`, `/errata/`, …) are redirected client-side from `404.html`.
 - A nightly GitHub Actions run rebuilds and deploys to Netlify. Running cost is $0.
 
+## Deploy
+
+- Netlify project `rfc-visual` serves `out/`, with custom domain `rfc.vexpertai.com`.
+- `.github/workflows/deploy.yml` runs on push to `main`, nightly at 03:17 UTC, and on demand. It needs the repo secrets `NETLIFY_AUTH_TOKEN` (a personal access token) and `NETLIFY_SITE_ID`.
+
 ## Development
 
 ```bash

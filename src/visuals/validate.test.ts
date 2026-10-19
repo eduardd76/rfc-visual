@@ -69,3 +69,159 @@ describe("normalizeRfcText", () => {
     expect(normalizeRfcText("then enter FIN-\n      WAIT-2 and")).toBe("then enter FIN-WAIT-2 and");
   });
 });
+
+describe("validateModel on other shapes", () => {
+  const tiny = (over: Partial<RfcVisualModel>): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], headers: [], notShown: [], ...over,
+  });
+  const doc = "Some RFC\n\n   The Source Port is an optional field. Length is the length in octets.\n";
+
+  it("accepts whole-document citations with section \"-\"", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Source Port", bits: 16, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+
+  it("rejects a header field whose quote does not name it", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Checksum", bits: 16, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/does not mention Checksum/);
+  });
+
+  it("rejects fixed header bits that do not end on an octet boundary", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Source Port", bits: 13, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/not a whole number of octets/);
+  });
+
+  it("allows sequence steps without states", () => {
+    const model = tiny({
+      sequences: [{ id: "s", title: "S", intro: { section: "-", quote: "Length is the length in octets." },
+        steps: [{ from: "A", segment: "Source Port", explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+});
+
+describe("section headings in older RFC styles", () => {
+  const dhcp = readFileSync("test/fixtures/rfc2131.txt", "utf8");
+  const dns = readFileSync("test/fixtures/rfc1035.txt", "utf8");
+  const tiny = (cite: { section: string; quote: string }): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+    headers: [{ id: "h", title: "H", intro: cite, fields: [] }],
+  });
+
+  it("finds '4.4.1 Initialization and allocation of network address' (no trailing dot)", () => {
+    expect(validateModel(tiny({ section: "4.4.1", quote: "The client begins in INIT state and forms a DHCPDISCOVER message." }), dhcp)).toEqual([]);
+  });
+
+  it("finds '4.1.1. Header section format' (single space)", () => {
+    expect(validateModel(tiny({ section: "4.1.1", quote: "The header contains the following fields:" }), dns)).toEqual([]);
+  });
+});
+
+describe("appendices, terminal states and reachability", () => {
+  const tls = readFileSync("test/fixtures/rfc8446.txt", "utf8");
+  const base = (over: Partial<RfcVisualModel>): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], headers: [], notShown: [], ...over,
+  });
+
+  it("finds appendix sections such as A.1", () => {
+    const model = base({ headers: [{ id: "h", title: "H", fields: [],
+      intro: { section: "A.1", quote: "START <----+" } }] });
+    expect(validateModel(model, tls)).toEqual([]);
+  });
+
+  const doc = "1.  Intro\n\n   READY moves to SENT. SENT moves to DONE. READY moves to GONE.\n";
+  const st = (id: string) => ({ id, cite: { section: "1", quote: id === "READY" ? "READY moves to SENT." : `moves to ${id}.` } });
+  const tr = (from: string, to: string, layer: "happy" | "rst", quote: string) =>
+    ({ from, to, event: "e", layer, cite: { section: "1", quote } });
+
+  it("lets states marked terminal have no exit", () => {
+    const model = base({
+      initial: "READY", terminal: ["DONE"],
+      states: [st("READY"), st("SENT"), st("DONE")],
+      transitions: [tr("READY", "SENT", "happy", "READY moves to SENT."), tr("SENT", "DONE", "happy", "SENT moves to DONE.")],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+
+  it("still requires an exit from non-terminal states", () => {
+    const model = base({
+      initial: "READY",
+      states: [st("READY"), st("SENT"), st("DONE")],
+      transitions: [tr("READY", "SENT", "happy", "READY moves to SENT."), tr("SENT", "DONE", "happy", "SENT moves to DONE.")],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/DONE has no exit/);
+  });
+
+  it("counts states reachable through any layer", () => {
+    const model = base({
+      initial: "READY", terminal: ["DONE", "GONE"],
+      states: [st("READY"), st("SENT"), st("DONE"), st("GONE")],
+      transitions: [
+        tr("READY", "SENT", "happy", "READY moves to SENT."),
+        tr("SENT", "DONE", "happy", "SENT moves to DONE."),
+        tr("READY", "GONE", "rst", "READY moves to GONE."),
+      ],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+});
+
+describe("long sub-sections and indented headings", () => {
+  const filler = "   Some unrelated rule text that goes on. ".repeat(80);
+  const doc = [
+    "8.2.2.  Finite State Machine", "",
+    "   OpenSent:", "", filler, "",
+    "      If a valid OPEN is received, it changes its state to OpenConfirm.", "",
+    "   OpenConfirm State:", "", filler, "",
+    "      If the local system receives a KEEPALIVE, it changes its state to Established.", "",
+  ].join("\n");
+  const model = (from: string, to: string, quote: string): RfcVisualModel => ({
+    rfc: 1, reviewed: false, headers: [], sequences: [], notShown: [],
+    initial: from, terminal: ["OpenConfirm", "Established"],
+    states: [
+      { id: "OpenSent", cite: { section: "8.2.2", quote: "OpenSent:" } },
+      { id: "OpenConfirm", cite: { section: "8.2.2", quote: "OpenConfirm State:" } },
+      ...(to === "Established" ? [{ id: to, cite: { section: "8.2.2", quote } }] : []),
+    ],
+    transitions: [{ from, to, event: "e", layer: "happy", cite: { section: "8.2.2", quote } }],
+  });
+
+  it("accepts a rule far below its state's sub-heading", () => {
+    expect(validateModel(model("OpenSent", "OpenConfirm",
+      "If a valid OPEN is received, it changes its state to OpenConfirm."), doc)).toEqual([]);
+  });
+
+  it("rejects a rule whose nearest state sub-heading is a different state", () => {
+    const wrong = model("OpenSent", "Established",
+      "If the local system receives a KEEPALIVE, it changes its state to Established.");
+    expect(validateModel(wrong, doc).join("\n")).toMatch(/OpenSent not named near the quote/);
+  });
+
+  it("finds indented multi-level and appendix headings", () => {
+    const ospf = readFileSync("test/fixtures/rfc2328.txt", "utf8");
+    const header = (section: string, quote: string): RfcVisualModel => ({
+      rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+      headers: [{ id: "h", title: "H", fields: [], intro: { section, quote } }],
+    });
+    expect(validateModel(header("10.3", "The Neighbor state machine"), ospf)).toEqual([]);
+    expect(validateModel(header("A.3.1", "The OSPF packet header"), ospf)).toEqual([]);
+  });
+});
+
+describe("deepestSection", () => {
+  it("names the most specific section that contains a quote", async () => {
+    const { deepestSection } = await import("~/visuals/validate");
+    const ospf = readFileSync("test/fixtures/rfc2328.txt", "utf8");
+    expect(deepestSection(ospf, "The Neighbor state machine")).toBe("10.3");
+    expect(deepestSection(text, "Enter the CLOSE-WAIT state.")).toBe("3.10.7.4");
+  });
+});

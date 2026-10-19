@@ -129,6 +129,7 @@ export const rfc9293: RfcVisualModel = {
       ],
     },
   ],
+  headers: [],
   notShown: [
     "Retransmission, windows and congestion control",
     "Urgent data and the PUSH flag",

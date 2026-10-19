@@ -4,22 +4,28 @@ import { useState } from "react";
 
 import MermaidChart from "~/components/mermaid-diagram";
 import { RFC_EDITOR_ORIGIN } from "~/lib/site";
-import { formatSegment, sequenceToMermaid, stateMachineToMermaid } from "~/visuals/compile";
-import type { Cite, Layer, RfcVisualModel, Sequence } from "~/visuals/types";
+import {
+  formatSegment,
+  headerRows,
+  sequenceToMermaid,
+  stateMachineToMermaid,
+} from "~/visuals/compile";
+import type { Cite, Header, Layer, RfcVisualModel, Sequence } from "~/visuals/types";
 
 const OPTIONAL_LAYERS: { layer: Layer; label: string }[] = [
-  { layer: "rst", label: "Reset (RST) handling" },
-  { layer: "error", label: "ABORT by the user" },
+  { layer: "rst", label: "Resets and refusals" },
+  { layer: "error", label: "Errors, aborts and timeouts" },
 ];
 
 function Source({ rfc, cite }: { rfc: number; cite: Cite }) {
+  const whole = cite.section === "-";
   return (
     <span className="block text-xs">
       <a
-        href={`${RFC_EDITOR_ORIGIN}/rfc/rfc${rfc}.html#section-${cite.section}`}
+        href={`${RFC_EDITOR_ORIGIN}/rfc/rfc${rfc}.html${whole ? "" : `#section-${cite.section}`}`}
         className="neo-link font-semibold hover:underline"
       >
-        RFC {rfc} §{cite.section}
+        {whole ? `RFC ${rfc}` : `RFC ${rfc} §${cite.section}`}
       </a>{" "}
       <q className="text-[hsl(var(--neo-soft-text))] dark:text-neutral-400">{cite.quote}</q>
     </span>
@@ -27,6 +33,7 @@ function Source({ rfc, cite }: { rfc: number; cite: Cite }) {
 }
 
 function SequenceView({ rfc, sequence }: { rfc: number; sequence: Sequence }) {
+  const names = sequence.participants ?? { a: "A", b: "B" };
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <div className="neo-panel h-[760px] rounded-lg p-2">
@@ -40,12 +47,16 @@ function SequenceView({ rfc, sequence }: { rfc: number; sequence: Sequence }) {
           {sequence.steps.map((step, i) => (
             <li key={i} className="rounded-md border-2 border-black p-3 text-sm dark:border-neutral-600">
               <p className="font-mono text-xs font-semibold">
-                {i + 1}. {step.from === "A" ? "A → B" : "B → A"}: {formatSegment(step.segment)}
+                {i + 1}. {step.from === "A" ? `${names.a} → ${names.b}` : `${names.b} → ${names.a}`}:{" "}
+                {formatSegment(step.segment)}
               </p>
               <p className="mt-1">{step.explain}</p>
-              <p className="mt-1 text-xs">
-                A: <strong>{step.stateA}</strong> · B: <strong>{step.stateB}</strong>
-              </p>
+              {step.stateA || step.stateB ? (
+                <p className="mt-1 text-xs">
+                  {names.a}: <strong>{step.stateA ?? "—"}</strong> · {names.b}:{" "}
+                  <strong>{step.stateB ?? "—"}</strong>
+                </p>
+              ) : null}
               <div className="mt-2">
                 <Source rfc={rfc} cite={step.cite} />
               </div>
@@ -66,9 +77,11 @@ function StateMachineView({ model }: { model: RfcVisualModel }) {
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="sr-only">Show transitions</legend>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked disabled /> Normal open and close
+          <input type="checkbox" checked disabled /> Normal path
         </label>
-        {OPTIONAL_LAYERS.map(({ layer, label }) => (
+        {OPTIONAL_LAYERS.filter(({ layer }) =>
+          model.transitions.some((t) => t.layer === layer),
+        ).map(({ layer, label }) => (
           <label key={layer} className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
@@ -134,21 +147,81 @@ function StateMachineView({ model }: { model: RfcVisualModel }) {
   );
 }
 
+function HeaderView({ rfc, header }: { rfc: number; header: Header }) {
+  const [selected, setSelected] = useState(header.fields[0]?.name);
+  const field = header.fields.find((f) => f.name === selected);
+  const rows = headerRows(header.fields);
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm">
+        <Source rfc={rfc} cite={header.intro} />
+      </p>
+      <div className="overflow-x-auto">
+        <div className="min-w-[640px]">
+          <div className="grid grid-cols-32 font-mono text-[10px] text-[hsl(var(--neo-soft-text))]">
+            {Array.from({ length: 32 }, (_, bit) => (
+              <span key={bit} className="text-center">
+                {bit}
+              </span>
+            ))}
+          </div>
+          {rows.map((row, r) => (
+            <div key={r} className="grid grid-cols-32">
+              {row.map((segment, s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-label={`${segment.name}, ${segment.bits === "var" ? "variable length" : `${segment.bits} bits`}${segment.continued ? " (continued)" : ""}`}
+                  aria-pressed={selected === segment.name}
+                  onClick={() => setSelected(segment.name)}
+                  style={{ gridColumn: `span ${segment.bits === "var" ? 32 : segment.bits}` }}
+                  className={`-mt-[2px] -ml-[2px] min-h-[44px] border-2 border-black px-1 text-xs font-medium transition-colors duration-150 ease-out dark:border-neutral-500 ${
+                    selected === segment.name ? "neo-button" : "bg-[hsl(var(--neo-subtle))] dark:bg-transparent"
+                  }`}
+                >
+                  {segment.name}
+                  {segment.continued ? " …" : ""}
+                  {segment.bits === "var" ? " (variable)" : ""}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      {field ? (
+        <div className="rounded-md border-2 border-black p-3 text-sm dark:border-neutral-600">
+          <p className="font-semibold">
+            {field.name} · {field.bits === "var" ? "variable length" : `${field.bits} bits`}
+          </p>
+          <p className="mt-1">{field.explain}</p>
+          <div className="mt-2">
+            <Source rfc={rfc} cite={field.cite} />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function RfcVisuals({ model }: { model: RfcVisualModel }) {
-  const tabs = [
-    ...model.sequences.map((s) => ({ id: s.id, label: s.title })),
-    { id: "state-machine", label: "State machine" },
-  ];
-  // Handshake first, then the state machine, then the close.
-  const ordered = [tabs[0]!, tabs[tabs.length - 1]!, ...tabs.slice(1, -1)];
-  const [active, setActive] = useState(ordered[0]!.id);
+  const sequenceTabs = model.sequences.map((s) => ({ id: s.id, label: s.title }));
+  const stateTab =
+    model.states.length > 0
+      ? [{ id: "state-machine", label: model.stateMachineTitle ?? "State machine" }]
+      : [];
+  const headerTabs = model.headers.map((h) => ({ id: `header-${h.id}`, label: h.title }));
+  // First flow, then the state machine, then the remaining flows and the headers.
+  const ordered = [...sequenceTabs.slice(0, 1), ...stateTab, ...sequenceTabs.slice(1), ...headerTabs];
+  const [active, setActive] = useState(ordered[0]?.id);
   const sequence = model.sequences.find((s) => s.id === active);
+  const header = model.headers.find((h) => `header-${h.id}` === active);
 
   return (
     <section className="space-y-4">
       <p className="rounded-md border-2 border-dashed border-black px-4 py-3 text-sm dark:border-neutral-500">
-        Built by hand from RFC {model.rfc}. Every arrow and step cites the RFC sentence it comes
-        from, and an automated test checks each quote against the RFC text.{" "}
+        Built by hand from RFC {model.rfc}. Every arrow, step and field cites the RFC sentence it
+        comes from, and an automated test checks each quote against the RFC text.{" "}
         {model.reviewed ? null : <strong>Provisional: not yet reviewed by a second engineer.</strong>}
       </p>
 
@@ -172,14 +245,18 @@ export function RfcVisuals({ model }: { model: RfcVisualModel }) {
       <div role="tabpanel">
         {sequence ? (
           <SequenceView rfc={model.rfc} sequence={sequence} />
+        ) : header ? (
+          <HeaderView rfc={model.rfc} header={header} />
         ) : (
           <StateMachineView model={model} />
         )}
       </div>
 
-      <p className="text-xs text-[hsl(var(--neo-soft-text))] dark:text-neutral-400">
-        Not shown: {model.notShown.join("; ")}.
-      </p>
+      {model.notShown.length > 0 ? (
+        <p className="text-xs text-[hsl(var(--neo-soft-text))] dark:text-neutral-400">
+          Not shown: {model.notShown.join("; ")}.
+        </p>
+      ) : null}
     </section>
   );
 }

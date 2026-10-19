@@ -47,3 +47,47 @@ describe("RfcVisuals", () => {
     expect(screen.getByText(/not yet reviewed by a second engineer/)).toBeInTheDocument();
   });
 });
+
+describe("RfcVisuals with a header layout", () => {
+  const udp = {
+    rfc: 768, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+    headers: [{
+      id: "udp", title: "UDP header",
+      intro: { section: "-", quote: "User Datagram Header Format" },
+      fields: [
+        { name: "Source Port", bits: 16, explain: "Sender's port.", cite: { section: "-", quote: "Source Port is an optional field" } },
+        { name: "Destination Port", bits: 16, explain: "Receiver's port.", cite: { section: "-", quote: "Destination Port has a meaning" } },
+        { name: "Data", bits: "var" as const, explain: "Payload.", cite: { section: "-", quote: "data octets" } },
+      ],
+    }],
+  };
+
+  it("shows only the tabs the model has", () => {
+    render(<RfcVisuals model={udp} />);
+    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["UDP header"]);
+  });
+
+  it("draws fields with their widths and explains the selected one", () => {
+    render(<RfcVisuals model={udp} />);
+    const field = screen.getByRole("button", { name: /Destination Port, 16 bits/ });
+    fireEvent.click(field);
+    expect(screen.getByText("Receiver's port.")).toBeInTheDocument();
+    for (const link of screen.getAllByRole("link", { name: "RFC 768" })) {
+      expect(link).toHaveAttribute("href", "https://www.rfc-editor.org/rfc/rfc768.html");
+    }
+  });
+});
+
+describe("layer toggles", () => {
+  it("only offers layers the model has, with protocol-neutral labels", () => {
+    const model = {
+      ...rfc9293,
+      transitions: rfc9293.transitions.filter((t) => t.layer !== "error"),
+    };
+    render(<RfcVisuals model={model} />);
+    fireEvent.click(screen.getByRole("tab", { name: "State machine" }));
+    expect(screen.getByRole("checkbox", { name: "Normal path" })).toBeDisabled();
+    expect(screen.getByRole("checkbox", { name: "Resets and refusals" })).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /aborts/i })).not.toBeInTheDocument();
+  });
+});

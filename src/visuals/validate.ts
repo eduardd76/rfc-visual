@@ -17,9 +17,16 @@ type Section = { title: string; start: number; end: number };
 function sectionsOf(raw: string): Map<string, Section> {
   const lines = raw.split("\n");
   const headings: { id: string; title: string; line: number }[] = [];
+  const seen = new Set<string>();
   lines.forEach((line, i) => {
-    const match = /^(\d+(?:\.\d+)*)\.\s{2}(\S.*)$/.exec(line);
-    if (match) headings.push({ id: match[1]!, title: match[2]!.trim(), line: i });
+    // "3.10.7.4.  Other States", "4.1.1. Header section format", "4.4.1 Initialization ..."
+    const match =
+      /^(\d+(?:\.\d+)*)\.\s+([A-Za-z].*)$/.exec(line) ??
+      /^(\d+\.\d+(?:\.\d+)*)\s+([A-Za-z].*)$/.exec(line);
+    // Skip table-of-contents lines ("2. Design .......... 5").
+    if (!match || /\.\s?\.\s?\./.test(line) || seen.has(match[1]!)) return;
+    seen.add(match[1]!);
+    headings.push({ id: match[1]!, title: match[2]!.trim(), line: i });
   });
   const sections = new Map<string, Section>();
   headings.forEach((heading, i) => {
@@ -44,7 +51,8 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
   /** Position of the quote inside its cited section, or null with an issue. */
   function locate(cite: Cite, what: string): number | null {
     const quote = normalizeRfcText(cite.quote);
-    const section = sections.get(cite.section);
+    const section =
+      cite.section === "-" ? { title: "", start: 0, end: text.length } : sections.get(cite.section);
     if (!section) {
       issues.push(`${what}: section ${cite.section} not found`);
       return null;
@@ -81,7 +89,7 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
       mentions(quote, t.to) || (t.to === "CLOSED" && /delete (the )?TCB/i.test(quote));
     if (!toOk) issues.push(`${what}: quote does not mention ${t.to}`);
     const before = text.slice(Math.max(0, at - FROM_STATE_WINDOW), at);
-    const title = sections.get(t.cite.section)?.title ?? "";
+    const title = t.cite.section === "-" ? "" : (sections.get(t.cite.section)?.title ?? "");
     if (!mentions(quote, t.from) && !mentions(title, t.from) && !mentions(before, t.from)) {
       issues.push(`${what}: ${t.from} not named near the quote`);
     }
@@ -95,10 +103,30 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
       const quote = normalizeRfcText(step.cite.quote);
       if (!quote.includes(step.segment)) issues.push(`${what}: segment ${step.segment} not in quote`);
       for (const state of [step.stateA, step.stateB]) {
-        if (!mentions(quote, state)) issues.push(`${what}: quote does not mention ${state}`);
+        if (state && !mentions(quote, state)) issues.push(`${what}: quote does not mention ${state}`);
       }
     });
   }
+
+  for (const header of model.headers) {
+    locate(header.intro, `header ${header.id} intro`);
+    let fixedBits = 0;
+    let fixedPrefix = true;
+    for (const field of header.fields) {
+      const what = `header ${header.id} field ${field.name}`;
+      if (locate(field.cite, what) !== null && !mentions(normalizeRfcText(field.cite.quote), field.name)) {
+        issues.push(`${what}: quote does not mention ${field.name}`);
+      }
+      if (field.bits === "var") fixedPrefix = false;
+      else if (fixedPrefix) fixedBits += field.bits;
+    }
+    if (fixedBits % 8 !== 0) {
+      issues.push(`header ${header.id}: fixed fields total ${fixedBits} bits, not a whole number of octets`);
+    }
+  }
+
+  if (model.states.length === 0) return issues;
+  if (!model.initial) return [...issues, "model has states but no initial state"];
 
   // Structure: every state reachable on the normal path, every state has a way out.
   const reachable = new Set([model.initial]);

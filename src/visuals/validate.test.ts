@@ -69,3 +69,59 @@ describe("normalizeRfcText", () => {
     expect(normalizeRfcText("then enter FIN-\n      WAIT-2 and")).toBe("then enter FIN-WAIT-2 and");
   });
 });
+
+describe("validateModel on other shapes", () => {
+  const tiny = (over: Partial<RfcVisualModel>): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], headers: [], notShown: [], ...over,
+  });
+  const doc = "Some RFC\n\n   The Source Port is an optional field. Length is the length in octets.\n";
+
+  it("accepts whole-document citations with section \"-\"", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Source Port", bits: 16, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+
+  it("rejects a header field whose quote does not name it", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Checksum", bits: 16, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/does not mention Checksum/);
+  });
+
+  it("rejects fixed header bits that do not end on an octet boundary", () => {
+    const model = tiny({
+      headers: [{ id: "h", title: "H", intro: { section: "-", quote: "Length is the length in octets." },
+        fields: [{ name: "Source Port", bits: 13, explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/not a whole number of octets/);
+  });
+
+  it("allows sequence steps without states", () => {
+    const model = tiny({
+      sequences: [{ id: "s", title: "S", intro: { section: "-", quote: "Length is the length in octets." },
+        steps: [{ from: "A", segment: "Source Port", explain: "", cite: { section: "-", quote: "The Source Port is an optional field." } }] }],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+});
+
+describe("section headings in older RFC styles", () => {
+  const dhcp = readFileSync("test/fixtures/rfc2131.txt", "utf8");
+  const dns = readFileSync("test/fixtures/rfc1035.txt", "utf8");
+  const tiny = (cite: { section: string; quote: string }): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+    headers: [{ id: "h", title: "H", intro: cite, fields: [] }],
+  });
+
+  it("finds '4.4.1 Initialization and allocation of network address' (no trailing dot)", () => {
+    expect(validateModel(tiny({ section: "4.4.1", quote: "The client begins in INIT state and forms a DHCPDISCOVER message." }), dhcp)).toEqual([]);
+  });
+
+  it("finds '4.1.1. Header section format' (single space)", () => {
+    expect(validateModel(tiny({ section: "4.1.1", quote: "The header contains the following fields:" }), dns)).toEqual([]);
+  });
+});

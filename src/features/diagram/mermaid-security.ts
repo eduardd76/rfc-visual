@@ -1,5 +1,23 @@
-const safeGitHubClickDirective =
-  /^\s*click\s+[a-z_][a-z0-9_-]*\s+"https:\/\/github\.com\/[^"\s]+"\s*$/iu;
+import { RFC_EDITOR_ORIGIN, SITE_ORIGIN } from "~/lib/site";
+
+// Diagram links may only point at rfc-visual itself or rfc-editor.org.
+const ALLOWED_LINK_ORIGINS = new Set([SITE_ORIGIN, RFC_EDITOR_ORIGIN]);
+
+const clickDirective = /^\s*click\s+[a-z_][a-z0-9_-]*\s+"([^"\s]+)"\s*$/iu;
+
+function isAllowedLink(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" && ALLOWED_LINK_ORIGINS.has(url.origin);
+  } catch {
+    return false;
+  }
+}
+
+function isSafeClickDirective(line: string): boolean {
+  const target = clickDirective.exec(line)?.[1];
+  return target !== undefined && isAllowedLink(target);
+}
 
 // Mermaid's lexer tokenizes `click` followed by ANY whitespace run (tab, or
 // even a newline — making a bare "click" line continue onto the next line), so
@@ -22,7 +40,7 @@ export function sanitizeMermaidSourceForRender(source: string): string {
     }
     if (
       clickDirectiveStart.test(trimmed) &&
-      !safeGitHubClickDirective.test(line)
+      !isSafeClickDirective(line)
     ) {
       continue;
     }
@@ -39,7 +57,7 @@ export function enforceSafeMermaidLinks(root: ParentNode): void {
 
     try {
       const url = new URL(rawHref, window.location.origin);
-      if (url.protocol !== "https:" || url.hostname !== "github.com") {
+      if (!isAllowedLink(url.toString())) {
         anchor.removeAttribute("href");
         anchor.removeAttribute("xlink:href");
         continue;

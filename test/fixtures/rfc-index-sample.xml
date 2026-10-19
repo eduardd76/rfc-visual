@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc-index xmlns="https://www.rfc-editor.org/rfc-index" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <bcp-entry>
+    <doc-id>BCP14</doc-id>
+  </bcp-entry>
+  <rfc-entry>
+    <doc-id>RFC761</doc-id>
+    <title>DoD standard Transmission Control Protocol</title>
+    <author>
+      <name>J. Postel</name>
+    </author>
+    <date>
+      <month>January</month>
+      <year>1980</year>
+    </date>
+    <format>
+      <file-format>TXT</file-format>
+      <file-format>HTML</file-format>
+    </format>
+    <page-count>88</page-count>
+    <keywords>
+      <kw>TCP</kw>
+    </keywords>
+    <obsoleted-by>
+      <doc-id>RFC793</doc-id>
+      <doc-id>RFC7805</doc-id>
+    </obsoleted-by>
+    <current-status>HISTORIC</current-status>
+    <publication-status>UNKNOWN</publication-status>
+    <stream>Legacy</stream>
+    <errata-url>https://www.rfc-editor.org/errata/rfc761</errata-url>
+    <doi>10.17487/RFC761</doi>
+  </rfc-entry>
+  <rfc-entry>
+    <doc-id>RFC793</doc-id>
+    <title>Transmission Control Protocol</title>
+    <author>
+      <name>J. Postel</name>
+    </author>
+    <date>
+      <month>September</month>
+      <year>1981</year>
+    </date>
+    <format>
+      <file-format>TXT</file-format>
+      <file-format>HTML</file-format>
+    </format>
+    <page-count>91</page-count>
+    <keywords>
+      <kw>TCP</kw>
+    </keywords>
+    <obsoletes>
+      <doc-id>RFC761</doc-id>
+    </obsoletes>
+    <obsoleted-by>
+      <doc-id>RFC9293</doc-id>
+    </obsoleted-by>
+    <updated-by>
+      <doc-id>RFC1122</doc-id>
+      <doc-id>RFC3168</doc-id>
+      <doc-id>RFC6093</doc-id>
+      <doc-id>RFC6528</doc-id>
+    </updated-by>
+    <current-status>INTERNET STANDARD</current-status>
+    <publication-status>INTERNET STANDARD</publication-status>
+    <stream>Legacy</stream>
+    <errata-url>https://www.rfc-editor.org/errata/rfc793</errata-url>
+    <doi>10.17487/RFC793</doi>
+  </rfc-entry>
+  <rfc-entry>
+    <doc-id>RFC1035</doc-id>
+    <title>Domain names - implementation and specification</title>
+    <author>
+      <name>P. Mockapetris</name>
+    </author>
+    <date>
+      <month>November</month>
+      <year>1987</year>
+    </date>
+    <format>
+      <file-format>TXT</file-format>
+      <file-format>HTML</file-format>
+    </format>
+    <page-count>55</page-count>
+    <keywords>
+      <kw>DOMAIN</kw>
+      <kw>DNS</kw>
+    </keywords>
+    <abstract>
+      <p>This RFC is the revised specification of the protocol and format used in the implementation of the Domain Name System.  It obsoletes RFC-883.  This memo documents the details of the domain name client - server communication.</p>
+    </abstract>
+    <is-also>
+      <doc-id>STD13</doc-id>
+    </is-also>
+    <obsoletes>
+      <doc-id>RFC882</doc-id>
+      <doc-id>RFC883</doc-id>
+      <doc-id>RFC973</doc-id>
+    </obsoletes>
+    <updated-by>
+      <doc-id>RFC1101</doc-id>
+      <doc-id>RFC1183</doc-id>
+      <doc-id>RFC1348</doc-id>
+      <doc-id>RFC1876</doc-id>
+      <doc-id>RFC1982</doc-id>
+      <doc-id>RFC1995</doc-id>
+      <doc-id>RFC1996</doc-id>
+      <doc-id>RFC2065</doc-id>
+      <doc-id>RFC2136</doc-id>
+      <doc-id>RFC2137</doc-id>
+      <doc-id>RFC2181</doc-id>
+      <doc-id>RFC2308</doc-id>
+      <doc-id>RFC2535</doc-id>
+      <doc-id>RFC2673</doc-id>
+      <doc-id>RFC2845</doc-id>
+      <doc-id>RFC3425</doc-id>
+      <doc-id>RFC3658</doc-id>
+      <doc-id>RFC4033</doc-id>
+      <doc-id>RFC4034</doc-id>
+      <doc-id>RFC4035</doc-id>
+      <doc-id>RFC4343</doc-id>
+      <doc-id>RFC5936</doc-id>
+      <doc-id>RFC5966</doc-id>
+      <doc-id>RFC6604</doc-id>
+      <doc-id>RFC7766</doc-id>
+      <doc-id>RFC8482</doc-id>
+      <doc-id>RFC8490</doc-id>
+      <doc-id>RFC8767</doc-id>
+      <doc-id>RFC9619</doc-id>
+    </updated-by>
+    <current-status>INTERNET STANDARD</current-status>
+    <publication-status>INTERNET STANDARD</publication-status>
+    <stream>Legacy</stream>
+    <errata-url>https://www.rfc-editor.org/errata/rfc1035</errata-url>
+    <doi>10.17487/RFC1035</doi>
+  </rfc-entry>
+  <rfc-entry>
+    <doc-id>RFC2119</doc-id>
+    <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+    <author>
+      <name>S. Bradner</name>
+    </author>
+    <date>
+      <month>March</month>
+      <year>1997</year>
+    </date>
+    <format>
+      <file-format>TXT</file-format>
+      <file-format>HTML</file-format>
+    </format>
+    <page-count>3</page-count>
+    <keywords>
+      <kw>Standards</kw>
+      <kw>Track</kw>
+      <kw>Documents</kw>
+    </keywords>
+    <abstract>
+      <p>In many standards track documents several words are used to signify the requirements in the specification.  These words are often capitalized.  This document defines these words as they should be interpreted in IETF documents.  This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</p>
+    </abstract>
+    <draft>draft-bradner-key-words-02</draft>
+    <is-also>
+      <doc-id>BCP14</doc-id>
+    </is-also>
+    <updated-by>
+      <doc-id>RFC8174</doc-id>
+    </updated-by>
+    <current-status>BEST CURRENT PRACTICE</current-status>
+    <publication-status>BEST CURRENT PRACTICE</publication-status>
+    <stream>IETF</stream>
+    <wg_acronym>NON WORKING GROUP</wg_acronym>
+    <errata-url>https://www.rfc-editor.org/errata/rfc2119</errata-url>
+    <doi>10.17487/RFC2119</doi>
+  </rfc-entry>
+  <rfc-entry>
+    <doc-id>RFC9293</doc-id>
+    <title>Transmission Control Protocol (TCP)</title>
+    <author>
+      <name>W. Eddy</name>
+      <title>Editor</title>
+    </author>
+    <date>
+      <month>August</month>
+      <year>2022</year>
+    </date>
+    <format>
+      <file-format>HTML</file-format>
+      <file-format>TXT</file-format>
+      <file-format>PDF</file-format>
+      <file-format>XML</file-format>
+    </format>
+    <page-count>98</page-count>
+    <abstract>
+      <p>This document specifies the Transmission Control Protocol (TCP).  TCP is an important transport-layer protocol in the Internet protocol stack, and it has continuously evolved over decades of use and growth of the Internet.  Over this time, a number of changes have been made to TCP as it was specified in RFC 793, though these have only been documented in a piecemeal fashion.  This document collects and brings those changes together with the protocol specification from RFC 793.  This document obsoletes RFC 793, as well as RFCs 879, 2873, 6093, 6429, 6528, and 6691 that updated parts of RFC 793.  It updates RFCs 1011 and 1122, and it should be considered as a replacement for the portions of those documents dealing with TCP requirements.  It also updates RFC 5961 by adding a small clarification in reset handling while in the SYN-RECEIVED state.  The TCP header control bits from RFC 793 have also been updated based on RFC 3168.</p>
+    </abstract>
+    <draft>draft-ietf-tcpm-rfc793bis-28</draft>
+    <is-also>
+      <doc-id>STD7</doc-id>
+    </is-also>
+    <obsoletes>
+      <doc-id>RFC793</doc-id>
+      <doc-id>RFC879</doc-id>
+      <doc-id>RFC2873</doc-id>
+      <doc-id>RFC6093</doc-id>
+      <doc-id>RFC6429</doc-id>
+      <doc-id>RFC6528</doc-id>
+      <doc-id>RFC6691</doc-id>
+    </obsoletes>
+    <updates>
+      <doc-id>RFC1011</doc-id>
+      <doc-id>RFC1122</doc-id>
+      <doc-id>RFC5961</doc-id>
+    </updates>
+    <current-status>INTERNET STANDARD</current-status>
+    <publication-status>INTERNET STANDARD</publication-status>
+    <stream>IETF</stream>
+    <area>wit</area>
+    <wg_acronym>tcpm</wg_acronym>
+    <errata-url>https://www.rfc-editor.org/errata/rfc9293</errata-url>
+    <doi>10.17487/RFC9293</doi>
+  </rfc-entry>
+</rfc-index>

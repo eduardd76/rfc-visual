@@ -8,7 +8,7 @@ import type { RfcIndex } from "../src/rfc/types";
 const OUT = "out";
 const failures: string[] = [];
 
-for (const path of ["rfc/rfc9293/index.html", "rfc/rfc793/index.html", "404.html"]) {
+for (const path of ["rfc/rfc9293/index.html", "rfc/rfc793/index.html", "404.html", "search-index.json"]) {
   if (!existsSync(join(OUT, path))) failures.push(`missing ${path}`);
 }
 if (existsSync(join(OUT, "rfc/rfc9293.txt"))) {

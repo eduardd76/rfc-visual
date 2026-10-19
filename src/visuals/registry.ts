@@ -15,6 +15,7 @@ import { rfc8446 } from "~/visuals/rfc8446";
 import { rfc9000 } from "~/visuals/rfc9000";
 import { rfc9112 } from "~/visuals/rfc9112";
 import { rfc9293 } from "~/visuals/rfc9293";
+import { rfc9846 } from "~/visuals/rfc9846";
 import type { RfcVisualModel } from "~/visuals/types";
 
 const VISUALS: RfcVisualModel[] = [
@@ -35,6 +36,7 @@ const VISUALS: RfcVisualModel[] = [
   rfc9000,
   rfc9112,
   rfc9293,
+  rfc9846,
 ];
 
 const BY_NUMBER = new Map(VISUALS.map((model) => [model.rfc, model]));

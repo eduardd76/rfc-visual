@@ -14,7 +14,7 @@
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx,css,json,jsonc,yml,yaml}\" --cache",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx,css,json,jsonc,yml,yaml}\" --cache",
     "dev": "next dev --turbopack",
-    "build": "next build && bun scripts/prune-export.ts",
+    "build": "bun scripts/build-search-index.ts && next build && bun scripts/prune-export.ts",
     "sync:data": "bun scripts/sync-rfc-data.ts",
     "verify:export": "bun scripts/verify-export.ts"
   },

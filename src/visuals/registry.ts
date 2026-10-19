@@ -16,9 +16,10 @@ import { rfc9000 } from "~/visuals/rfc9000";
 import { rfc9112 } from "~/visuals/rfc9112";
 import { rfc9293 } from "~/visuals/rfc9293";
 import { rfc9846 } from "~/visuals/rfc9846";
+import { GENERATED } from "~/visuals/generated";
 import type { RfcVisualModel } from "~/visuals/types";
 
-const VISUALS: RfcVisualModel[] = [
+const HAND_BUILT: RfcVisualModel[] = [
   rfc768,
   rfc791,
   rfc792,
@@ -38,6 +39,14 @@ const VISUALS: RfcVisualModel[] = [
   rfc9293,
   rfc9846,
 ];
+
+/** Hand-built visuals win over generated drafts of the same RFC. */
+export function mergeVisuals(hand: RfcVisualModel[], generated: RfcVisualModel[]): RfcVisualModel[] {
+  const handNumbers = new Set(hand.map((model) => model.rfc));
+  return [...hand, ...generated.filter((model) => !handNumbers.has(model.rfc))];
+}
+
+const VISUALS = mergeVisuals(HAND_BUILT, GENERATED);
 
 const BY_NUMBER = new Map(VISUALS.map((model) => [model.rfc, model]));
 

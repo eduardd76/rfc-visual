@@ -7,6 +7,14 @@ on:
     # Nightly: picks up new RFCs and errata from rfc-editor.org.
     - cron: "17 3 * * *"
   workflow_dispatch:
+  # Commits pushed by the generator do not trigger `push`, so deploy after it.
+  workflow_run:
+    workflows: ["Generate visuals"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
 
 concurrency:
   group: deploy
@@ -14,6 +22,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:

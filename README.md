@@ -19,6 +19,21 @@ Phase 0 (this release) shows, for every RFC:
 
 No LLM is involved. State machines and packet-flow diagrams, with every element cited back to the RFC text, come next. See [the design](docs/superpowers/specs/2026-10-19-rfc-visual-design.md).
 
+## Generated visuals (Phase 1)
+
+RFCs without a hand-built visual get a **machine-generated draft**. The draft is made by free OpenRouter models, and the site labels it with the model's name and the date.
+
+- **What runs, and when:** `.github/workflows/generate.yml` runs nightly (01:30 UTC). It uses the free tier, which allows 50 requests a day without credits, so it budgets 45 requests, about 20 RFCs per night.
+- **Which RFCs go first:** current standards-track RFCs, most-updated first. BCP, informational and experimental RFCs follow.
+- **How a draft is built:**
+  1. The model gets the same rules hand-authors follow (`docs/visual-authoring.md`), the schema, and an example.
+  2. The validator checks every quote against the RFC text. Rejected elements are sent back once for repair.
+  3. Whatever still fails is removed.
+  4. If more than 20% fails, the draft is withheld; it is retried after 30 days (`src/visuals/generated/failed.json`).
+- **What gets committed:** only drafts that pass the full test suite are committed. The site then redeploys.
+- **Hand-built visuals always win:** a generated draft never replaces a hand-built visual.
+- **Running it locally:** `OPENROUTER_API_KEY=... bun scripts/generate-visuals.ts` (set `ONLY=5905` to generate one RFC).
+
 ## Help verify
 
 Each visual is marked **Provisional** until it is reviewed by engineers who know the protocol. Every visual has a **Help verify this visual** link. You can also [open a verification report](https://github.com/eduardd76/rfc-visual/issues/new?template=verify-visual.yml) directly.

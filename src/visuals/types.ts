@@ -60,8 +60,18 @@ export type Header = {
   fields: HeaderField[];
 };
 
+/** Present on visuals drafted by the Phase 1 generator. */
+export type Provenance = {
+  kind: "generated";
+  model: string;
+  generatedAt: string;
+  /** Elements the validator rejected and the generator removed. */
+  dropped: number;
+};
+
 export type RfcVisualModel = {
   rfc: number;
+  provenance?: Provenance;
   /** Required when the model has states. */
   initial?: string;
   /** States the RFC defines as final; they need no exit. */

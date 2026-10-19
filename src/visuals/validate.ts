@@ -67,10 +67,25 @@ function nearestStateHeading(text: string, states: string[]): string | undefined
 const mentions = (haystack: string, state: string) =>
   haystack.toUpperCase().includes(state.toUpperCase());
 
+/**
+ * A validation problem and the element it belongs to: "states.2",
+ * "transitions.5", "sequences.0.steps.3", "headers.1.fields.0", "headers.1",
+ * or "structure" for state-machine shape problems.
+ */
+export type ValidationIssue = { path: string; message: string };
+
 export function validateModel(model: RfcVisualModel, rfcText: string): string[] {
+  return validateDetailed(model, rfcText).map((issue) => issue.message);
+}
+
+export function validateDetailed(model: RfcVisualModel, rfcText: string): ValidationIssue[] {
   const text = normalizeRfcText(rfcText);
   const sections = sectionsOf(rfcText);
-  const issues: string[] = [];
+  const issues: ValidationIssue[] = [];
+  let path = "";
+  const report = (message: string) => {
+    issues.push({ path, message });
+  };
 
   /** Position of the quote inside its cited section, or null with an issue. */
   function locate(cite: Cite, what: string): number | null {
@@ -78,40 +93,42 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
     const section =
       cite.section === "-" ? { title: "", start: 0, end: text.length } : sections.get(cite.section);
     if (!section) {
-      issues.push(`${what}: section ${cite.section} not found`);
+      report(`${what}: section ${cite.section} not found`);
       return null;
     }
     const at = text.indexOf(quote, section.start);
     if (at === -1 && !text.includes(quote)) {
-      issues.push(`${what}: quote not found in RFC: "${quote}"`);
+      report(`${what}: quote not found in RFC: "${quote}"`);
       return null;
     }
     if (at === -1 || at + quote.length > section.end) {
-      issues.push(`${what}: quote not in section ${cite.section}: "${quote}"`);
+      report(`${what}: quote not in section ${cite.section}: "${quote}"`);
       return null;
     }
     return at;
   }
 
   const stateIds = new Set(model.states.map((s) => s.id));
-  for (const state of model.states) {
+  model.states.forEach((state, i) => {
+    path = `states.${i}`;
     const what = `state ${state.id}`;
     if (locate(state.cite, what) !== null && !mentions(state.cite.quote, state.id)) {
-      issues.push(`${what}: quote does not mention ${state.id}`);
+      report(`${what}: quote does not mention ${state.id}`);
     }
-  }
+  });
 
-  for (const t of model.transitions) {
+  model.transitions.forEach((t, i) => {
+    path = `transitions.${i}`;
     const what = `${t.from} → ${t.to} (${t.event})`;
     for (const id of [t.from, t.to]) {
-      if (!stateIds.has(id)) issues.push(`${what}: unknown state ${id}`);
+      if (!stateIds.has(id)) report(`${what}: unknown state ${id}`);
     }
     const at = locate(t.cite, what);
-    if (at === null) continue;
+    if (at === null) return;
     const quote = t.cite.quote;
     const toOk =
       mentions(quote, t.to) || (t.to === "CLOSED" && /delete (the )?TCB/i.test(quote));
-    if (!toOk) issues.push(`${what}: quote does not mention ${t.to}`);
+    if (!toOk) report(`${what}: quote does not mention ${t.to}`);
     const before = text.slice(Math.max(0, at - FROM_STATE_WINDOW), at);
     const title = t.cite.section === "-" ? "" : (sections.get(t.cite.section)?.title ?? "");
     const sectionStart = t.cite.section === "-" ? 0 : (sections.get(t.cite.section)?.start ?? 0);
@@ -122,42 +139,51 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
       !mentions(before, t.from) &&
       heading !== t.from
     ) {
-      issues.push(`${what}: ${t.from} not named near the quote`);
+      report(`${what}: ${t.from} not named near the quote`);
     }
-  }
+  });
 
-  for (const sequence of model.sequences) {
+  model.sequences.forEach((sequence, s) => {
+    path = `sequences.${s}.intro`;
     locate(sequence.intro, `sequence ${sequence.id} intro`);
     sequence.steps.forEach((step, i) => {
+      path = `sequences.${s}.steps.${i}`;
       const what = `sequence ${sequence.id} step ${i + 1}`;
       if (locate(step.cite, what) === null) return;
       const quote = normalizeRfcText(step.cite.quote);
-      if (!quote.includes(step.segment)) issues.push(`${what}: segment ${step.segment} not in quote`);
+      if (!quote.includes(step.segment)) report(`${what}: segment ${step.segment} not in quote`);
       for (const state of [step.stateA, step.stateB]) {
-        if (state && !mentions(quote, state)) issues.push(`${what}: quote does not mention ${state}`);
+        if (state && !mentions(quote, state)) report(`${what}: quote does not mention ${state}`);
       }
     });
-  }
+  });
 
-  for (const header of model.headers) {
+  model.headers.forEach((header, h) => {
+    path = `headers.${h}.intro`;
     locate(header.intro, `header ${header.id} intro`);
     let fixedBits = 0;
     let fixedPrefix = true;
-    for (const field of header.fields) {
+    header.fields.forEach((field, f) => {
+      path = `headers.${h}.fields.${f}`;
       const what = `header ${header.id} field ${field.name}`;
       if (locate(field.cite, what) !== null && !mentions(normalizeRfcText(field.cite.quote), field.name)) {
-        issues.push(`${what}: quote does not mention ${field.name}`);
+        report(`${what}: quote does not mention ${field.name}`);
       }
       if (field.bits === "var") fixedPrefix = false;
       else if (fixedPrefix) fixedBits += field.bits;
-    }
+    });
+    path = `headers.${h}`;
     if (fixedBits % 8 !== 0) {
-      issues.push(`header ${header.id}: fixed fields total ${fixedBits} bits, not a whole number of octets`);
+      report(`header ${header.id}: fixed fields total ${fixedBits} bits, not a whole number of octets`);
     }
-  }
+  });
 
+  path = "structure";
   if (model.states.length === 0) return issues;
-  if (!model.initial) return [...issues, "model has states but no initial state"];
+  if (!model.initial) {
+    report("model has states but no initial state");
+    return issues;
+  }
 
   // Structure: every state reachable, every non-terminal state has a way out.
   const reachable = new Set([model.initial]);
@@ -171,10 +197,10 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
     }
   }
   for (const id of stateIds) {
-    if (!reachable.has(id)) issues.push(`${id} is unreachable from ${model.initial}`);
+    if (!reachable.has(id)) report(`${id} is unreachable from ${model.initial}`);
     const terminal = model.terminal?.includes(id) ?? false;
     if (id !== model.initial && !terminal && !model.transitions.some((t) => t.from === id)) {
-      issues.push(`${id} has no exit`);
+      report(`${id} has no exit`);
     }
   }
 

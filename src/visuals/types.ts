@@ -64,6 +64,8 @@ export type RfcVisualModel = {
   rfc: number;
   /** Required when the model has states. */
   initial?: string;
+  /** States the RFC defines as final; they need no exit. */
+  terminal?: string[];
   /** Tab label for the state machine, e.g. "BGP FSM". Default "State machine". */
   stateMachineTitle?: string;
   reviewed: boolean;

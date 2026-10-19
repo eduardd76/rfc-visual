@@ -1,0 +1,120 @@
+import type { RfcVisualModel } from "~/visuals/types";
+
+// Hand-built from RFC 4861 (Neighbor Discovery). Every quote is verbatim RFC
+// text (whitespace collapsed) and is checked against the RFC by the validator.
+// The state machine follows the normative prose of Sections 7.2 and 7.3;
+// Appendix C is only a summary of those rules.
+export const rfc4861: RfcVisualModel = {
+  rfc: 4861,
+  initial: "INCOMPLETE",
+  stateMachineTitle: "Neighbor Cache entry states",
+  reviewed: false,
+  states: [
+    { id: "INCOMPLETE", cite: { section: "7.3.2", quote: "INCOMPLETE Address resolution is being performed on the entry. Specifically, a Neighbor Solicitation has been sent to the solicited-node multicast address of the target, but the corresponding Neighbor Advertisement has not yet been received." } },
+    { id: "REACHABLE", cite: { section: "7.3.2", quote: "REACHABLE Positive confirmation was received within the last ReachableTime milliseconds that the forward path to the neighbor was functioning properly." } },
+    { id: "STALE", cite: { section: "7.3.2", quote: "STALE More than ReachableTime milliseconds have elapsed since the last positive confirmation was received that the forward path was functioning properly. While stale, no action takes place until a packet is sent." } },
+    { id: "DELAY", cite: { section: "7.3.2", quote: "DELAY More than ReachableTime milliseconds have elapsed since the last positive confirmation was received that the forward path was functioning properly, and a packet was sent within the last DELAY_FIRST_PROBE_TIME seconds." } },
+    { id: "PROBE", cite: { section: "7.3.2", quote: "PROBE A reachability confirmation is actively sought by retransmitting Neighbor Solicitations every RetransTimer milliseconds until a reachability confirmation is received." } },
+  ],
+  transitions: [
+    // Address resolution completes
+    { from: "INCOMPLETE", to: "REACHABLE", event: "rcv NA, Solicited=1", action: "send queued packets", layer: "happy",
+      cite: { section: "7.2.5", quote: "If the advertisement's Solicited flag is set, the state of the entry is set to REACHABLE; otherwise, it is set to STALE." } },
+    { from: "INCOMPLETE", to: "STALE", event: "rcv NA, Solicited=0", action: "send queued packets", layer: "happy",
+      cite: { section: "7.2.5", quote: "If the advertisement's Solicited flag is set, the state of the entry is set to REACHABLE; otherwise, it is set to STALE." } },
+    // Reachability ages out
+    { from: "REACHABLE", to: "STALE", event: "ReachableTime passes", layer: "happy",
+      note: "An implementation may defer this change until a packet is sent to the neighbor.",
+      cite: { section: "7.3.3", quote: "When ReachableTime milliseconds have passed since receipt of the last reachability confirmation for a neighbor, the Neighbor Cache entry's state changes from REACHABLE to STALE." } },
+    { from: "REACHABLE", to: "STALE", event: "rcv NA, Override=0, new link-layer addr", layer: "happy",
+      note: "The entry is not updated in any other way.",
+      cite: { section: "7.2.5", quote: "a. If the state of the entry is REACHABLE, set it to STALE, but do not update the entry in any other way." } },
+    { from: "REACHABLE", to: "STALE", event: "rcv NA, Solicited=0, Override=1, new link-layer addr", action: "record new address", layer: "happy",
+      cite: { section: "7.2.5", quote: "If the Solicited flag is zero and the link-layer address was updated with a different address, the state MUST be set to STALE." } },
+    // NUD
+    { from: "STALE", to: "DELAY", event: "send packet", action: "start delay timer", layer: "happy",
+      cite: { section: "7.3.3", quote: "The first time a node sends a packet to a neighbor whose entry is STALE, the sender changes the state to DELAY and sets a timer to expire in DELAY_FIRST_PROBE_TIME seconds." } },
+    { from: "DELAY", to: "PROBE", event: "delay timer expires", action: "snd unicast NS", layer: "happy",
+      cite: { section: "7.3.3", quote: "If the entry is still in the DELAY state when the timer expires, the entry's state changes to PROBE." } },
+    { from: "DELAY", to: "REACHABLE", event: "reachability confirmation", layer: "happy",
+      cite: { section: "7.3.3", quote: "If reachability confirmation is received, the entry's state changes to REACHABLE." } },
+    { from: "PROBE", to: "PROBE", event: "retransmit timeout", action: "snd unicast NS", layer: "happy",
+      cite: { section: "7.3.3", quote: "While in the PROBE state, a node retransmits Neighbor Solicitation messages every RetransTimer milliseconds until reachability confirmation is obtained." } },
+    { from: "STALE", to: "REACHABLE", event: "rcv NA, Solicited=1", layer: "happy",
+      note: "Applies in any state other than INCOMPLETE, when Override is set or the advertised link-layer address matches the cache.",
+      cite: { section: "7.2.5", quote: "If the Solicited flag is set, the state of the entry MUST be set to REACHABLE." } },
+    ...(["PROBE"] as const).map((from) => ({
+      from, to: "REACHABLE", event: "reachability confirmation", layer: "happy" as const,
+      note: "Confirmation is upper-layer advice or a solicited Neighbor Advertisement.",
+      cite: { section: "7.3.3", quote: "When a reachability confirmation is received (either through upper-layer advice or a solicited Neighbor Advertisement), an entry's state changes to REACHABLE." },
+    })),
+  ],
+  sequences: [
+    {
+      id: "address-resolution",
+      title: "Address resolution",
+      participants: { a: "Node A", b: "Neighbor B" },
+      intro: { section: "7.2", quote: "Address resolution is the process through which a node determines the link-layer address of a neighbor given only its IP address." },
+      steps: [
+        { from: "A", segment: "Neighbor Solicitation", stateA: "INCOMPLETE",
+          explain: "A has a unicast packet for B but does not know B's link-layer address. A creates a Neighbor Cache entry for B in INCOMPLETE and sends a Neighbor Solicitation to B's solicited-node multicast address.",
+          cite: { section: "7.2.2", quote: "For multicast-capable interfaces, this entails creating a Neighbor Cache entry in the INCOMPLETE state and transmitting a Neighbor Solicitation message targeted at the neighbor." } },
+        { from: "B", segment: "Neighbor Advertisement", stateA: "REACHABLE",
+          explain: "B answers with a solicited Neighbor Advertisement. For A this confirms reachability, so A's entry for B becomes REACHABLE.",
+          cite: { section: "7.3.3", quote: "When a reachability confirmation is received (either through upper-layer advice or a solicited Neighbor Advertisement), an entry's state changes to REACHABLE." } },
+      ],
+    },
+    {
+      id: "nud-probe",
+      title: "Reachability probe",
+      participants: { a: "Node A", b: "Neighbor B" },
+      intro: { section: "7.3", quote: "Thus, a node actively tracks the reachability \"state\" for the neighbors to which it is sending packets." },
+      steps: [
+        { from: "A", segment: "Neighbor Solicitation", stateA: "PROBE",
+          explain: "A's entry for B has entered PROBE, so A sends a unicast Neighbor Solicitation to B's cached link-layer address.",
+          cite: { section: "7.3.3", quote: "Upon entering the PROBE state, a node sends a unicast Neighbor Solicitation message to the neighbor using the cached link-layer address." } },
+        { from: "B", segment: "Neighbor Advertisement", stateA: "REACHABLE",
+          explain: "B's solicited Neighbor Advertisement confirms the forward path works, so A's entry becomes REACHABLE again.",
+          cite: { section: "7.3.3", quote: "When a reachability confirmation is received (either through upper-layer advice or a solicited Neighbor Advertisement), an entry's state changes to REACHABLE." } },
+      ],
+    },
+  ],
+  headers: [
+    {
+      id: "ns",
+      title: "Neighbor Solicitation message",
+      intro: { section: "4.3", quote: "Nodes send Neighbor Solicitations to request the link-layer address of a target node while also providing their own link-layer address to the target." },
+      fields: [
+        { name: "Type", bits: 8,
+          explain: "135 identifies a Neighbor Solicitation.",
+          cite: { section: "4.3", quote: "Type 135" } },
+        { name: "Code", bits: 8,
+          explain: "Always 0.",
+          cite: { section: "4.3", quote: "Code 0" } },
+        { name: "Checksum", bits: 16,
+          explain: "The ICMP checksum, as defined by ICMPv6.",
+          cite: { section: "4.3", quote: "Checksum The ICMP checksum. See [ICMPv6]." } },
+        { name: "Reserved", bits: 32,
+          explain: "Unused. The sender sets it to zero and the receiver ignores it.",
+          cite: { section: "4.3", quote: "Reserved This field is unused. It MUST be initialized to zero by the sender and MUST be ignored by the receiver." } },
+        { name: "Target Address", bits: 128,
+          explain: "The IP address being asked about. It must not be a multicast address.",
+          cite: { section: "4.3", quote: "Target Address The IP address of the target of the solicitation. It MUST NOT be a multicast address." } },
+        { name: "Options", bits: "var",
+          explain: "Usually the Source link-layer address option, carrying the sender's link-layer address. Receivers ignore options they do not recognize.",
+          cite: { section: "4.3", quote: "Receivers MUST silently ignore any options they do not recognize and continue processing the message." } },
+      ],
+    },
+  ],
+  notShown: [
+    "Entry deletion: after failed address resolution from INCOMPLETE, or after MAX_UNICAST_SOLICIT unanswered probes in PROBE (§7.2.2, §7.3.3); deleted entries have no state to draw",
+    "INCOMPLETE retransmissions of the multicast Neighbor Solicitation and the ICMP Address Unreachable errors sent when resolution fails (§7.2.2)",
+    "Entries created directly in STALE, or moved to STALE, by Neighbor Solicitations, Router Solicitations, Router Advertisements or Redirects (§7.2.3, §7.3.3)",
+    "Unsolicited Neighbor Advertisements that change the link-layer address while in STALE, DELAY or PROBE (§7.2.5)",
+    "IsRouter flag handling (§7.2.5, Appendix D)",
+    "Router and prefix discovery, Router Solicitation and Router Advertisement (§6)",
+    "Neighbor Advertisement and Redirect message formats and the option formats (§4.4–§4.6)",
+    "Duplicate Address Detection, anycast and proxy advertisements (§7.2.7, §7.2.8)",
+    "Redirect function (§8)",
+  ],
+};

@@ -4,7 +4,8 @@ import MermaidChart from "~/components/mermaid-diagram";
 
 const ROW_HEIGHT = 56;
 const PADDING = 48;
-const MIN_HEIGHT = 240;
+// Matches the interactive viewer's min-h-[22rem]; smaller boxes overflow.
+const MIN_HEIGHT = 352;
 
 /** Container height for a graph with `rows` node rows on its taller side. */
 export function lineageGraphHeight(rows: number): number {

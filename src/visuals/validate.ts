@@ -22,7 +22,9 @@ function sectionsOf(raw: string): Map<string, Section> {
     // "3.10.7.4.  Other States", "4.1.1. Header section format", "4.4.1 Initialization ..."
     const match =
       /^(\d+(?:\.\d+)*)\.\s+([A-Za-z].*)$/.exec(line) ??
-      /^(\d+\.\d+(?:\.\d+)*)\s+([A-Za-z].*)$/.exec(line);
+      /^(\d+\.\d+(?:\.\d+)*)\s+([A-Za-z].*)$/.exec(line) ??
+      // "Appendix A.  State Machine", "A.1.  Client", "Appendix C: ..."
+      /^(?:Appendix\s+)?([A-Z](?:\.\d+)*)[.:]\s+([A-Za-z].*)$/.exec(line);
     // Skip table-of-contents lines ("2. Design .......... 5").
     if (!match || /\.\s?\.\s?\./.test(line) || seen.has(match[1]!)) return;
     seen.add(match[1]!);
@@ -128,12 +130,12 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
   if (model.states.length === 0) return issues;
   if (!model.initial) return [...issues, "model has states but no initial state"];
 
-  // Structure: every state reachable on the normal path, every state has a way out.
+  // Structure: every state reachable, every non-terminal state has a way out.
   const reachable = new Set([model.initial]);
   for (let grew = true; grew; ) {
     grew = false;
     for (const t of model.transitions) {
-      if (t.layer === "happy" && reachable.has(t.from) && !reachable.has(t.to)) {
+      if (reachable.has(t.from) && !reachable.has(t.to)) {
         reachable.add(t.to);
         grew = true;
       }
@@ -141,7 +143,8 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
   }
   for (const id of stateIds) {
     if (!reachable.has(id)) issues.push(`${id} is unreachable from ${model.initial}`);
-    if (id !== model.initial && !model.transitions.some((t) => t.from === id)) {
+    const terminal = model.terminal?.includes(id) ?? false;
+    if (id !== model.initial && !terminal && !model.transitions.some((t) => t.from === id)) {
       issues.push(`${id} has no exit`);
     }
   }

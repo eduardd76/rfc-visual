@@ -1,0 +1,80 @@
+import type { RfcVisualModel } from "~/visuals/types";
+
+// Hand-built from RFC 4443 (ICMPv6). Every quote is verbatim RFC text
+// (whitespace collapsed) and is checked against the RFC by the validator.
+export const rfc4443: RfcVisualModel = {
+  rfc: 4443,
+  reviewed: false,
+  states: [],
+  transitions: [],
+  sequences: [
+    {
+      id: "echo",
+      title: "Echo Request and Echo Reply",
+      participants: { a: "Sender", b: "Echo responder" },
+      intro: { section: "4.1", quote: "A node SHOULD also implement an application-layer interface for originating Echo Requests and receiving Echo Replies, for diagnostic purposes." },
+      steps: [
+        { from: "A", segment: "Echo Request",
+          explain: "A sends an Echo Request (Type 128). Every node must have an Echo responder that answers it.",
+          cite: { section: "4.1", quote: "Every node MUST implement an ICMPv6 Echo responder function that receives Echo Requests and originates corresponding Echo Replies." } },
+        { from: "B", segment: "Echo Reply",
+          explain: "B answers with an Echo Reply (Type 129). It copies the Identifier, Sequence Number and Data from the request, and sends it back to the request's source address.",
+          cite: { section: "4.2", quote: "The data received in the ICMPv6 Echo Request message MUST be returned entirely and unmodified in the ICMPv6 Echo Reply message." } },
+      ],
+    },
+  ],
+  headers: [
+    {
+      id: "general",
+      title: "ICMPv6 general message format",
+      intro: { section: "2.1", quote: "Every ICMPv6 message is preceded by an IPv6 header and zero or more IPv6 extension headers. The ICMPv6 header is identified by a Next Header value of 58 in the immediately preceding header." },
+      fields: [
+        { name: "Type", bits: 8,
+          explain: "Says what kind of message this is and so how the rest is laid out. Error messages use types 0 to 127; informational messages use 128 to 255.",
+          cite: { section: "2.1", quote: "The type field indicates the type of the message. Its value determines the format of the remaining data." } },
+        { name: "Code", bits: 8,
+          explain: "Its meaning depends on the Type. It adds a finer level of detail to the message.",
+          cite: { section: "2.1", quote: "The code field depends on the message type. It is used to create an additional level of message granularity." } },
+        { name: "Checksum", bits: 16,
+          explain: "Detects corruption of the ICMPv6 message and of parts of the IPv6 header.",
+          cite: { section: "2.1", quote: "The checksum field is used to detect data corruption in the ICMPv6 message and parts of the IPv6 header." } },
+        { name: "Message Body", bits: "var",
+          explain: "The rest of the message. Its format depends on the Type.",
+          cite: { section: "2.1", quote: "Message Body" } },
+      ],
+    },
+    {
+      id: "echo",
+      title: "Echo Request / Echo Reply",
+      intro: { section: "4.1", quote: "Echo Request Message" },
+      fields: [
+        { name: "Type", bits: 8,
+          explain: "128 for an Echo Request. An Echo Reply uses 129.",
+          cite: { section: "4.1", quote: "Type 128" } },
+        { name: "Code", bits: 8,
+          explain: "Always 0 for Echo Request and Echo Reply.",
+          cite: { section: "4.1", quote: "Code 0" } },
+        { name: "Checksum", bits: 16,
+          explain: "The ICMPv6 checksum, as in every ICMPv6 message.",
+          cite: { section: "2.1", quote: "The checksum field is used to detect data corruption in the ICMPv6 message and parts of the IPv6 header." } },
+        { name: "Identifier", bits: 16,
+          explain: "Helps the sender match Echo Replies to this Echo Request. May be zero. The reply carries the same value.",
+          cite: { section: "4.1", quote: "Identifier An identifier to aid in matching Echo Replies to this Echo Request. May be zero." } },
+        { name: "Sequence Number", bits: 16,
+          explain: "Also helps match Echo Replies to this Echo Request. May be zero. The reply carries the same value.",
+          cite: { section: "4.1", quote: "A sequence number to aid in matching Echo Replies to this Echo Request. May be zero." } },
+        { name: "Data", bits: "var",
+          explain: "Zero or more octets of arbitrary data. The reply returns it unchanged.",
+          cite: { section: "4.1", quote: "Data Zero or more octets of arbitrary data." } },
+      ],
+    },
+  ],
+  notShown: [
+    "Error messages: Destination Unreachable, Packet Too Big, Time Exceeded, Parameter Problem (§3)",
+    "Source address selection for ICMPv6 messages (§2.2)",
+    "Checksum calculation and the IPv6 pseudo-header (§2.3)",
+    "Message processing rules, including when not to send errors and rate limiting (§2.4)",
+    "Echo Replies to multicast or anycast Echo Requests (§4.2)",
+    "Security considerations (§5)",
+  ],
+};

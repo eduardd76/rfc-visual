@@ -13,8 +13,8 @@ import {
 import type { Cite, Header, Layer, RfcVisualModel, Sequence } from "~/visuals/types";
 
 const OPTIONAL_LAYERS: { layer: Layer; label: string }[] = [
-  { layer: "rst", label: "Reset (RST) handling" },
-  { layer: "error", label: "ABORT by the user" },
+  { layer: "rst", label: "Resets and refusals" },
+  { layer: "error", label: "Errors, aborts and timeouts" },
 ];
 
 function Source({ rfc, cite }: { rfc: number; cite: Cite }) {
@@ -77,9 +77,11 @@ function StateMachineView({ model }: { model: RfcVisualModel }) {
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="sr-only">Show transitions</legend>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked disabled /> Normal open and close
+          <input type="checkbox" checked disabled /> Normal path
         </label>
-        {OPTIONAL_LAYERS.map(({ layer, label }) => (
+        {OPTIONAL_LAYERS.filter(({ layer }) =>
+          model.transitions.some((t) => t.layer === layer),
+        ).map(({ layer, label }) => (
           <label key={layer} className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"

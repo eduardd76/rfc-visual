@@ -125,3 +125,52 @@ describe("section headings in older RFC styles", () => {
     expect(validateModel(tiny({ section: "4.1.1", quote: "The header contains the following fields:" }), dns)).toEqual([]);
   });
 });
+
+describe("appendices, terminal states and reachability", () => {
+  const tls = readFileSync("test/fixtures/rfc8446.txt", "utf8");
+  const base = (over: Partial<RfcVisualModel>): RfcVisualModel => ({
+    rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], headers: [], notShown: [], ...over,
+  });
+
+  it("finds appendix sections such as A.1", () => {
+    const model = base({ headers: [{ id: "h", title: "H", fields: [],
+      intro: { section: "A.1", quote: "START <----+" } }] });
+    expect(validateModel(model, tls)).toEqual([]);
+  });
+
+  const doc = "1.  Intro\n\n   READY moves to SENT. SENT moves to DONE. READY moves to GONE.\n";
+  const st = (id: string) => ({ id, cite: { section: "1", quote: id === "READY" ? "READY moves to SENT." : `moves to ${id}.` } });
+  const tr = (from: string, to: string, layer: "happy" | "rst", quote: string) =>
+    ({ from, to, event: "e", layer, cite: { section: "1", quote } });
+
+  it("lets states marked terminal have no exit", () => {
+    const model = base({
+      initial: "READY", terminal: ["DONE"],
+      states: [st("READY"), st("SENT"), st("DONE")],
+      transitions: [tr("READY", "SENT", "happy", "READY moves to SENT."), tr("SENT", "DONE", "happy", "SENT moves to DONE.")],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+
+  it("still requires an exit from non-terminal states", () => {
+    const model = base({
+      initial: "READY",
+      states: [st("READY"), st("SENT"), st("DONE")],
+      transitions: [tr("READY", "SENT", "happy", "READY moves to SENT."), tr("SENT", "DONE", "happy", "SENT moves to DONE.")],
+    });
+    expect(validateModel(model, doc).join("\n")).toMatch(/DONE has no exit/);
+  });
+
+  it("counts states reachable through any layer", () => {
+    const model = base({
+      initial: "READY", terminal: ["DONE", "GONE"],
+      states: [st("READY"), st("SENT"), st("DONE"), st("GONE")],
+      transitions: [
+        tr("READY", "SENT", "happy", "READY moves to SENT."),
+        tr("SENT", "DONE", "happy", "SENT moves to DONE."),
+        tr("READY", "GONE", "rst", "READY moves to GONE."),
+      ],
+    });
+    expect(validateModel(model, doc)).toEqual([]);
+  });
+});

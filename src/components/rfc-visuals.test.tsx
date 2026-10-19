@@ -77,3 +77,17 @@ describe("RfcVisuals with a header layout", () => {
     }
   });
 });
+
+describe("layer toggles", () => {
+  it("only offers layers the model has, with protocol-neutral labels", () => {
+    const model = {
+      ...rfc9293,
+      transitions: rfc9293.transitions.filter((t) => t.layer !== "error"),
+    };
+    render(<RfcVisuals model={model} />);
+    fireEvent.click(screen.getByRole("tab", { name: "State machine" }));
+    expect(screen.getByRole("checkbox", { name: "Normal path" })).toBeDisabled();
+    expect(screen.getByRole("checkbox", { name: "Resets and refusals" })).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /aborts/i })).not.toBeInTheDocument();
+  });
+});

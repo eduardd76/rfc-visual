@@ -23,8 +23,11 @@ function sectionsOf(raw: string): Map<string, Section> {
     const match =
       /^(\d+(?:\.\d+)*)\.\s+([A-Za-z].*)$/.exec(line) ??
       /^(\d+\.\d+(?:\.\d+)*)\s+([A-Za-z].*)$/.exec(line) ??
-      // "Appendix A.  State Machine", "A.1.  Client", "Appendix C: ..."
-      /^(?:Appendix\s+)?([A-Z](?:\.\d+)*)[.:]\s+([A-Za-z].*)$/.exec(line);
+      // Indented multi-level headings: "    10.3.  The Neighbor state machine"
+      /^\s{1,4}(\d+\.\d+(?:\.\d+)*)\.\s{2}([A-Za-z].*)$/.exec(line) ??
+      // "Appendix A.  State Machine", "A.1.  Client", "Appendix C: ...", "A.3.1 The OSPF ..."
+      /^(?:Appendix\s+)?([A-Z](?:\.\d+)*)[.:]\s+([A-Za-z].*)$/.exec(line) ??
+      /^([A-Z](?:\.\d+)+)\s+([A-Za-z].*)$/.exec(line);
     // Skip table-of-contents lines ("2. Design .......... 5").
     if (!match || /\.\s?\.\s?\./.test(line) || seen.has(match[1]!)) return;
     seen.add(match[1]!);
@@ -32,7 +35,9 @@ function sectionsOf(raw: string): Map<string, Section> {
   });
   const sections = new Map<string, Section>();
   headings.forEach((heading, i) => {
-    const end = headings[i + 1]?.line ?? lines.length;
+    // A section includes its subsections: it ends at the next non-descendant heading.
+    const next = headings.slice(i + 1).find((h) => !h.id.startsWith(`${heading.id}.`));
+    const end = next?.line ?? lines.length;
     sections.set(heading.id, {
       title: heading.title,
       start: normalizeRfcText(lines.slice(0, heading.line).join("\n")).length,
@@ -40,6 +45,23 @@ function sectionsOf(raw: string): Map<string, Section> {
     });
   });
   return sections;
+}
+
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * The state whose sub-heading ("OpenSent:", "OpenConfirm State:") comes last
+ * in `text`, i.e. the state a rule further down belongs to.
+ */
+function nearestStateHeading(text: string, states: string[]): string | undefined {
+  let best: { state: string; at: number } | undefined;
+  for (const state of states) {
+    const pattern = new RegExp(`(?:^|\\s)${escapeRegExp(state)}(?:\\s+state)?:`, "gi");
+    for (const match of text.matchAll(pattern)) {
+      if (!best || match.index > best.at) best = { state, at: match.index };
+    }
+  }
+  return best?.state;
 }
 
 const mentions = (haystack: string, state: string) =>
@@ -92,7 +114,14 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
     if (!toOk) issues.push(`${what}: quote does not mention ${t.to}`);
     const before = text.slice(Math.max(0, at - FROM_STATE_WINDOW), at);
     const title = t.cite.section === "-" ? "" : (sections.get(t.cite.section)?.title ?? "");
-    if (!mentions(quote, t.from) && !mentions(title, t.from) && !mentions(before, t.from)) {
+    const sectionStart = t.cite.section === "-" ? 0 : (sections.get(t.cite.section)?.start ?? 0);
+    const heading = nearestStateHeading(text.slice(sectionStart, at), [...stateIds]);
+    if (
+      !mentions(quote, t.from) &&
+      !mentions(title, t.from) &&
+      !mentions(before, t.from) &&
+      heading !== t.from
+    ) {
       issues.push(`${what}: ${t.from} not named near the quote`);
     }
   }
@@ -150,4 +179,21 @@ export function validateModel(model: RfcVisualModel, rfcText: string): string[] 
   }
 
   return issues;
+}
+
+/** The most specific section holding the first in-section occurrence of `quote`. */
+export function deepestSection(rfcText: string, quote: string): string | undefined {
+  const text = normalizeRfcText(rfcText);
+  const needle = normalizeRfcText(quote);
+  const sections = [...sectionsOf(rfcText)];
+  // Earlier occurrences may sit in the table of contents, outside every section.
+  for (let at = text.indexOf(needle); at !== -1; at = text.indexOf(needle, at + 1)) {
+    let best: { id: string; size: number } | undefined;
+    for (const [id, section] of sections) {
+      const size = section.end - section.start;
+      if (section.start <= at && at < section.end && (!best || size < best.size)) best = { id, size };
+    }
+    if (best) return best.id;
+  }
+  return undefined;
 }

@@ -174,3 +174,54 @@ describe("appendices, terminal states and reachability", () => {
     expect(validateModel(model, doc)).toEqual([]);
   });
 });
+
+describe("long sub-sections and indented headings", () => {
+  const filler = "   Some unrelated rule text that goes on. ".repeat(80);
+  const doc = [
+    "8.2.2.  Finite State Machine", "",
+    "   OpenSent:", "", filler, "",
+    "      If a valid OPEN is received, it changes its state to OpenConfirm.", "",
+    "   OpenConfirm State:", "", filler, "",
+    "      If the local system receives a KEEPALIVE, it changes its state to Established.", "",
+  ].join("\n");
+  const model = (from: string, to: string, quote: string): RfcVisualModel => ({
+    rfc: 1, reviewed: false, headers: [], sequences: [], notShown: [],
+    initial: from, terminal: ["OpenConfirm", "Established"],
+    states: [
+      { id: "OpenSent", cite: { section: "8.2.2", quote: "OpenSent:" } },
+      { id: "OpenConfirm", cite: { section: "8.2.2", quote: "OpenConfirm State:" } },
+      ...(to === "Established" ? [{ id: to, cite: { section: "8.2.2", quote } }] : []),
+    ],
+    transitions: [{ from, to, event: "e", layer: "happy", cite: { section: "8.2.2", quote } }],
+  });
+
+  it("accepts a rule far below its state's sub-heading", () => {
+    expect(validateModel(model("OpenSent", "OpenConfirm",
+      "If a valid OPEN is received, it changes its state to OpenConfirm."), doc)).toEqual([]);
+  });
+
+  it("rejects a rule whose nearest state sub-heading is a different state", () => {
+    const wrong = model("OpenSent", "Established",
+      "If the local system receives a KEEPALIVE, it changes its state to Established.");
+    expect(validateModel(wrong, doc).join("\n")).toMatch(/OpenSent not named near the quote/);
+  });
+
+  it("finds indented multi-level and appendix headings", () => {
+    const ospf = readFileSync("test/fixtures/rfc2328.txt", "utf8");
+    const header = (section: string, quote: string): RfcVisualModel => ({
+      rfc: 1, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+      headers: [{ id: "h", title: "H", fields: [], intro: { section, quote } }],
+    });
+    expect(validateModel(header("10.3", "The Neighbor state machine"), ospf)).toEqual([]);
+    expect(validateModel(header("A.3.1", "The OSPF packet header"), ospf)).toEqual([]);
+  });
+});
+
+describe("deepestSection", () => {
+  it("names the most specific section that contains a quote", async () => {
+    const { deepestSection } = await import("~/visuals/validate");
+    const ospf = readFileSync("test/fixtures/rfc2328.txt", "utf8");
+    expect(deepestSection(ospf, "The Neighbor state machine")).toBe("10.3");
+    expect(deepestSection(text, "Enter the CLOSE-WAIT state.")).toBe("3.10.7.4");
+  });
+});

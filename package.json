@@ -14,8 +14,9 @@
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx,css,json,jsonc,yml,yaml}\" --cache",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx,css,json,jsonc,yml,yaml}\" --cache",
     "dev": "next dev --turbopack",
-    "build": "next build",
-    "sync:data": "bun scripts/sync-rfc-data.ts"
+    "build": "next build && bun scripts/prune-export.ts",
+    "sync:data": "bun scripts/sync-rfc-data.ts",
+    "verify:export": "bun scripts/verify-export.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

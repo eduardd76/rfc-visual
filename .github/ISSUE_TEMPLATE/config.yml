@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Read the RFC on rfc-editor.org
+    url: https://www.rfc-editor.org/
+    about: The authoritative text every visual cites.
+  - name: How visuals are built and checked
+    url: https://github.com/eduardd76/rfc-visual/blob/main/docs/visual-authoring.md
+    about: The citation rules and the validator every visual must pass.

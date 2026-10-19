@@ -19,6 +19,17 @@ Phase 0 (this release) shows, for every RFC:
 
 No LLM is involved. State machines and packet-flow diagrams, with every element cited back to the RFC text, come next. See [the design](docs/superpowers/specs/2026-10-19-rfc-visual-design.md).
 
+## Help verify
+
+Each visual is marked **Provisional** until it is reviewed by engineers who know the protocol. Every visual has a **Help verify this visual** link. You can also [open a verification report](https://github.com/eduardd76/rfc-visual/issues/new?template=verify-visual.yml) directly.
+
+What to check:
+- Does each quoted sentence support the arrow, field or step it is attached to?
+- Is anything important missing?
+- Are the plain-English explanations right?
+
+"Looks correct" reports count too.
+
 ## How it works
 
 - `bun run sync:data` downloads `rfc-index.xml` and the errata API from rfc-editor.org into `data/rfc-index.json`.

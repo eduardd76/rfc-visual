@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import MermaidChart from "~/components/mermaid-diagram";
-import { RFC_EDITOR_ORIGIN } from "~/lib/site";
+import { GITHUB_REPO_URL, RFC_EDITOR_ORIGIN } from "~/lib/site";
 import {
   formatSegment,
   headerRows,
@@ -11,6 +11,16 @@ import {
   stateMachineToMermaid,
 } from "~/visuals/compile";
 import type { Cite, Header, Layer, RfcVisualModel, Sequence } from "~/visuals/types";
+
+/** The "Verify an RFC visual" issue form, prefilled for this RFC. */
+function verifyUrl(rfc: number): string {
+  const params = new URLSearchParams({
+    template: "verify-visual.yml",
+    rfc: String(rfc),
+    title: `[Verify] RFC ${rfc}`,
+  });
+  return `${GITHUB_REPO_URL}/issues/new?${params.toString()}`;
+}
 
 const OPTIONAL_LAYERS: { layer: Layer; label: string }[] = [
   { layer: "rst", label: "Resets and refusals" },
@@ -222,7 +232,10 @@ export function RfcVisuals({ model }: { model: RfcVisualModel }) {
       <p className="rounded-md border-2 border-dashed border-black px-4 py-3 text-sm dark:border-neutral-500">
         Built by hand from RFC {model.rfc}. Every arrow, step and field cites the RFC sentence it
         comes from, and an automated test checks each quote against the RFC text.{" "}
-        {model.reviewed ? null : <strong>Provisional: not yet reviewed by a second engineer.</strong>}
+        {model.reviewed ? null : <strong>Provisional: not yet reviewed by a second engineer.</strong>}{" "}
+        <a href={verifyUrl(model.rfc)} className="neo-link font-semibold hover:underline">
+          Help verify this visual
+        </a>
       </p>
 
       <div role="tablist" aria-label="Visuals" className="flex flex-wrap gap-2">

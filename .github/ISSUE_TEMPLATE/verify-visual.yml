@@ -1,0 +1,76 @@
+name: Verify an RFC visual
+description: Check a visual on rfc.vexpertai.com against the RFC and report what you found, correct or not.
+title: "[Verify] RFC "
+labels: ["verification"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for checking. Every state, arrow, step and field on rfc.vexpertai.com cites a sentence from the RFC. Your job is to check that each cited sentence really supports the element it is attached to, and that nothing important is missing.
+
+        A report of **"looks correct"** is just as useful as a bug report: sign-offs from engineers who know the protocol are how a visual moves from *Provisional* to *Reviewed*.
+
+  - type: input
+    id: rfc
+    attributes:
+      label: RFC number
+      placeholder: "4271"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: visual
+    attributes:
+      label: Which visual did you check?
+      multiple: true
+      options:
+        - Flow / sequence diagram
+        - State machine
+        - Header / packet layout
+        - Lineage (obsoletes / updates)
+        - Plain-English explanations
+    validations:
+      required: true
+
+  - type: dropdown
+    id: verdict
+    attributes:
+      label: Verdict
+      options:
+        - Looks correct
+        - Found an error
+        - Something important is missing
+        - Explanation is unclear or misleading
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: What you checked
+      description: Tick what you actually checked. Untested is fine; just don't tick it.
+      options:
+        - label: States / fields / steps match the RFC (names, widths, order)
+        - label: Each quoted sentence supports the element it is attached to
+        - label: The extra layers (resets, errors, timeouts) are correct
+        - label: The plain-English explanations are accurate
+        - label: The "Not shown" list names what is missing
+        - label: Compared against real behaviour (router, packet capture, implementation)
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: For an error, name the element (e.g. "OpenSent → OpenConfirm" or the "Flags" field), what is wrong, and what the RFC actually says.
+      placeholder: |
+        Element: OpenSent → OpenConfirm (BGP FSM)
+        Problem: ...
+        RFC says (section + sentence): §8.2.2 "..."
+    validations:
+      required: false
+
+  - type: input
+    id: experience
+    attributes:
+      label: Your experience with this protocol (optional)
+      placeholder: "e.g. 8 years running BGP in an ISP backbone"

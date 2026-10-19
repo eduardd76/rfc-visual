@@ -91,3 +91,15 @@ describe("layer toggles", () => {
     expect(screen.queryByRole("checkbox", { name: /aborts/i })).not.toBeInTheDocument();
   });
 });
+
+describe("help verify link", () => {
+  it("opens the verification form prefilled with the RFC", () => {
+    render(<RfcVisuals model={rfc9293} />);
+    const link = screen.getByRole("link", { name: "Help verify this visual" });
+    const url = new URL(link.getAttribute("href")!);
+    expect(url.origin + url.pathname).toBe("https://github.com/eduardd76/rfc-visual/issues/new");
+    expect(url.searchParams.get("template")).toBe("verify-visual.yml");
+    expect(url.searchParams.get("rfc")).toBe("9293");
+    expect(url.searchParams.get("title")).toBe("[Verify] RFC 9293");
+  });
+});

@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 
 import { LineageGraph } from "~/components/lineage-graph";
 import { RfcHeader } from "~/components/rfc-header";
+import { RfcRelations } from "~/components/rfc-relations";
 import { RfcText } from "~/components/rfc-text";
 import { GITHUB_REPO_URL } from "~/lib/site";
-import { hasLineage, lineageToMermaid } from "~/rfc/lineage";
+import { hasLineage, lineageRows, lineageToMermaid } from "~/rfc/lineage";
 import { loadRfcIndex } from "~/rfc/load";
 
 export const dynamicParams = false;
@@ -30,6 +31,10 @@ export default async function RfcPage({ params }: Props) {
   const index = loadRfcIndex();
   const entry = entryFor((await params).slug);
   if (!entry) notFound();
+  const related = [...entry.obsoletes, ...entry.updates, ...entry.obsoletedBy, ...entry.updatedBy];
+  const titles = Object.fromEntries(
+    related.map((num) => [num, index.entries[num]?.title ?? ""]),
+  );
 
   return (
     <main className="container mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
@@ -46,8 +51,14 @@ export default async function RfcPage({ params }: Props) {
       <section>
         <h2 className="mb-2 text-lg font-semibold">Lineage</h2>
         {hasLineage(entry) ? (
-          <div className="neo-panel rounded-lg p-2">
-            <LineageGraph chart={lineageToMermaid(entry, index.entries)} />
+          <div className="space-y-4">
+            <div className="neo-panel rounded-lg p-2">
+              <LineageGraph
+                chart={lineageToMermaid(entry, index.entries)}
+                rows={lineageRows(entry)}
+              />
+            </div>
+            <RfcRelations entry={entry} titles={titles} />
           </div>
         ) : (
           <p className="text-sm">No other RFCs obsolete or update this one.</p>

@@ -28,6 +28,18 @@ describe("sanitizeMermaidSourceForRender", () => {
     );
   });
 
+  it("keeps same-origin relative links and drops protocol-relative ones", () => {
+    const source = [
+      "flowchart LR",
+      'click r1 "/rfc/rfc9293/"',
+      'click r2 "//evil.example.com/x"',
+    ].join("\n");
+
+    expect(sanitizeMermaidSourceForRender(source)).toBe(
+      ["flowchart LR", 'click r1 "/rfc/rfc9293/"'].join("\n"),
+    );
+  });
+
   it("removes click directives that use non-space whitespace after the keyword", () => {
     const source = [
       "flowchart TD",
@@ -69,6 +81,7 @@ describe("enforceSafeMermaidLinks", () => {
       '<a id="editor" href="https://www.rfc-editor.org/rfc/rfc9293">editor</a>',
       '<a id="unsafe" href="https://example.com/phish">unsafe</a>',
       '<a id="github" href="https://github.com/acme/demo">github</a>',
+      '<a id="relative" href="/rfc/rfc793/">relative</a>',
     ].join("");
 
     enforceSafeMermaidLinks(root);
@@ -80,6 +93,9 @@ describe("enforceSafeMermaidLinks", () => {
       "https://www.rfc-editor.org/rfc/rfc9293",
     );
     expect(root.querySelector("#github")?.hasAttribute("href")).toBe(false);
+    expect(root.querySelector("#relative")?.getAttribute("href")).toBe(
+      `${window.location.origin}/rfc/rfc793/`,
+    );
     expect(root.querySelector("#safe")?.getAttribute("rel")).toBe(
       "noopener noreferrer",
     );

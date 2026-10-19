@@ -1,11 +1,17 @@
 import { RFC_EDITOR_ORIGIN, SITE_ORIGIN } from "~/lib/site";
 
-// Diagram links may only point at rfc-visual itself or rfc-editor.org.
+// Diagram links may only point at rfc-visual itself (relative paths, so they
+// work on any host it is served from) or rfc-editor.org.
 const ALLOWED_LINK_ORIGINS = new Set([SITE_ORIGIN, RFC_EDITOR_ORIGIN]);
+
+function isSameOriginPath(raw: string): boolean {
+  return raw.startsWith("/") && !raw.startsWith("//");
+}
 
 const clickDirective = /^\s*click\s+[a-z_][a-z0-9_-]*\s+"([^"\s]+)"\s*$/iu;
 
 function isAllowedLink(raw: string): boolean {
+  if (isSameOriginPath(raw)) return true;
   try {
     const url = new URL(raw);
     return url.protocol === "https:" && ALLOWED_LINK_ORIGINS.has(url.origin);
@@ -57,7 +63,8 @@ export function enforceSafeMermaidLinks(root: ParentNode): void {
 
     try {
       const url = new URL(rawHref, window.location.origin);
-      if (!isAllowedLink(url.toString())) {
+      const sameOrigin = isSameOriginPath(rawHref) && url.origin === window.location.origin;
+      if (!sameOrigin && !isAllowedLink(url.toString())) {
         anchor.removeAttribute("href");
         anchor.removeAttribute("xlink:href");
         continue;

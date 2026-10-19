@@ -1,7 +1,7 @@
 import mermaid from "mermaid";
 import { describe, expect, it } from "vitest";
 
-import { hasLineage, lineageToMermaid } from "~/rfc/lineage";
+import { hasLineage, lineageRows, lineageToMermaid } from "~/rfc/lineage";
 import type { RfcEntry } from "~/rfc/types";
 
 function entry(num: number, overrides: Partial<RfcEntry> = {}): RfcEntry {
@@ -45,7 +45,8 @@ describe("lineageToMermaid", () => {
     expect(source).toContain("r761");
     expect(source).toContain("r9293");
     expect(source).toContain("obsoleted by");
-    expect(source).toContain('click r9293 "https://rfc.vexpertai.com/rfc/rfc9293/"');
+    // Relative, so links work on any host (netlify.app, previews, custom domain).
+    expect(source).toContain('click r9293 "/rfc/rfc9293/"');
     for (const n of [1122, 3168, 6093, 6528]) expect(source).toContain(`r${n}[`);
   });
 
@@ -53,7 +54,8 @@ describe("lineageToMermaid", () => {
     const updatedBy = Array.from({ length: 29 }, (_, i) => 2000 + i);
     const source = lineageToMermaid(entry(1035, { updatedBy }), {});
     const shown = updatedBy.filter((n) => source.includes(`r${n}[`));
-    expect(shown).toHaveLength(8);
+    // The newest updates are the most relevant ones to show.
+    expect(shown).toEqual([2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028]);
     expect(source).toContain("+21 more");
     const moreId = /(\w+)\["\+21 more"\]/.exec(source)?.[1];
     expect(moreId).toBeDefined();
@@ -84,5 +86,16 @@ describe("hasLineage", () => {
   it("is false when all four lists are empty", () => {
     expect(hasLineage(entry(2119))).toBe(false);
     expect(hasLineage(tcp793)).toBe(true);
+  });
+});
+
+describe("lineageRows", () => {
+  it("counts the taller side, including +K more nodes", () => {
+    // 793: older = 761 (1); newer = 9293 + four updated-by (5).
+    expect(lineageRows(tcp793)).toBe(5);
+    const updatedBy = Array.from({ length: 29 }, (_, i) => 2000 + i);
+    // 8 shown + one "+21 more".
+    expect(lineageRows(entry(1035, { updatedBy }))).toBe(9);
+    expect(lineageRows(entry(2119))).toBe(1);
   });
 });

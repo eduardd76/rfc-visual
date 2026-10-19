@@ -1,4 +1,3 @@
-import { SITE_ORIGIN } from "~/lib/site";
 import { canonicalRfcPath } from "~/rfc/canonical";
 import type { RfcEntry } from "~/rfc/types";
 
@@ -41,6 +40,21 @@ function nodeLabel(num: number, index: Record<number, RfcEntry>): string {
     : `RFC ${num}`;
 }
 
+/** The newest `max` numbers: later updates are the more relevant ones. */
+function newest(nums: number[], max: number): number[] {
+  return [...nums].sort((a, b) => b - a).slice(0, max);
+}
+
+/** Node rows on the taller side of the graph, for sizing its container. */
+export function lineageRows(entry: RfcEntry, maxPerGroup = 8): number {
+  const rows = { older: 0, newer: 0 };
+  for (const group of GROUPS) {
+    const count = entry[group.key].length;
+    rows[group.side] += Math.min(count, maxPerGroup) + (count > maxPerGroup ? 1 : 0);
+  }
+  return Math.max(rows.older, rows.newer, 1);
+}
+
 export function hasLineage(entry: RfcEntry): boolean {
   return GROUPS.some((group) => entry[group.key].length > 0);
 }
@@ -56,16 +70,16 @@ export function lineageToMermaid(
     `  ${focal}["${nodeLabel(entry.num, { ...index, [entry.num]: entry })}"]`,
     `  class ${focal} focal`,
   ];
-  const clicks = [`  click ${focal} "${SITE_ORIGIN}${canonicalRfcPath(entry.num)}"`];
+  const clicks = [`  click ${focal} "${canonicalRfcPath(entry.num)}"`];
   const seen = new Set<number>([entry.num]);
 
   for (const group of GROUPS) {
     const nums = entry[group.key];
-    for (const num of nums.slice(0, maxPerGroup)) {
+    for (const num of newest(nums, maxPerGroup)) {
       const id = `r${num}`;
       if (!seen.has(num)) {
         lines.push(`  ${id}["${nodeLabel(num, index)}"]`);
-        clicks.push(`  click ${id} "${SITE_ORIGIN}${canonicalRfcPath(num)}"`);
+        clicks.push(`  click ${id} "${canonicalRfcPath(num)}"`);
         seen.add(num);
       }
       lines.push(

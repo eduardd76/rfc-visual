@@ -2,13 +2,19 @@
 
 import MermaidChart from "~/components/mermaid-diagram";
 
-export function LineageGraph({ chart }: { chart: string }) {
+const ROW_HEIGHT = 56;
+const PADDING = 48;
+const MIN_HEIGHT = 240;
+
+/** Container height for a graph with `rows` node rows on its taller side. */
+export function lineageGraphHeight(rows: number): number {
+  return Math.max(MIN_HEIGHT, PADDING + rows * ROW_HEIGHT);
+}
+
+export function LineageGraph({ chart, rows }: { chart: string; rows: number }) {
   return (
-    <MermaidChart
-      chart={chart}
-      zoomingEnabled={false}
-      fitToContainer
-      containerClassName="h-[320px] sm:h-[380px]"
-    />
+    <div style={{ height: lineageGraphHeight(rows) }}>
+      <MermaidChart chart={chart} zoomingEnabled containerClassName="h-full" />
+    </div>
   );
 }

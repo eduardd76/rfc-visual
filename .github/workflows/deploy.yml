@@ -1,0 +1,36 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Nightly: picks up new RFCs and errata from rfc-editor.org.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run sync:data
+      - run: bun run check
+      - run: bun run test
+      - run: bun run build
+      - run: bun run verify:export
+      # Installed globally: npx inside the repo trips over package.json overrides.
+      - run: npm install --global netlify-cli@24.10.0
+      - name: Deploy to Netlify
+        run: netlify deploy --prod --dir=out --no-build --message "${{ github.event_name }} ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

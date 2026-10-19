@@ -6,14 +6,15 @@ import {
 } from "~/features/diagram/mermaid-security";
 
 describe("sanitizeMermaidSourceForRender", () => {
-  it("removes config directives and unsafe callbacks while preserving generated GitHub links", () => {
+  it("removes config directives and unsafe callbacks while preserving rfc-visual and rfc-editor links", () => {
     const source = [
       "%%{init:",
       "  {'securityLevel': 'loose'}",
       "}%%",
       "flowchart TD",
-      'click node_safe "https://github.com/acme/demo/blob/main/src/a.ts"',
-      'click CORE "https://github.com/FastAPI/FastAPI/blob/master/fastapi/applications.py"',
+      'click node_safe "https://rfc.vexpertai.com/rfc/rfc9293/"',
+      'click CORE "https://www.rfc-editor.org/rfc/rfc9293.html"',
+      'click node_gh "https://github.com/acme/demo"',
       "click node_bad call alert()",
       'click node_bad "javascript:alert(1)"',
     ].join("\n");
@@ -21,9 +22,21 @@ describe("sanitizeMermaidSourceForRender", () => {
     expect(sanitizeMermaidSourceForRender(source)).toBe(
       [
         "flowchart TD",
-        'click node_safe "https://github.com/acme/demo/blob/main/src/a.ts"',
-        'click CORE "https://github.com/FastAPI/FastAPI/blob/master/fastapi/applications.py"',
+        'click node_safe "https://rfc.vexpertai.com/rfc/rfc9293/"',
+        'click CORE "https://www.rfc-editor.org/rfc/rfc9293.html"',
       ].join("\n"),
+    );
+  });
+
+  it("keeps same-origin relative links and drops protocol-relative ones", () => {
+    const source = [
+      "flowchart LR",
+      'click r1 "/rfc/rfc9293/"',
+      'click r2 "//evil.example.com/x"',
+    ].join("\n");
+
+    expect(sanitizeMermaidSourceForRender(source)).toBe(
+      ["flowchart LR", 'click r1 "/rfc/rfc9293/"'].join("\n"),
     );
   });
 
@@ -53,7 +66,7 @@ describe("sanitizeMermaidSourceForRender", () => {
   it("preserves canonical compiler click output unchanged", () => {
     const source = [
       "flowchart TD",
-      'click node_safe "https://github.com/acme/demo/blob/main/src/a.ts"',
+      'click node_safe "https://rfc.vexpertai.com/rfc/rfc9293/"',
     ].join("\n");
 
     expect(sanitizeMermaidSourceForRender(source)).toBe(source);
@@ -61,17 +74,27 @@ describe("sanitizeMermaidSourceForRender", () => {
 });
 
 describe("enforceSafeMermaidLinks", () => {
-  it("keeps only HTTPS GitHub links", () => {
+  it("keeps only HTTPS rfc-visual and rfc-editor links", () => {
     const root = document.createElement("div");
     root.innerHTML = [
-      '<a id="safe" href="https://github.com/acme/demo">safe</a>',
+      '<a id="safe" href="https://rfc.vexpertai.com/rfc/rfc9293/">safe</a>',
+      '<a id="editor" href="https://www.rfc-editor.org/rfc/rfc9293">editor</a>',
       '<a id="unsafe" href="https://example.com/phish">unsafe</a>',
+      '<a id="github" href="https://github.com/acme/demo">github</a>',
+      '<a id="relative" href="/rfc/rfc793/">relative</a>',
     ].join("");
 
     enforceSafeMermaidLinks(root);
 
     expect(root.querySelector("#safe")?.getAttribute("href")).toBe(
-      "https://github.com/acme/demo",
+      "https://rfc.vexpertai.com/rfc/rfc9293/",
+    );
+    expect(root.querySelector("#editor")?.getAttribute("href")).toBe(
+      "https://www.rfc-editor.org/rfc/rfc9293",
+    );
+    expect(root.querySelector("#github")?.hasAttribute("href")).toBe(false);
+    expect(root.querySelector("#relative")?.getAttribute("href")).toBe(
+      `${window.location.origin}/rfc/rfc793/`,
     );
     expect(root.querySelector("#safe")?.getAttribute("rel")).toBe(
       "noopener noreferrer",

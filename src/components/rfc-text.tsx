@@ -20,8 +20,9 @@ export function RfcText({ num, formats }: { num: number; formats: string[] }) {
         return response.text();
       })
       .then((text) => {
-        // Form feeds mark the old paginated layout's page breaks.
-        if (!cancelled) setState({ kind: "loaded", text: text.replace(/\f/g, "") });
+        // Shown exactly as published: the IETF licence allows RFCs in full
+        // and without modification. Form feeds (page breaks) render as nothing.
+        if (!cancelled) setState({ kind: "loaded", text });
       })
       .catch(() => {
         if (!cancelled) setState({ kind: "failed" });

@@ -145,3 +145,12 @@ describe("reviewed visuals", () => {
     expect(screen.queryByText(/not reviewed by anyone/)).not.toBeInTheDocument();
   });
 });
+
+describe("IETF attribution", () => {
+  it("credits the IETF and the RFC for every quote, as the TLP requires", () => {
+    render(<RfcVisuals model={rfc9293} />);
+    const note = screen.getByText(/unmodified excerpts from RFC 9293/);
+    expect(note.textContent).toMatch(/IETF Trust and the persons identified as the document authors/);
+    expect(note.textContent).toMatch(/do not replace the RFC/);
+  });
+});

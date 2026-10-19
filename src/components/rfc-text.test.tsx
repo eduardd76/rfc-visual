@@ -8,15 +8,14 @@ afterEach(() => {
 });
 
 describe("RfcText", () => {
-  it("renders the fetched text without form feeds", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response("page one\fpage two TCP text", { status: 200 }),
-    );
+  it("renders the fetched text exactly as published (IETF licence: in full, unmodified)", async () => {
+    const published = "page one\fpage two TCP text";
+    const fetchMock = vi.fn().mockResolvedValue(new Response(published, { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     render(<RfcText num={9293} formats={["TXT", "HTML"]} />);
     const pre = await screen.findByText(/page two TCP text/);
     expect(pre.tagName).toBe("PRE");
-    expect(pre.textContent).not.toContain("\f");
+    expect(pre.textContent).toBe(published);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://www.rfc-editor.org/rfc/rfc9293.txt",
     );

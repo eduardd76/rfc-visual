@@ -307,6 +307,13 @@ export function RfcVisuals({ model }: { model: RfcVisualModel }) {
         )}
       </div>
 
+      <p className="text-xs text-[hsl(var(--neo-soft-text))] dark:text-neutral-400">
+        Quoted text consists of unmodified excerpts from RFC {model.rfc}, published by the IETF
+        (line breaks reflowed). Copyright in the RFC text belongs to the IETF Trust and the
+        persons identified as the document authors, as stated in the RFC. The diagrams and
+        plain-English explanations are rfc-visual&apos;s own and do not replace the RFC.
+      </p>
+
       {model.notShown.length > 0 ? (
         <p className="text-xs text-[hsl(var(--neo-soft-text))] dark:text-neutral-400">
           Not shown: {model.notShown.join("; ")}.

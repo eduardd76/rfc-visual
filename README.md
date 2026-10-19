@@ -43,7 +43,7 @@ What to check:
 - Is anything important missing?
 - Are the plain-English explanations right?
 
-"Looks correct" reports count too.
+"Looks correct" reports count too. One maintainer sign-off marks a visual **Reviewed**; see [CONTRIBUTING.md](CONTRIBUTING.md), which also explains how to author a visual.
 
 ## How it works
 

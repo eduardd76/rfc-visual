@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for checking. Every state, arrow, step and field on rfc.vexpertai.com cites a sentence from the RFC. Your job is to check that each cited sentence really supports the element it is attached to, and that nothing important is missing.
 
-        A report of **"looks correct"** is just as useful as a bug report: sign-offs from engineers who know the protocol are how a visual moves from *Provisional* to *Reviewed*.
+        A report of **"looks correct"** is just as useful as a bug report: maintainers sign a visual off as *Reviewed* based on these reports (see CONTRIBUTING.md).
 
   - type: input
     id: rfc

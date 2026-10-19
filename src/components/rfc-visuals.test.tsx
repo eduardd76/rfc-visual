@@ -44,7 +44,7 @@ describe("RfcVisuals", () => {
 
   it("says it is hand-built and not yet reviewed", () => {
     render(<RfcVisuals model={rfc9293} />);
-    expect(screen.getByText(/not yet reviewed by a second engineer/)).toBeInTheDocument();
+    expect(screen.getByText(/not yet reviewed by a maintainer/)).toBeInTheDocument();
   });
 });
 
@@ -115,5 +115,33 @@ describe("machine-generated visuals", () => {
     expect(screen.getByText(/3 elements failed the citation check and were removed/)).toBeInTheDocument();
     expect(screen.queryByText(/Built by hand/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Help verify this visual" })).toBeInTheDocument();
+  });
+});
+
+describe("reviewed visuals", () => {
+  const review = { by: "eduardd76", date: "2026-10-20", issue: 12 };
+
+  it("show who reviewed a hand-built visual instead of Provisional", () => {
+    render(<RfcVisuals model={{ ...rfc9293, reviewed: true, review }} />);
+    expect(screen.getByText(/Reviewed by/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "@eduardd76" })).toHaveAttribute("href", "https://github.com/eduardd76");
+    expect(screen.getByRole("link", { name: "#12" })).toHaveAttribute(
+      "href",
+      "https://github.com/eduardd76/rfc-visual/issues/12",
+    );
+    expect(screen.queryByText(/Provisional/)).not.toBeInTheDocument();
+  });
+
+  it("show a reviewed generated draft as reviewed, still naming the model", () => {
+    const generated = {
+      ...rfc9293,
+      reviewed: true,
+      review,
+      provenance: { kind: "generated" as const, model: "m:free", generatedAt: "2026-10-19T00:00:00Z", dropped: 0 },
+    };
+    render(<RfcVisuals model={generated} />);
+    expect(screen.getByText(/Drafted by m:free/)).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed by/)).toBeInTheDocument();
+    expect(screen.queryByText(/not reviewed by anyone/)).not.toBeInTheDocument();
   });
 });

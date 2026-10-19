@@ -1,0 +1,25 @@
+name: CI
+
+# Runs on every pull request, including from forks. No secrets are used.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      # Includes every visual validated against its RFC text.
+      - run: bun run test
+      - run: bun run sync:data
+      - run: bun run build
+      - run: bun run verify:export

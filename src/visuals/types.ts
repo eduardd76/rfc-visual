@@ -69,9 +69,19 @@ export type Provenance = {
   dropped: number;
 };
 
+/** A maintainer's sign-off (CONTRIBUTING.md): one is enough to mark a visual Reviewed. */
+export type Review = {
+  /** GitHub handle of the maintainer, e.g. "eduardd76". */
+  by: string;
+  date: string;
+  /** The verification issue that triggered the review, if any. */
+  issue?: number;
+};
+
 export type RfcVisualModel = {
   rfc: number;
   provenance?: Provenance;
+  review?: Review;
   /** Required when the model has states. */
   initial?: string;
   /** States the RFC defines as final; they need no exit. */

@@ -18,6 +18,10 @@ describe("every registered visual", () => {
       expect(validateModel(model, readFileSync(fixture, "utf8"))).toEqual([]);
     });
 
+    it(`RFC ${model.rfc} records who reviewed it if it is marked reviewed`, () => {
+      if (model.reviewed) expect(model.review?.by).toBeTruthy();
+    });
+
     it(`RFC ${model.rfc} diagrams are valid Mermaid`, async () => {
       if (model.states.length > 0) {
         await expect(mermaid.parse(stateMachineToMermaid(model, ["happy", "rst", "error"]))).resolves.toBeTruthy();

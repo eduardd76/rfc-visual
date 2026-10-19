@@ -28,6 +28,7 @@ export function buildMessages({
   const system = [
     "You build citation-checked visual explanations of IETF RFCs for network engineers.",
     "Follow these authoring rules exactly. An automated validator checks every quote against the RFC text; anything that fails is removed.",
+    "Two extra rules for you: state transitions must cite prose sentences, never table rows or ASCII figures (they will be removed); header fields must be listed in exactly the order the RFC's packet diagram draws them, with each Reserved/padding area as its own field.",
     "",
     guide,
     "",

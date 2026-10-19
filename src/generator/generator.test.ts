@@ -99,3 +99,21 @@ describe("pickQueue", () => {
     expect(pickQueue(entries, new Set(), 2)).toEqual([4, 3]);
   });
 });
+
+describe("pruneModel for generated drafts", () => {
+  it("drops transitions that cite table or diagram fragments instead of prose", async () => {
+    const { rfc2131 } = await import("~/visuals/rfc2131");
+    const dhcpText = readFileSync("test/fixtures/rfc2131.txt", "utf8");
+    // The hand-built DHCP model cites Figure 5 for several transitions; a generated
+    // draft may not, so its state machine cannot stand.
+    const result = pruneModel(structuredClone(rfc2131), dhcpText, { proseOnlyTransitions: true });
+    expect(result.dropped.some((d) => /cites a figure or table/.test(d))).toBe(true);
+    expect(result.model.transitions.every((t) => !t.cite.quote.includes("|"))).toBe(true);
+  });
+
+  it("leaves hand-built rules alone by default", async () => {
+    const { rfc2131 } = await import("~/visuals/rfc2131");
+    const dhcpText = readFileSync("test/fixtures/rfc2131.txt", "utf8");
+    expect(pruneModel(structuredClone(rfc2131), dhcpText).dropped).toEqual([]);
+  });
+});

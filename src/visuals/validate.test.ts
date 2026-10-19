@@ -225,3 +225,23 @@ describe("deepestSection", () => {
     expect(deepestSection(text, "Enter the CLOSE-WAIT state.")).toBe("3.10.7.4");
   });
 });
+
+describe("header field order against the RFC's packet diagram", () => {
+  const vxlan = readFileSync("test/fixtures/rfc7348.txt", "utf8");
+  const field = (name: string, bits: number, quote: string) => ({ name, bits, explain: "", cite: { section: "5", quote } });
+  const flags = field("Flags", 8, "Flags (8 bits): where the I flag MUST be set to 1");
+  const vni = field("VXLAN Segment ID/VXLAN Network Identifier (VNI)", 24, "VXLAN Segment ID/VXLAN Network Identifier (VNI): this is a 24-bit value");
+  const reserved = (bits: number) => field("Reserved", bits, "Reserved fields (24 bits and 8 bits): MUST be set to zero on transmission");
+  const model = (fields: ReturnType<typeof field>[]): RfcVisualModel => ({
+    rfc: 7348, reviewed: false, states: [], transitions: [], sequences: [], notShown: [],
+    headers: [{ id: "vxlan", title: "VXLAN Header", intro: { section: "5", quote: "VXLAN Header: This is an 8-byte field that has:" }, fields }],
+  });
+
+  it("rejects fields drawn in a different order from the diagram", () => {
+    expect(validateModel(model([flags, vni, reserved(32)]), vxlan).join("\n")).toMatch(/order/);
+  });
+
+  it("accepts the diagram's order", () => {
+    expect(validateModel(model([flags, reserved(24), vni, reserved(8)]), vxlan)).toEqual([]);
+  });
+});

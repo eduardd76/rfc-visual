@@ -25,11 +25,30 @@ function countElements(model: RfcVisualModel): number {
  * if it is no longer sound. Withholds the visual if too much was rejected or
  * nothing is left.
  */
-export function pruneModel(input: RfcVisualModel, rfcText: string): PruneResult {
+// Box and table drawing: "|", "+-", "-->", "----".
+const FIGURE_TEXT = /\||\+-|-->|-{3,}/;
+
+export function pruneModel(
+  input: RfcVisualModel,
+  rfcText: string,
+  {
+    /** Generated drafts may not cite figures or tables for state transitions. */
+    proseOnlyTransitions = false,
+  }: { proseOnlyTransitions?: boolean } = {},
+): PruneResult {
   const model = structuredClone(input);
   const total = countElements(model);
   const dropped: string[] = [];
   let rejected = 0;
+
+  if (proseOnlyTransitions) {
+    model.transitions = model.transitions.filter((t) => {
+      if (!FIGURE_TEXT.test(t.cite.quote)) return true;
+      dropped.push(`${t.from} → ${t.to} (${t.event}): cites a figure or table, not prose`);
+      rejected += 1;
+      return false;
+    });
+  }
 
   for (let round = 0; round < 5; round++) {
     const issues = validateDetailed(model, rfcText);

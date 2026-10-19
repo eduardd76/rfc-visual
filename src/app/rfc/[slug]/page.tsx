@@ -5,9 +5,11 @@ import { LineageGraph } from "~/components/lineage-graph";
 import { RfcHeader } from "~/components/rfc-header";
 import { RfcRelations } from "~/components/rfc-relations";
 import { RfcText } from "~/components/rfc-text";
+import { RfcVisuals } from "~/components/rfc-visuals";
 import { GITHUB_REPO_URL } from "~/lib/site";
 import { hasLineage, lineageRows, lineageToMermaid } from "~/rfc/lineage";
 import { loadRfcIndex } from "~/rfc/load";
+import { visualFor } from "~/visuals/registry";
 
 export const dynamicParams = false;
 
@@ -31,6 +33,7 @@ export default async function RfcPage({ params }: Props) {
   const index = loadRfcIndex();
   const entry = entryFor((await params).slug);
   if (!entry) notFound();
+  const visual = visualFor(entry.num);
   const related = [...entry.obsoletes, ...entry.updates, ...entry.obsoletedBy, ...entry.updatedBy];
   const titles = Object.fromEntries(
     related.map((num) => [num, index.entries[num]?.title ?? ""]),
@@ -40,13 +43,20 @@ export default async function RfcPage({ params }: Props) {
     <main className="container mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
       <RfcHeader entry={entry} fetchedAt={index.fetchedAt} />
 
-      <p className="rounded-md border-2 border-dashed border-black px-4 py-3 text-sm dark:border-neutral-500">
-        A visual explanation of this RFC hasn&apos;t been generated yet. Showing its lineage
-        and text.{" "}
-        <a href={`${GITHUB_REPO_URL}#status`} className="neo-link hover:underline">
-          What&apos;s coming
-        </a>
-      </p>
+      {visual ? (
+        <section>
+          <h2 className="mb-2 text-lg font-semibold">How it works</h2>
+          <RfcVisuals model={visual} />
+        </section>
+      ) : (
+        <p className="rounded-md border-2 border-dashed border-black px-4 py-3 text-sm dark:border-neutral-500">
+          A visual explanation of this RFC hasn&apos;t been generated yet. Showing its lineage
+          and text.{" "}
+          <a href={`${GITHUB_REPO_URL}#status`} className="neo-link hover:underline">
+            What&apos;s coming
+          </a>
+        </p>
+      )}
 
       <section>
         <h2 className="mb-2 text-lg font-semibold">Lineage</h2>

@@ -80,3 +80,6 @@ venv
 .video-cache/
 /wrangler.staging*.jsonc
 /wrangler.deploy.jsonc
+
+# plan workspaces
+/.superpowers/

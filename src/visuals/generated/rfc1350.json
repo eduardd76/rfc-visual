@@ -1,0 +1,369 @@
+{
+  "rfc": 1350,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "read-transfer",
+      "title": "Read Request and Lock-Step Transfer",
+      "participants": {
+        "a": "Requesting host",
+        "b": "TFTP server"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "A transfer is established by sending a request (WRQ to write onto a foreign file system, or RRQ to read from it), and receiving a positive reply, an acknowledgment packet for write, or the first data packet for read."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RRQ",
+          "explain": "Host A requests to read the file from Host B.",
+          "cite": {
+            "section": "4",
+            "quote": "A transfer is established by sending a request (WRQ to write onto a foreign file system, or RRQ to read from it), and receiving a positive reply, an acknowledgment packet for write, or the first data packet for read."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DATA",
+          "explain": "Host B sends the first DATA block, whose block number is one.",
+          "cite": {
+            "section": "5",
+            "quote": "DATA packets (opcode = 3) have a block number and data field.  The block numbers on data packets begin with one and increase by one for each new block of data."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "ACK",
+          "explain": "Host A acknowledges that DATA block.",
+          "cite": {
+            "section": "5",
+            "quote": "The block number in an ACK echoes the block number of the DATA packet being acknowledged."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DATA",
+          "explain": "Host B sends the next DATA block.",
+          "cite": {
+            "section": "5",
+            "quote": "DATA packets (opcode = 3) have a block number and data field.  The block numbers on data packets begin with one and increase by one for each new block of data."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "ACK",
+          "explain": "Host A acknowledges the next DATA block.",
+          "cite": {
+            "section": "5",
+            "quote": "The block number in an ACK echoes the block number of the DATA packet being acknowledged."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DATA",
+          "explain": "Host B sends a short DATA packet that marks the end of the transfer.",
+          "cite": {
+            "section": "6",
+            "quote": "The end of a transfer is marked by a DATA packet that contains between 0 and 511 bytes of data (i.e., Datagram length < 516)."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "ACK",
+          "explain": "Host A acknowledges the final DATA packet.",
+          "cite": {
+            "section": "6",
+            "quote": "This packet is acknowledged by an ACK packet like all other DATA packets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "write-transfer",
+      "title": "Write Request and Lock-Step Transfer",
+      "participants": {
+        "a": "Requesting host",
+        "b": "TFTP server"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "A transfer is established by sending a request (WRQ to write onto a foreign file system, or RRQ to read from it), and receiving a positive reply, an acknowledgment packet for write, or the first data packet for read."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "WRQ",
+          "explain": "Host A requests to write the file on Host B.",
+          "cite": {
+            "section": "4",
+            "quote": "A transfer is established by sending a request (WRQ to write onto a foreign file system, or RRQ to read from it), and receiving a positive reply, an acknowledgment packet for write, or the first data packet for read."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ACK",
+          "explain": "Host B accepts the write request with an ACK for block zero.",
+          "cite": {
+            "section": "5",
+            "quote": "A WRQ is acknowledged with an ACK packet having a block number of zero."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "DATA",
+          "explain": "Host A sends the first DATA block, with block number one.",
+          "cite": {
+            "section": "5",
+            "quote": "DATA packets (opcode = 3) have a block number and data field.  The block numbers on data packets begin with one and increase by one for each new block of data."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ACK",
+          "explain": "Host B acknowledges that DATA block.",
+          "cite": {
+            "section": "5",
+            "quote": "The block number in an ACK echoes the block number of the DATA packet being acknowledged."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "DATA",
+          "explain": "Host A sends a short DATA packet that marks the end of the transfer.",
+          "cite": {
+            "section": "6",
+            "quote": "The end of a transfer is marked by a DATA packet that contains between 0 and 511 bytes of data (i.e., Datagram length < 516)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ACK",
+          "explain": "Host B acknowledges the final DATA packet.",
+          "cite": {
+            "section": "6",
+            "quote": "This packet is acknowledged by an ACK packet like all other DATA packets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "denied-request",
+      "title": "Denied Request",
+      "participants": {
+        "a": "Requesting host",
+        "b": "TFTP server"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "If the reply is an error packet, then the request has been denied."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RRQ",
+          "explain": "Host A sends a read request.",
+          "cite": {
+            "section": "4",
+            "quote": "A transfer is established by sending a request (WRQ to write onto a foreign file system, or RRQ to read from it), and receiving a positive reply, an acknowledgment packet for write, or the first data packet for read."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ERROR",
+          "explain": "Host B replies with an ERROR packet, so the request is denied.",
+          "cite": {
+            "section": "5",
+            "quote": "An ERROR packet (opcode 5) takes the form depicted in Figure 5-4."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "rrq-wrq",
+      "title": "Read or Write Request Packet",
+      "intro": {
+        "section": "5",
+        "quote": "RRQ and WRQ packets (opcodes 1 and 2 respectively) have the format shown in Figure 5-1."
+      },
+      "fields": [
+        {
+          "name": "Opcode",
+          "bits": 16,
+          "explain": "Identifies the request packet's type.",
+          "cite": {
+            "section": "5",
+            "quote": "The TFTP header of a packet contains the opcode associated with that packet."
+          }
+        },
+        {
+          "name": "file name",
+          "bits": "var",
+          "explain": "Names the file to be read or written.",
+          "cite": {
+            "section": "5",
+            "quote": "The file name is a sequence of bytes in netascii terminated by a zero byte."
+          }
+        },
+        {
+          "name": "zero byte",
+          "bits": 8,
+          "explain": "Terminates the file name.",
+          "cite": {
+            "section": "5",
+            "quote": "The file name is a sequence of bytes in netascii terminated by a zero byte."
+          }
+        },
+        {
+          "name": "Mode",
+          "bits": "var",
+          "explain": "Selects the transfer mode. The RFC lists netascii, octet, and mail.",
+          "cite": {
+            "section": "5",
+            "quote": "The mode field contains the string \"netascii\", \"octet\", or \"mail\""
+          }
+        },
+        {
+          "name": "zero byte",
+          "bits": 8,
+          "explain": "Terminates the mode string.",
+          "cite": {
+            "section": "5",
+            "quote": "Like all other strings, it is terminated with a zero byte."
+          }
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "DATA Packet",
+      "intro": {
+        "section": "5",
+        "quote": "Data is actually transferred in DATA packets depicted in Figure 5-2."
+      },
+      "fields": [
+        {
+          "name": "Opcode",
+          "bits": 16,
+          "explain": "Identifies the packet as DATA.",
+          "cite": {
+            "section": "5",
+            "quote": "DATA packets (opcode = 3) have a block number and data field."
+          }
+        },
+        {
+          "name": "Block number",
+          "bits": 16,
+          "explain": "Numbers DATA blocks, beginning with one and increasing by one for each new block.",
+          "cite": {
+            "section": "5",
+            "quote": "DATA packets (opcode = 3) have a block number and data field.  The block numbers on data packets begin with one and increase by one for each new block of data."
+          }
+        },
+        {
+          "name": "Data",
+          "bits": "var",
+          "explain": "Carries one block of file data. A full-size block means more data follows, while a shorter block marks the end.",
+          "cite": {
+            "section": "5",
+            "quote": "The data field is from zero to 512 bytes long.  If it is 512 bytes long, the block is not the last block of data; if it is from zero to 511 bytes long, it signals the end of the transfer."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ack",
+      "title": "ACK Packet",
+      "intro": {
+        "section": "5",
+        "quote": "Figure 5-3 depicts an ACK packet; the opcode is 4."
+      },
+      "fields": [
+        {
+          "name": "Opcode",
+          "bits": 16,
+          "explain": "Identifies the packet as ACK.",
+          "cite": {
+            "section": "5",
+            "quote": "Figure 5-3 depicts an ACK packet; the opcode is 4."
+          }
+        },
+        {
+          "name": "Block number",
+          "bits": 16,
+          "explain": "Echoes the block number of the DATA packet being acknowledged.",
+          "cite": {
+            "section": "5",
+            "quote": "The block number in an ACK echoes the block number of the DATA packet being acknowledged."
+          }
+        }
+      ]
+    },
+    {
+      "id": "error",
+      "title": "ERROR Packet",
+      "intro": {
+        "section": "5",
+        "quote": "An ERROR packet (opcode 5) takes the form depicted in Figure 5-4."
+      },
+      "fields": [
+        {
+          "name": "Opcode",
+          "bits": 16,
+          "explain": "Identifies the packet as ERROR.",
+          "cite": {
+            "section": "5",
+            "quote": "An ERROR packet (opcode 5) takes the form depicted in Figure 5-4."
+          }
+        },
+        {
+          "name": "Error code",
+          "bits": 16,
+          "explain": "Indicates the nature of the error.",
+          "cite": {
+            "section": "5",
+            "quote": "The error code is an integer indicating the nature of the error."
+          }
+        },
+        {
+          "name": "Error message",
+          "bits": "var",
+          "explain": "Provides a human-readable netascii explanation of the error and is terminated with a zero byte.",
+          "cite": {
+            "section": "5",
+            "quote": "The error message is intended for human consumption, and should be in netascii.  Like all other strings, it is terminated with a zero byte."
+          }
+        },
+        {
+          "name": "zero byte",
+          "bits": 8,
+          "explain": "Terminates the error message.",
+          "cite": {
+            "section": "5",
+            "quote": "Like all other strings, it is terminated with a zero byte."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "TID allocation, the initial request to port 69, and wrong-TID handling",
+    "Retransmission and timeout behavior for lost DATA and ACK packets",
+    "Detailed netascii and octet transfer rules and the obsolete mail mode",
+    "The table of numeric ERROR code values",
+    "Final-ACK dallying and retransmission behavior",
+    "Internet, UDP, and local-medium header layers",
+    "A formal TFTP state machine, which RFC 1350 does not define"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:50:23.549Z",
+    "dropped": 0
+  }
+}

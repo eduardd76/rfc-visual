@@ -1,0 +1,188 @@
+{
+  "rfc": 4791,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "discover-and-populate-calendar",
+      "title": "Discover and Populate a Calendar",
+      "participants": {
+        "a": "CalDAV client",
+        "b": "CalDAV server"
+      },
+      "intro": {
+        "section": "5.1",
+        "quote": "A server supporting the features described in this document MUST include \"calendar-access\" as a field in the DAV response header from an OPTIONS request on any resource that supports any calendar properties, reports, method, or privilege."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPTIONS",
+          "explain": "The client sends OPTIONS to ask whether the resource supports CalDAV.",
+          "cite": {
+            "section": "5.1",
+            "quote": "A server supporting the features described in this document MUST include \"calendar-access\" as a field in the DAV response header from an OPTIONS request on any resource that supports any calendar properties, reports, method, or privilege."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DAV: 1, 2, access-control, calendar-access",
+          "explain": "The server includes calendar-access in the DAV header to advertise the CalDAV feature.",
+          "cite": {
+            "section": "5.1.1",
+            "quote": "DAV: 1, 2, access-control, calendar-access"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "MKCALENDAR",
+          "explain": "The client asks the server to create a new calendar collection.",
+          "cite": {
+            "section": "5.3.1",
+            "quote": "An HTTP request using the MKCALENDAR method creates a new calendar collection resource."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HTTP/1.1 201 Created",
+          "explain": "The server confirms that the calendar collection was created.",
+          "cite": {
+            "section": "5.3.1.2",
+            "quote": "HTTP/1.1 201 Created"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PUT",
+          "explain": "The client sends a PUT for a new calendar object resource. The If-None-Match header prevents it from overwriting an existing resource.",
+          "cite": {
+            "section": "5.3.2",
+            "quote": "PUT /home/lisa/calendars/events/qwue23489.ics HTTP/1.1\nIf-None-Match: *\nHost: cal.example.com\nContent-Type: text/calendar\nContent-Length: xxxx"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HTTP/1.1 201 Created",
+          "explain": "The server confirms creation and returns an ETag for the new calendar object resource.",
+          "cite": {
+            "section": "5.3.2",
+            "quote": "HTTP/1.1 201 Created\nContent-Length: 0\nDate: Sat, 11 Nov 2006 09:32:12 GMT\nETag: \"123456789-000-111\""
+          }
+        }
+      ]
+    },
+    {
+      "id": "calendar-query",
+      "title": "Query Calendar Object Resources",
+      "participants": {
+        "a": "CalDAV client",
+        "b": "CalDAV server"
+      },
+      "intro": {
+        "section": "7.8",
+        "quote": "The CALDAV:calendar-query REPORT performs a search for all calendar object resources that match a specified filter. The response of this report will contain all the WebDAV properties and calendar object resource data specified in the request."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "CALDAV:calendar-query REPORT",
+          "explain": "The client asks the server to find calendar object resources matching a filter and return the requested properties and data.",
+          "cite": {
+            "section": "7.8",
+            "quote": "The CALDAV:calendar-query REPORT performs a search for all calendar object resources that match a specified filter."
+          }
+        }
+      ]
+    },
+    {
+      "id": "free-busy-query",
+      "title": "Query Free-Busy Information",
+      "participants": {
+        "a": "CalDAV client",
+        "b": "CalDAV server"
+      },
+      "intro": {
+        "section": "7.10",
+        "quote": "The CALDAV:free-busy-query REPORT generates a VFREEBUSY component containing free busy information for all the calendar object resources targeted by the request and that have the CALDAV:read-free-busy or DAV:read privilege granted to the current user."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "CALDAV:free-busy-query REPORT",
+          "explain": "The client requests free-busy information for the resources it is allowed to examine.",
+          "cite": {
+            "section": "7.10",
+            "quote": "The CALDAV:free-busy-query REPORT generates a VFREEBUSY component containing free busy information for all the calendar object resources targeted by the request and that have the CALDAV:read-free-busy or DAV:read privilege granted to the current user."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "VFREEBUSY",
+          "explain": "The server returns one VFREEBUSY component describing the relevant busy intervals.",
+          "cite": {
+            "section": "7.10",
+            "quote": "The response body for a successful request MUST be an iCalendar object that contains exactly one VFREEBUSY component that describes the busy time intervals for the calendar object resources containing VEVENT, or VFREEBUSY components that satisfy the Depth value and for which the current user is at least granted the CALDAV:read-free-busy privilege."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "calendar-query-body",
+      "title": "CALDAV:calendar-query Request Body Layout",
+      "intro": {
+        "section": "9.5",
+        "quote": "<!ELEMENT calendar-query ((DAV:allprop | DAV:propname | DAV:prop)?, filter, timezone?)>"
+      },
+      "fields": [
+        {
+          "name": "DAV:prop",
+          "bits": "var",
+          "explain": "Optional property selection. DAV:allprop and DAV:propname are the alternatives.",
+          "cite": {
+            "section": "9.5",
+            "quote": "<!ELEMENT calendar-query ((DAV:allprop | DAV:propname | DAV:prop)?, filter, timezone?)>"
+          }
+        },
+        {
+          "name": "CALDAV:filter",
+          "bits": "var",
+          "explain": "Search filter that limits the calendar components returned by the report.",
+          "cite": {
+            "section": "9.7",
+            "quote": "The CALDAV:filter XML element specifies the search filter used to limit the calendar components returned by a calendaring REPORT request."
+          }
+        },
+        {
+          "name": "CALDAV:timezone",
+          "bits": "var",
+          "explain": "Optional timezone used to resolve floating date and time values for the report.",
+          "cite": {
+            "section": "9.8",
+            "quote": "The CALDAV:timezone XML element specifies that for a given calendaring REPORT request, the server MUST rely on the specified VTIMEZONE component instead of the CALDAV:calendar-timezone property of the calendar collection, in which the calendar object resource is contained to resolve \"date\" values and \"date with local time\" values (i.e., floating time) to \"date with UTC time\" values."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "MKCALENDAR request-body property initialization and failure status codes",
+    "PUT, COPY, and MOVE precondition handling, including UID conflicts and collection resource limits",
+    "The CALDAV:calendar-multiget report and ETag-based synchronization workflow",
+    "Detailed recurrence expansion, partial retrieval, and component-specific time-range rules",
+    "Free-busy access failures and privacy behavior when the caller lacks read privileges",
+    "WebDAV ACL details, principal lookup, and calendar-home-set discovery",
+    "Attachment, alarm, locking, and interoperability guidance",
+    "The complete XML grammars for MKCALENDAR, free-busy-query, and calendar-multiget",
+    "iCalendar object syntax and scheduling semantics defined by RFC 2445"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T03:06:08.363Z",
+    "dropped": 1
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "rfc": 4291,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "link-local-unicast",
+      "title": "Link-Local IPv6 Unicast Address",
+      "intro": {
+        "section": "2.5.6",
+        "quote": "Link-Local addresses are for use on a single link.  Link-Local addresses have the following format:"
+      },
+      "fields": [
+        {
+          "name": "1111111010",
+          "bits": 10,
+          "explain": "The fixed 10-bit binary prefix identifies a Link-Local unicast address.",
+          "cite": {
+            "section": "2.5.6",
+            "quote": "|   10     |\n   |  bits    |         54 bits         |          64 bits           |\n   +----------+-------------------------+----------------------------+\n   |1111111010|           0             |       interface ID         |\n   +----------+-------------------------+----------------------------+"
+          }
+        },
+        {
+          "name": "0",
+          "bits": 54,
+          "explain": "This 54-bit field is fixed to zero.",
+          "cite": {
+            "section": "2.5.6",
+            "quote": "|   10     |\n   |  bits    |         54 bits         |          64 bits           |\n   +----------+-------------------------+----------------------------+\n   |1111111010|           0             |       interface ID         |\n   +----------+-------------------------+----------------------------+"
+          }
+        },
+        {
+          "name": "interface ID",
+          "bits": 64,
+          "explain": "The interface ID is 64 bits long and is constructed in Modified EUI-64 format.",
+          "cite": {
+            "section": "2.5.1",
+            "quote": "For all unicast addresses, except those that start with the binary value 000, Interface IDs are required to be 64 bits long and to be constructed in Modified EUI-64 format."
+          }
+        }
+      ]
+    },
+    {
+      "id": "site-local-unicast",
+      "title": "Site-Local IPv6 Unicast Address (Deprecated)",
+      "intro": {
+        "section": "2.5.7",
+        "quote": "Site-local addresses are now deprecated as defined in [SLDEP]."
+      },
+      "fields": [
+        {
+          "name": "1111111011",
+          "bits": 10,
+          "explain": "The fixed 10-bit binary prefix identifies the deprecated site-local address space.",
+          "cite": {
+            "section": "2.5.7",
+            "quote": "|   10     |\n   |  bits    |         54 bits         |         64 bits            |\n   +----------+-------------------------+----------------------------+\n   |1111111011|        subnet ID        |       interface ID         |\n   +----------+-------------------------+----------------------------+"
+          }
+        },
+        {
+          "name": "subnet ID",
+          "bits": 54,
+          "explain": "This 54-bit field contains the subnet ID.",
+          "cite": {
+            "section": "2.5.7",
+            "quote": "|   10     |\n   |  bits    |         54 bits         |         64 bits            |\n   +----------+-------------------------+----------------------------+\n   |1111111011|        subnet ID        |       interface ID         |\n   +----------+-------------------------+----------------------------+"
+          }
+        },
+        {
+          "name": "interface ID",
+          "bits": 64,
+          "explain": "The interface ID is 64 bits long and is constructed in Modified EUI-64 format.",
+          "cite": {
+            "section": "2.5.1",
+            "quote": "For all unicast addresses, except those that start with the binary value 000, Interface IDs are required to be 64 bits long and to be constructed in Modified EUI-64 format."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ipv4-mapped-ipv6",
+      "title": "IPv4-Mapped IPv6 Address",
+      "intro": {
+        "section": "2.5.5.2",
+        "quote": "A second type of IPv6 address that holds an embedded IPv4 address is defined.  This address type is used to represent the addresses of IPv4 nodes as IPv6 addresses."
+      },
+      "fields": [
+        {
+          "name": "0000..............................0000",
+          "bits": 80,
+          "explain": "This 80-bit prefix is fixed to zero.",
+          "cite": {
+            "section": "2.5.5.2",
+            "quote": "|                80 bits               | 16 |      32 bits        |\n   +--------------------------------------+--------------------------+\n   |0000..............................0000|FFFF|    IPv4 address     |\n   +--------------------------------------+----+---------------------+"
+          }
+        },
+        {
+          "name": "FFFF",
+          "bits": 16,
+          "explain": "This 16-bit field contains the fixed value FFFF.",
+          "cite": {
+            "section": "2.5.5.2",
+            "quote": "|                80 bits               | 16 |      32 bits        |\n   +--------------------------------------+--------------------------+\n   |0000..............................0000|FFFF|    IPv4 address     |\n   +--------------------------------------+----+---------------------+"
+          }
+        },
+        {
+          "name": "IPv4 address",
+          "bits": 32,
+          "explain": "The low-order 32 bits carry the embedded IPv4 address.",
+          "cite": {
+            "section": "2.5.5",
+            "quote": "Two types of IPv6 addresses are defined that carry an IPv4 address in the low-order 32 bits of the address."
+          }
+        }
+      ]
+    },
+    {
+      "id": "multicast",
+      "title": "IPv6 Multicast Address",
+      "intro": {
+        "section": "2.7",
+        "quote": "Multicast addresses have the following format:"
+      },
+      "fields": [
+        {
+          "name": "11111111",
+          "bits": 8,
+          "explain": "The fixed eight-bit all-ones prefix identifies a multicast address.",
+          "cite": {
+            "section": "2.7",
+            "quote": "|   8    |  4 |  4 |                  112 bits                   |\n   +------ -+----+----+---------------------------------------------+\n   |11111111|flgs|scop|                  group ID                   |\n   +--------+----+----+---------------------------------------------+\n\n      binary 11111111 at the start of the address\n      identifies the address as being a multicast address."
+          }
+        },
+        {
+          "name": "flgs",
+          "bits": 4,
+          "explain": "The four-bit flag set contains a high-order reserved bit plus the R, P, and T flags. The reserved bit must be initialized to zero.",
+          "cite": {
+            "section": "2.7",
+            "quote": "flgs is a set of 4 flags:     |0|R|P|T|\n                                    +-+-+-+-+\n\n         The high-order flag is reserved, and must be initialized to 0."
+          }
+        },
+        {
+          "name": "scop",
+          "bits": 4,
+          "explain": "The four-bit scope value limits the scope of the multicast group.",
+          "cite": {
+            "section": "2.7",
+            "quote": "scop is a 4-bit multicast scope value used to limit the scope of\n      the multicast group.  The values are as follows:"
+          }
+        },
+        {
+          "name": "group ID",
+          "bits": 112,
+          "explain": "The group ID identifies the multicast group within the given scope.",
+          "cite": {
+            "section": "2.7",
+            "quote": "|   8    |  4 |  4 |                  112 bits                   |\n   +------ -+----+----+---------------------------------------------+\n   |11111111|flgs|scop|                  group ID                   |\n   +--------+----+----+---------------------------------------------+"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Global Unicast address partitioning, whose prefix and subnet lengths are variable in Section 2.5.4",
+    "The deprecated IPv4-Compatible IPv6 Address format in Section 2.5.5.1",
+    "Anycast address assignment and routing, including the Subnet-Router anycast address",
+    "The Unspecified and Loopback address rules in Sections 2.5.2 and 2.5.3",
+    "Text representations of addresses and address prefixes",
+    "Modified EUI-64 interface identifier construction details in Appendix A",
+    "Predefined multicast addresses and a node's required addresses"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T03:09:54.451Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "rfc": 1122,
+  "reviewed": false,
+  "initial": "unresolved IP address",
+  "terminal": [
+    "address has been resolved"
+  ],
+  "stateMachineTitle": "ARP address resolution",
+  "states": [
+    {
+      "id": "unresolved IP address",
+      "cite": {
+        "section": "2",
+        "quote": "The link layer SHOULD save (rather than discard) at least one (the latest) packet of each set of packets destined to the same unresolved IP address, and transmit the saved packet when the address has been resolved."
+      }
+    },
+    {
+      "id": "address has been resolved",
+      "cite": {
+        "section": "2",
+        "quote": "The link layer SHOULD save (rather than discard) at least one (the latest) packet of each set of packets destined to the same unresolved IP address, and transmit the saved packet when the address has been resolved."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "unresolved IP address",
+      "to": "address has been resolved",
+      "event": "address resolution completes",
+      "action": "transmit saved packet",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The link layer SHOULD save (rather than discard) at least one (the latest) packet of each set of packets destined to the same unresolved IP address, and transmit the saved packet when the address has been resolved."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "trailer-arp-negotiation",
+      "title": "Trailer Protocol Negotiation over ARP",
+      "participants": {
+        "a": "Host requesting trailers",
+        "b": "Peer host"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "The trailer protocol [LINK:1] for link-layer encapsulation MAY be used, but only when it has been verified that both systems (host or gateway) involved in the link-layer communication implement trailers."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "IP ARP request",
+          "explain": "The requesting host sends an IP ARP request as part of the normal ARP exchange.",
+          "cite": {
+            "section": "2",
+            "quote": "Thus, a host that received an ARP request for its IP protocol address would send a trailer ARP reply in addition to the normal IP ARP reply; a host that sent the IP ARP request would send a trailer ARP reply when it received the corresponding IP ARP reply."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "IP ARP reply",
+          "explain": "The peer returns the normal IP ARP reply.",
+          "cite": {
+            "section": "2",
+            "quote": "Thus, a host that received an ARP request for its IP protocol address would send a trailer ARP reply in addition to the normal IP ARP reply; a host that sent the IP ARP request would send a trailer ARP reply when it received the corresponding IP ARP reply."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "trailer ARP reply",
+          "explain": "A host that wants to use trailers sends an additional trailer ARP reply.",
+          "cite": {
+            "section": "2",
+            "quote": "Specifically, the ARP exchange is completed in the usual manner using the normal IP protocol type, but a host that wants to speak trailers will send an additional \"trailer ARP reply\" packet, i.e., an ARP reply that specifies the trailer encapsulation protocol type but otherwise has the format of a normal ARP reply."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "trailer ARP reply",
+          "explain": "A trailer-capable responder may include a trailer ARP reply with its normal IP ARP reply.",
+          "cite": {
+            "section": "2",
+            "quote": "A trailer ARP reply may always be sent along with an IP ARP reply responding to an IP ARP request."
+          }
+        }
+      ]
+    },
+    {
+      "id": "icmp-echo",
+      "title": "ICMP Echo Request and Reply",
+      "participants": {
+        "a": "Diagnostic client",
+        "b": "Echo server"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "Every host MUST implement an ICMP Echo server function that receives Echo Requests and sends corresponding Echo Replies."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Echo Request",
+          "explain": "The diagnostic client sends an Echo Request to the Echo server.",
+          "cite": {
+            "section": "3",
+            "quote": "Every host MUST implement an ICMP Echo server function that receives Echo Requests and sends corresponding Echo Replies. A host SHOULD also implement an application-layer interface for sending an Echo Request and receiving an Echo Reply, for diagnostic purposes."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Echo Reply",
+          "explain": "The Echo server returns an Echo Reply with all request data, and the reply uses the request's specific-destination address as its source.",
+          "cite": {
+            "section": "3",
+            "quote": "The IP source address in an ICMP Echo Reply MUST be the same as the specific-destination address (defined in Section 3.2.1.3) of the corresponding ICMP Echo Request message. Data received in an ICMP Echo Request MUST be entirely included in the resulting Echo Reply."
+          }
+        }
+      ]
+    },
+    {
+      "id": "address-mask",
+      "title": "ICMP Address Mask Request and Reply",
+      "participants": {
+        "a": "Host",
+        "b": "Authoritative address-mask agent"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "A host MUST support the first, and MAY implement all three, of the following methods for determining the address mask(s) corresponding to its IP address(es):"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Address Mask Request",
+          "explain": "At initialization, the host broadcasts an Address Mask Request and retransmits it if no immediate reply arrives.",
+          "cite": {
+            "section": "3",
+            "quote": "(a) When it initializes, the host MUST broadcast an Address Mask Request message on the connected network corresponding to the IP address. It MUST retransmit this message a small number of times if it does not receive an immediate Address Mask Reply."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Address Mask Reply",
+          "explain": "An authoritative agent sends a unicast Address Mask Reply to the requester.",
+          "cite": {
+            "section": "3",
+            "quote": "When an authoritative agent receives an Address Mask Request message, it will send a unicast Address Mask Reply to the source IP address."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [],
+  "notShown": [
+    "ARP cache timeout, flood prevention, and invalidation mechanisms",
+    "Complete ARP, IP, ICMP, UDP, and TCP header layouts",
+    "IP addressing, checksum validation, fragmentation and reassembly, and route-cache rules",
+    "Local multihoming, source-route forwarding, broadcasts, and IP multicasting",
+    "ICMP error and query messages other than Echo and Address Mask",
+    "UDP host requirements",
+    "TCP connection establishment and closing corrections, retransmission timers, congestion control, keep-alives, and ICMP handling",
+    "Trailer encapsulation default configuration and Ethernet or IEEE 802 encapsulation"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:25:00.245Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,300 @@
+{
+  "rfc": 3550,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "media-feedback",
+      "title": "Multicast Media and Feedback",
+      "participants": {
+        "a": "Sender",
+        "b": "Receiver"
+      },
+      "intro": {
+        "section": "2.1",
+        "quote": "The audio conferencing application used by each conference participant sends audio data in small chunks of, say, 20 ms duration. Each chunk of audio data is preceded by an RTP header; RTP header and data are in turn contained in a UDP packet."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RTP packet",
+          "explain": "The RTP packet carries the payload behind the fixed header and any contributing-source list.",
+          "cite": {
+            "section": "3",
+            "quote": "RTP packet: A data packet consisting of the fixed RTP header, a possibly empty list of contributing sources (see below), and the payload data."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "reception report",
+          "explain": "The receiver periodically multicasts a reception report with the user's name on the RTCP control port.",
+          "cite": {
+            "section": "2.1",
+            "quote": "each instance of the audio application in the conference periodically multicasts a reception report plus the name of its user on the RTCP (control) port."
+          }
+        }
+      ]
+    },
+    {
+      "id": "leave-session",
+      "title": "Leaving a Multicast Session",
+      "participants": {
+        "a": "Remaining participant",
+        "b": "Departing participant"
+      },
+      "intro": {
+        "section": "6.6",
+        "quote": "The BYE packet indicates that one or more sources are no longer active."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "BYE packet",
+          "explain": "The departing site sends an RTCP BYE packet to announce that it is leaving the conference.",
+          "cite": {
+            "section": "2.1",
+            "quote": "A site sends the RTCP BYE packet (Section 6.6) when it leaves the conference."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "rtp-fixed-header",
+      "title": "RTP Fixed Header",
+      "intro": {
+        "section": "5.1",
+        "quote": "The first twelve octets are present in every RTP packet, while the list of CSRC identifiers is present only when inserted by a mixer."
+      },
+      "fields": [
+        {
+          "name": "version",
+          "bits": 2,
+          "explain": "Identifies the RTP version, which is version 2 in this specification.",
+          "cite": {
+            "section": "5.1",
+            "quote": "version (V): 2 bits This field identifies the version of RTP. The version defined by this specification is two (2)."
+          }
+        },
+        {
+          "name": "padding",
+          "bits": 1,
+          "explain": "When set, indicates trailing padding octets that are not part of the payload.",
+          "cite": {
+            "section": "5.1",
+            "quote": "padding (P): 1 bit If the padding bit is set, the packet contains one or more additional padding octets at the end which are not part of the payload."
+          }
+        },
+        {
+          "name": "extension",
+          "bits": 1,
+          "explain": "When set, indicates that exactly one header extension follows the fixed header.",
+          "cite": {
+            "section": "5.1",
+            "quote": "extension (X): 1 bit If the extension bit is set, the fixed header MUST be followed by exactly one header extension, with a format defined in Section 5.3.1."
+          }
+        },
+        {
+          "name": "CSRC count",
+          "bits": 4,
+          "explain": "Gives the number of contributing-source identifiers following the fixed header.",
+          "cite": {
+            "section": "5.1",
+            "quote": "CSRC count (CC): 4 bits The CSRC count contains the number of CSRC identifiers that follow the fixed header."
+          }
+        },
+        {
+          "name": "marker",
+          "bits": 1,
+          "explain": "Marks profile-defined significant events, such as frame boundaries, in the packet stream.",
+          "cite": {
+            "section": "5.1",
+            "quote": "marker (M): 1 bit The interpretation of the marker is defined by a profile. It is intended to allow significant events such as frame boundaries to be marked in the packet stream."
+          }
+        },
+        {
+          "name": "payload type",
+          "bits": 7,
+          "explain": "Identifies the RTP payload format and tells the application how to interpret it.",
+          "cite": {
+            "section": "5.1",
+            "quote": "payload type (PT): 7 bits This field identifies the format of the RTP payload and determines its interpretation by the application."
+          }
+        },
+        {
+          "name": "sequence number",
+          "bits": 16,
+          "explain": "Increments for each RTP data packet and lets receivers detect loss and restore packet order.",
+          "cite": {
+            "section": "5.1",
+            "quote": "sequence number: 16 bits The sequence number increments by one for each RTP data packet sent, and may be used by the receiver to detect packet loss and to restore packet sequence."
+          }
+        },
+        {
+          "name": "timestamp",
+          "bits": 32,
+          "explain": "Reflects the sampling instant of the first octet in the RTP data packet.",
+          "cite": {
+            "section": "5.1",
+            "quote": "timestamp: 32 bits The timestamp reflects the sampling instant of the first octet in the RTP data packet."
+          }
+        },
+        {
+          "name": "SSRC",
+          "bits": 32,
+          "explain": "Identifies the synchronization source for the packet stream.",
+          "cite": {
+            "section": "5.1",
+            "quote": "SSRC: 32 bits The SSRC field identifies the synchronization source."
+          }
+        },
+        {
+          "name": "CSRC list",
+          "bits": "var",
+          "explain": "Lists the sources that contributed to the payload, with the number of identifiers given by the CSRC count.",
+          "cite": {
+            "section": "5.1",
+            "quote": "CSRC list: 0 to 15 items, 32 bits each The CSRC list identifies the contributing sources for the payload contained in this packet. The number of identifiers is given by the CC field."
+          }
+        }
+      ]
+    },
+    {
+      "id": "rtcp-sender-report",
+      "title": "RTCP Sender Report (SR)",
+      "intro": {
+        "section": "6.4.1",
+        "quote": "The sender report packet consists of three sections, possibly followed by a fourth profile-specific extension section if defined. The first section, the header, is 8 octets long."
+      },
+      "fields": [
+        {
+          "name": "version",
+          "bits": 2,
+          "explain": "Identifies RTP version 2, the same version used by RTP data packets.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "version (V): 2 bits Identifies the version of RTP, which is the same in RTCP packets as in RTP data packets. The version defined by this specification is two (2)."
+          }
+        },
+        {
+          "name": "padding",
+          "bits": 1,
+          "explain": "When set, identifies trailing padding octets outside the control information but included in the packet length.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "padding (P): 1 bit If the padding bit is set, this individual RTCP packet contains some additional padding octets at the end which are not part of the control information but are included in the length field."
+          }
+        },
+        {
+          "name": "reception report count",
+          "bits": 5,
+          "explain": "Gives the number of reception report blocks in the packet and may be zero.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "reception report count (RC): 5 bits The number of reception report blocks contained in this packet. A value of zero is valid."
+          }
+        },
+        {
+          "name": "packet type",
+          "bits": 8,
+          "explain": "Uses the constant 200 to identify an RTCP sender report.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "packet type (PT): 8 bits Contains the constant 200 to identify this as an RTCP SR packet."
+          }
+        },
+        {
+          "name": "length",
+          "bits": 16,
+          "explain": "Gives the RTCP packet length in 32-bit words minus one, including the header and padding.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "length: 16 bits The length of this RTCP packet in 32-bit words minus one, including the header and any padding."
+          }
+        },
+        {
+          "name": "SSRC",
+          "bits": 32,
+          "explain": "Identifies the originator of the sender report.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "SSRC: 32 bits The synchronization source identifier for the originator of this SR packet."
+          }
+        },
+        {
+          "name": "NTP timestamp",
+          "bits": 64,
+          "explain": "Records the wallclock time when the report was sent and supports round-trip propagation measurements.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "NTP timestamp: 64 bits Indicates the wallclock time (see Section 4) when this report was sent so that it may be used in combination with timestamps returned in reception reports from other receivers to measure round-trip propagation to those receivers."
+          }
+        },
+        {
+          "name": "RTP timestamp",
+          "bits": 32,
+          "explain": "Corresponds to the NTP timestamp in RTP units and with the same random offset as data-packet timestamps.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "RTP timestamp: 32 bits Corresponds to the same time as the NTP timestamp (above), but in the same units and with the same random offset as the RTP timestamps in data packets."
+          }
+        },
+        {
+          "name": "sender's packet count",
+          "bits": 32,
+          "explain": "Counts the RTP data packets transmitted by the sender since transmission began.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "sender's packet count: 32 bits The total number of RTP data packets transmitted by the sender since starting transmission up until the time this SR packet was generated."
+          }
+        },
+        {
+          "name": "sender's octet count",
+          "bits": 32,
+          "explain": "Counts transmitted payload octets, excluding headers and padding.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "sender's octet count: 32 bits The total number of payload octets (i.e., not including header or padding) transmitted in RTP data packets by the sender since starting transmission up until the time this SR packet was generated."
+          }
+        },
+        {
+          "name": "reception report blocks",
+          "bits": "var",
+          "explain": "Optional blocks report reception statistics for sources heard since the previous report.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "The third section contains zero or more reception report blocks depending on the number of other sources heard by this sender since the last report. Each reception report block conveys statistics on the reception of RTP packets from a single synchronization source."
+          }
+        },
+        {
+          "name": "profile-specific extension section",
+          "bits": "var",
+          "explain": "Optional fourth section for information defined by an RTP profile.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "The sender report packet consists of three sections, possibly followed by a fourth profile-specific extension section if defined."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "RTP header extensions and profile-specific modifications to the RTP header",
+    "RTCP compound packet construction, encryption prefixes, and packet ordering rules",
+    "RTCP RR format, detailed reception report block fields, SDES item formats, and APP packet format",
+    "RTCP transmission interval, timer reconsideration, and participant-timeout algorithms",
+    "SSRC allocation, collision resolution, and loop detection",
+    "RTP translator and mixer processing rules",
+    "RTP security mechanisms and congestion-control requirements",
+    "Transport-port mapping, RTP payload formats, and profile-specific behavior"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:09:34.731Z",
+    "dropped": 0
+  }
+}

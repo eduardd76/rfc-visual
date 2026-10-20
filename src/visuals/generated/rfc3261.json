@@ -1,0 +1,281 @@
+{
+  "rfc": 3261,
+  "reviewed": false,
+  "initial": "early",
+  "terminal": [
+    "terminated"
+  ],
+  "stateMachineTitle": "SIP Dialog FSM",
+  "states": [
+    {
+      "id": "early",
+      "cite": {
+        "section": "12.1",
+        "quote": "Dialogs are created through the generation of non-failure responses to requests with specific methods. Within this specification, only 2xx and 101-199 responses with a To tag, where the request was INVITE, will establish a dialog. A dialog established by a non-final response to a request is in the \"early\" state and it is called an early dialog."
+      }
+    },
+    {
+      "id": "terminated",
+      "cite": {
+        "section": "12.3",
+        "quote": "Independent of the method, if a request outside of a dialog generates a non-2xx final response, any early dialogs created through provisional responses to that request are terminated."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "early",
+      "to": "terminated",
+      "event": "recv non-2xx",
+      "action": "terminate early dialog",
+      "layer": "error",
+      "cite": {
+        "section": "12.3",
+        "quote": "Independent of the method, if a request outside of a dialog generates a non-2xx final response, any early dialogs created through provisional responses to that request are terminated."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "session-setup",
+      "title": "INVITE Session Setup",
+      "participants": {
+        "a": "Alice",
+        "b": "Bob"
+      },
+      "intro": {
+        "section": "13.1",
+        "quote": "When a user agent client desires to initiate a session (for example, audio, video, or a game), it formulates an INVITE request. The INVITE request asks a server to establish a session."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "INVITE",
+          "explain": "Alice sends an INVITE request asking the server to establish a session.",
+          "cite": {
+            "section": "13.1",
+            "quote": "When a user agent client desires to initiate a session (for example, audio, video, or a game), it formulates an INVITE request. The INVITE request asks a server to establish a session."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "provisional response",
+          "explain": "Bob reports progress on the invitation, for example by indicating that a phone is ringing, with a provisional response.",
+          "cite": {
+            "section": "13.3.1.1",
+            "quote": "If the UAS is not able to answer the invitation immediately, it can choose to indicate some kind of progress to the UAC (for example, an indication that a phone is ringing). This is accomplished with a provisional response between 101 and 199."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "2xx response",
+          "explain": "Bob accepts the invitation and establishes the session by sending a 2xx response.",
+          "cite": {
+            "section": "13.1",
+            "quote": "After some time, those UASs can accept the invitation (meaning the session is to be established) by sending a 2xx response."
+          }
+        }
+      ]
+    },
+    {
+      "id": "session-teardown",
+      "title": "BYE Session Teardown",
+      "participants": {
+        "a": "Alice",
+        "b": "Bob"
+      },
+      "intro": {
+        "section": "15.1.1",
+        "quote": "A BYE request is constructed as would any other request within a dialog, as described in Section 12."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "BYE",
+          "explain": "Bob's user agent sends a BYE request and treats the session as terminated once the request is passed to its client transaction.",
+          "cite": {
+            "section": "15.1.1",
+            "quote": "Once the BYE is constructed, the UAC core creates a new non-INVITE client transaction, and passes it the BYE request. The UAC MUST consider the session terminated (and therefore stop sending or listening for media) as soon as the BYE request is passed to the client transaction."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "2xx response",
+          "explain": "Alice's user agent server acknowledges the BYE with a 2xx response.",
+          "cite": {
+            "section": "15.1.2",
+            "quote": "Whether or not it ends its participation on the session, the UAS core MUST generate a 2xx response to the BYE, and MUST pass that to the server transaction for transmission."
+          }
+        }
+      ]
+    },
+    {
+      "id": "registration",
+      "title": "Registration",
+      "participants": {
+        "a": "User Agent",
+        "b": "Registrar"
+      },
+      "intro": {
+        "section": "10.1",
+        "quote": "Registration entails sending a REGISTER request to a special type of UAS known as a registrar. A registrar acts as the front end to the location service for a domain, reading and writing mappings based on the contents of REGISTER requests."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "REGISTER",
+          "explain": "The user agent sends a REGISTER request to the registrar.",
+          "cite": {
+            "section": "10.1",
+            "quote": "Registration entails sending a REGISTER request to a special type of UAS known as a registrar."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "200 (OK)",
+          "explain": "The registrar confirms the request and returns the current bindings.",
+          "cite": {
+            "section": "10.3",
+            "quote": "The registrar returns a 200 (OK) response. The response MUST contain Contact header field values enumerating all current bindings."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "invite-request",
+      "title": "INVITE Request Layout",
+      "intro": {
+        "section": "7.1",
+        "quote": "SIP requests are distinguished by having a Request-Line for a start-line. A Request-Line contains a method name, a Request-URI, and the protocol version separated by a single space (SP) character."
+      },
+      "fields": [
+        {
+          "name": "Method",
+          "bits": "var",
+          "explain": "Names the SIP operation requested by the client, such as INVITE, REGISTER, ACK, CANCEL, BYE, or OPTIONS.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Method: This specification defines six methods: REGISTER for registering contact information, INVITE, ACK, and CANCEL for setting up sessions, BYE for terminating sessions, and OPTIONS for querying servers about their capabilities."
+          }
+        },
+        {
+          "name": "Request-URI",
+          "bits": "var",
+          "explain": "Identifies the user or service to which the request is addressed.",
+          "cite": {
+            "section": "7.1",
+            "quote": "The Request-URI is a SIP or SIPS URI as described in Section 19.1 or a general URI (RFC 2396 [5]). It indicates the user or service to which this request is being addressed."
+          }
+        },
+        {
+          "name": "SIP-Version",
+          "bits": "var",
+          "explain": "Identifies the SIP protocol version used by the message.",
+          "cite": {
+            "section": "7.1",
+            "quote": "SIP-Version: Both request and response messages include the version of SIP in use"
+          }
+        },
+        {
+          "name": "Via",
+          "bits": "var",
+          "explain": "Identifies the transaction transport and the location where responses should be sent.",
+          "cite": {
+            "section": "8.1.1.7",
+            "quote": "The Via header field indicates the transport used for the transaction and identifies the location where the response is to be sent."
+          }
+        },
+        {
+          "name": "Max-Forwards",
+          "bits": "var",
+          "explain": "Limits how many hops the request may traverse on its way to its destination.",
+          "cite": {
+            "section": "8.1.1.6",
+            "quote": "The Max-Forwards header field serves to limit the number of hops a request can transit on the way to its destination."
+          }
+        },
+        {
+          "name": "To",
+          "bits": "var",
+          "explain": "Specifies the logical recipient or address-of-record targeted by the request.",
+          "cite": {
+            "section": "8.1.1.2",
+            "quote": "The To header field first and foremost specifies the desired \"logical\" recipient of the request, or the address-of-record of the user or resource that is the target of this request."
+          }
+        },
+        {
+          "name": "From",
+          "bits": "var",
+          "explain": "Identifies the logical initiator of the request.",
+          "cite": {
+            "section": "8.1.1.3",
+            "quote": "The From header field indicates the logical identity of the initiator of the request, possibly the user's address-of-record."
+          }
+        },
+        {
+          "name": "Call-ID",
+          "bits": "var",
+          "explain": "Provides a unique identifier that groups related messages together.",
+          "cite": {
+            "section": "8.1.1.4",
+            "quote": "The Call-ID header field acts as a unique identifier to group together a series of messages."
+          }
+        },
+        {
+          "name": "CSeq",
+          "bits": "var",
+          "explain": "Identifies and orders transactions using a sequence number and method.",
+          "cite": {
+            "section": "8.1.1.5",
+            "quote": "The CSeq header field serves as a way to identify and order transactions. It consists of a sequence number and a method."
+          }
+        },
+        {
+          "name": "Contact",
+          "bits": "var",
+          "explain": "Provides a URI that can be used to contact the user agent for subsequent requests.",
+          "cite": {
+            "section": "8.1.1.8",
+            "quote": "The Contact header field provides a SIP or SIPS URI that can be used to contact that specific instance of the UA for subsequent requests."
+          }
+        },
+        {
+          "name": "Content-Type",
+          "bits": "var",
+          "explain": "Gives the media type of the message body.",
+          "cite": {
+            "section": "7.4.1",
+            "quote": "The Internet media type of the message body MUST be given by the Content-Type header field."
+          }
+        },
+        {
+          "name": "Content-Length",
+          "bits": "var",
+          "explain": "Gives the length of the message body in bytes.",
+          "cite": {
+            "section": "7.4.2",
+            "quote": "The body length in bytes is provided by the Content-Length header field."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Detailed INVITE and non-INVITE client and server transaction state machines and timer behavior",
+    "Proxy request forwarding, response aggregation, forking, and CANCEL processing",
+    "Authentication, S/MIME, TLS, and other security mechanisms",
+    "The complete response-code catalog and all optional SIP header fields",
+    "SDP details, media transport, and service-policy implementation",
+    "Direct confirmation by a final success response without a preceding provisional response",
+    "Redirect processing and alternative location-service mechanisms",
+    "The optional message body and its SDP offer/answer content"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T01:54:59.291Z",
+    "dropped": 4
+  }
+}

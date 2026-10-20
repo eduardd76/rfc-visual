@@ -1,0 +1,70 @@
+{
+  "rfc": 3032,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "label-stack-entry",
+      "title": "MPLS Label Stack Entry",
+      "intro": {
+        "section": "2.1",
+        "quote": "The label stack is represented as a sequence of \"label stack entries\". Each label stack entry is represented by 4 octets. This is shown in Figure 1."
+      },
+      "fields": [
+        {
+          "name": "Label",
+          "bits": 20,
+          "explain": "Carries the label value.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Label:  Label Value, 20 bits"
+          }
+        },
+        {
+          "name": "Exp",
+          "bits": 3,
+          "explain": "Carries experimental-use information.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Exp:    Experimental Use, 3 bits"
+          }
+        },
+        {
+          "name": "S",
+          "bits": 1,
+          "explain": "Marks the bottom of the label stack.",
+          "cite": {
+            "section": "2.1",
+            "quote": "S:      Bottom of Stack, 1 bit"
+          }
+        },
+        {
+          "name": "TTL",
+          "bits": 8,
+          "explain": "Carries the time-to-live value.",
+          "cite": {
+            "section": "2.1",
+            "quote": "TTL:    Time to Live, 8 bits"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Placement of label stack entries between data-link and network-layer headers",
+    "Special and reserved label values and network-layer protocol inference rules",
+    "TTL decrement, expiry, and IP-dependent TTL processing",
+    "Fragmentation, Path MTU Discovery, and ICMP handling for oversized labeled packets",
+    "PPP and LAN encapsulations, including MPLS Control Protocol establishment",
+    "IANA assignments and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:21:10.259Z",
+    "dropped": 0
+  }
+}

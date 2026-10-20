@@ -1,0 +1,178 @@
+{
+  "rfc": 4120,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "as-exchange",
+      "title": "Successful Authentication Service Exchange",
+      "participants": {
+        "a": "Client",
+        "b": "Authentication Server"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "The AS exchange consists of two messages: KRB_AS_REQ from the client to Kerberos, and KRB_AS_REP or KRB_ERROR in reply."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "KRB_AS_REQ",
+          "explain": "The client prepares the AS request and sends it to the authentication server.",
+          "cite": {
+            "section": "3.1.1",
+            "quote": "The client prepares the KRB_AS_REQ message and sends it to the KDC."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "KRB_AS_REP",
+          "explain": "The authentication server returns a ticket for presentation to the requested service and a session key shared by the client and service server.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The response, KRB_AS_REP, contains a ticket for the client to present to the server, and a session key that will be shared by the client and the server."
+          }
+        }
+      ]
+    },
+    {
+      "id": "tgs-exchange",
+      "title": "Successful Ticket-Granting Service Exchange",
+      "participants": {
+        "a": "Client",
+        "b": "Ticket-Granting Server"
+      },
+      "intro": {
+        "section": "3.3",
+        "quote": "The TGS exchange consists of two messages: a request (KRB_TGS_REQ) from the client to the Kerberos Ticket-Granting Server, and a reply (KRB_TGS_REP or KRB_ERROR)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "KRB_TGS_REQ",
+          "explain": "The client sends a TGS request containing an authentication header and the fields needed to request a ticket.",
+          "cite": {
+            "section": "3.3.1",
+            "quote": "The client prepares the KRB_TGS_REQ message, providing an authentication header as an element of the padata field"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "KRB_TGS_REP",
+          "explain": "The TGS returns the requested credentials encrypted under the TGT session key or the authenticator sub-session key.",
+          "cite": {
+            "section": "3.3",
+            "quote": "The TGS reply (KRB_TGS_REP) contains the requested credentials, encrypted in the session key from the TGT or renewable ticket, or, if present, in the sub-session key from the Authenticator (part of the authentication header)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mutual-client-server",
+      "title": "Mutual Client/Server Authentication",
+      "participants": {
+        "a": "Client",
+        "b": "Application Server"
+      },
+      "intro": {
+        "section": "3.2",
+        "quote": "The client/server authentication (CS) exchange is used by network applications to authenticate the client to the server and vice versa."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "KRB_AP_REQ",
+          "explain": "The client sends the ticket and encrypted authenticator to the application server with any application-specific information.",
+          "cite": {
+            "section": "3.2.2",
+            "quote": "The Authenticator is encrypted in the session key and combined with the ticket to form the KRB_AP_REQ message, which is then sent to the end server along with any additional application-specific information."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "KRB_AP_REP",
+          "explain": "For mutual authentication, the server returns a KRB_AP_REP in response to the request.",
+          "cite": {
+            "section": "3.2.4",
+            "quote": "However, if mutual authentication (authenticating not only the client to the server, but also the server to the client) is being performed, the KRB_AP_REQ message will have MUTUAL-REQUIRED set in its ap-options field, and a KRB_AP_REP message is required in response."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ap-req",
+      "title": "KRB_AP_REQ Authentication Header",
+      "intro": {
+        "section": "5.5.1",
+        "quote": "The KRB_AP_REQ message contains the Kerberos protocol version number, the message type KRB_AP_REQ, an options field to indicate any options in use, and the ticket and authenticator themselves."
+      },
+      "fields": [
+        {
+          "name": "pvno",
+          "bits": 32,
+          "explain": "The protocol version is fixed at 5.",
+          "cite": {
+            "section": "5.4.1",
+            "quote": "pvno This field is included in each message, and specifies the protocol version number. This document specifies protocol version 5."
+          }
+        },
+        {
+          "name": "msg-type",
+          "bits": 32,
+          "explain": "Identifies the message as KRB_AP_REQ.",
+          "cite": {
+            "section": "5.5.1",
+            "quote": "pvno and msg-type These fields are described above in Section 5.4.1. msg-type is KRB_AP_REQ."
+          }
+        },
+        {
+          "name": "ap-options",
+          "bits": 32,
+          "explain": "This bit field selects request-processing options; unselected and reserved options are reset.",
+          "cite": {
+            "section": "5.5.1",
+            "quote": "ap-options This field appears in the application request (KRB_AP_REQ) and affects the way the request is processed. It is a bit-field, where the selected options are indicated by the bit being set (1), and the unselected options and reserved fields by being reset (0)."
+          }
+        },
+        {
+          "name": "ticket",
+          "bits": "var",
+          "explain": "Carries the ticket that authenticates the client to the server.",
+          "cite": {
+            "section": "5.5.1",
+            "quote": "ticket This field is a ticket authenticating the client to the server."
+          }
+        },
+        {
+          "name": "authenticator",
+          "bits": "var",
+          "explain": "Carries the encrypted authenticator, including the client's choice of a subkey.",
+          "cite": {
+            "section": "5.5.1",
+            "quote": "authenticator This contains the encrypted authenticator, which includes the client's choice of a subkey."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "KRB_ERROR response flows and the detailed error-code handling for each exchange",
+    "KDC request and reply field layouts, including the shared KDC request body and encrypted reply part",
+    "Ticket and encrypted-ticket-part layouts, ticket flags, and authorization-data details",
+    "KRB_SAFE, KRB_PRIV, and KRB_CRED exchanges",
+    "User-to-user authentication and the ENC-TKT-IN-SKEY option",
+    "Cross-realm authentication paths and transited-field encoding",
+    "Pre-authentication method negotiation and hardware-authentication extensions",
+    "TCP length framing, KDC discovery, and UDP/IP versus TCP/IP transport behavior"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:07:59.144Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "rfc": 5545,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "free-busy-request-reply",
+      "title": "Free/Busy Request and Reply Component Semantics",
+      "participants": {
+        "a": "Organizer",
+        "b": "Attendee"
+      },
+      "intro": {
+        "section": "3.6.4",
+        "quote": "A \"VFREEBUSY\" calendar component is a grouping of component properties that represents either a request for free or busy time information, a reply to a request for free or busy time information, or a published set of busy time information."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ATTENDEE",
+          "explain": "The request identifies the calendar user whose free or busy time is being requested, while the ORGANIZER property identifies the requester.",
+          "cite": {
+            "section": "3.6.4",
+            "quote": "When used to request free/busy time information, the \"ATTENDEE\" property specifies the calendar users whose free/busy time is being requested; the \"ORGANIZER\" property specifies the calendar user who is requesting the free/busy time;"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "reply to a request for free/busy time",
+          "explain": "The attendee replies with any available free or busy time information, while the organizer remains identified as the original requester.",
+          "cite": {
+            "section": "3.6.4",
+            "quote": "When used to reply to a request for free/busy time, the \"ATTENDEE\" property specifies the calendar user responding to the free/busy time request; the \"ORGANIZER\" property specifies the calendar user that originally requested the free/busy time; the \"FREEBUSY\" property specifies the free/busy time information (if it exists);"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "content-line",
+      "title": "Content Line",
+      "intro": {
+        "section": "3.1",
+        "quote": "contentline = name *(\";\" param ) \":\" value CRLF"
+      },
+      "fields": [
+        {
+          "name": "name",
+          "bits": "var",
+          "explain": "The property identifier at the start of the content line.",
+          "cite": {
+            "section": "3.1",
+            "quote": "name = iana-token / x-name"
+          }
+        },
+        {
+          "name": "param",
+          "bits": "var",
+          "explain": "Optional semicolon-prefixed parameter groups, each giving a parameter name and value.",
+          "cite": {
+            "section": "3.1",
+            "quote": "param = param-name \"=\" param-value *(\",\" param-value)"
+          }
+        },
+        {
+          "name": "value",
+          "bits": "var",
+          "explain": "The property-specific value following the colon.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The property value component of a content line has a format that is property specific.  Refer to the section describing each property for a definition of this format."
+          }
+        },
+        {
+          "name": "CRLF",
+          "bits": 16,
+          "explain": "The carriage-return and line-feed pair that terminates each content line.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Content lines are delimited by a line break, which is a CRLF sequence (CR character followed by LF character)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "icalendar-object",
+      "title": "iCalendar Object",
+      "intro": {
+        "section": "3.4",
+        "quote": "icalobject = \"BEGIN\" \":\" \"VCALENDAR\" CRLF icalbody \"END\" \":\" \"VCALENDAR\" CRLF"
+      },
+      "fields": [
+        {
+          "name": "BEGIN:VCALENDAR",
+          "bits": "var",
+          "explain": "The opening delimiter of the iCalendar object.",
+          "cite": {
+            "section": "3.7",
+            "quote": "They SHOULD be specified after the \"BEGIN:VCALENDAR\" delimiter string and prior to any calendar component."
+          }
+        },
+        {
+          "name": "calendar properties",
+          "bits": "var",
+          "explain": "Object-wide properties placed after the opening delimiter and before any calendar component.",
+          "cite": {
+            "section": "3.7",
+            "quote": "The Calendar Properties are attributes that apply to the iCalendar object, as a whole.  These properties do not appear within a calendar component.  They SHOULD be specified after the \"BEGIN:VCALENDAR\" delimiter string and prior to any calendar component."
+          }
+        },
+        {
+          "name": "calendar components",
+          "bits": "var",
+          "explain": "Collections of properties expressing a calendar semantic, such as an event, to-do, journal entry, time zone, free/busy information, or alarm.",
+          "cite": {
+            "section": "3.6",
+            "quote": "The calendar components are collections of properties that express a particular calendar semantic.  For example, the calendar component can specify an event, a to-do, a journal entry, time zone information, free/busy time information, or an alarm."
+          }
+        },
+        {
+          "name": "END:VCALENDAR",
+          "bits": "var",
+          "explain": "The closing delimiter of the iCalendar object.",
+          "cite": {
+            "section": "3.4",
+            "quote": "END:VCALENDAR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vevent-component",
+      "title": "VEVENT Component",
+      "intro": {
+        "section": "3.6.1",
+        "quote": "A \"VEVENT\" calendar component is a grouping of component properties, possibly including \"VALARM\" calendar components, that represents a scheduled amount of time on a calendar."
+      },
+      "fields": [
+        {
+          "name": "BEGIN:VEVENT",
+          "bits": "var",
+          "explain": "The opening delimiter of the event component.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "BEGIN:VEVENT"
+          }
+        },
+        {
+          "name": "component properties",
+          "bits": "var",
+          "explain": "The properties that describe the scheduled event.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "A \"VEVENT\" calendar component is a grouping of component properties, possibly including \"VALARM\" calendar components, that represents a scheduled amount of time on a calendar."
+          }
+        },
+        {
+          "name": "VALARM",
+          "bits": "var",
+          "explain": "An optional nested component that defines an alarm for the event.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "A \"VEVENT\" calendar component is a grouping of component properties, possibly including \"VALARM\" calendar components, that represents a scheduled amount of time on a calendar."
+          }
+        },
+        {
+          "name": "END:VEVENT",
+          "bits": "var",
+          "explain": "The closing delimiter of the event component.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "END:VEVENT"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The iTIP scheduling transactions and method semantics, including REQUEST, REPLY, CANCEL, and PUBLISH, because RFC 5545 states that no methods are defined by this specification.",
+    "MIME media-type registration and transport-specific bindings.",
+    "The complete property, parameter, and value-type catalogues.",
+    "Detailed recurrence expansion, time-zone observance calculations, and alarm-delivery behavior.",
+    "Complete property sets for VTODO, VJOURNAL, VFREEBUSY, VTIMEZONE, and VALARM components."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:29:21.335Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "rfc": 2181,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "udp-reply-addressing",
+      "title": "UDP Reply Source Address Selection",
+      "participants": {
+        "a": "DNS Client",
+        "b": "DNS Server"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "Most, if not all, DNS clients, expect the address from which a reply is received to be the same address as that to which the query eliciting the reply was sent. This is true for servers acting as clients for the purposes of recursive query resolution, as well as simple resolver clients."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "query",
+          "explain": "The client sends a query to a selected server address and expects the reply to come from that same address.",
+          "cite": {
+            "section": "4",
+            "quote": "Most, if not all, DNS clients, expect the address from which a reply is received to be the same address as that to which the query eliciting the reply was sent."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "reply",
+          "explain": "For UDP, the server uses the query packet's destination address as the reply's source address. If that address cannot be used, the reply may use any legal address allocated to the server.",
+          "cite": {
+            "section": "4.1",
+            "quote": "To avoid these problems, servers when responding to queries using UDP must cause the reply to be sent with the source address field in the IP header set to the address that was in the destination address field of the IP header of the packet containing the query causing the response. If this would cause the response to be sent from an IP address that is not permitted for this purpose, then the response may be sent from any legal IP address allocated to the server."
+          }
+        }
+      ]
+    },
+    {
+      "id": "udp-reply-port-selection",
+      "title": "UDP Reply Port Selection",
+      "participants": {
+        "a": "DNS Client",
+        "b": "DNS Server"
+      },
+      "intro": {
+        "section": "4.2",
+        "quote": "Replies to all queries must be directed to the port from which they were sent. When queries are received via TCP this is an inherent part of the transport protocol. For queries received by UDP the server must take note of the source port and use that as the destination port in the response."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "queries",
+          "explain": "For a query received over UDP, the server records the query's source port.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Replies to all queries must be directed to the port from which they were sent. When queries are received via TCP this is an inherent part of the transport protocol. For queries received by UDP the server must take note of the source port and use that as the destination port in the response."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "response",
+          "explain": "The server sends the response to the port from which the query was received.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Replies to all queries must be directed to the port from which they were sent. When queries are received via TCP this is an inherent part of the transport protocol. For queries received by UDP the server must take note of the source port and use that as the destination port in the response."
+          }
+        }
+      ]
+    },
+    {
+      "id": "required-rrset-truncation",
+      "title": "Required RRSet Truncation and Retry",
+      "participants": {
+        "a": "DNS Client",
+        "b": "DNS Server"
+      },
+      "intro": {
+        "section": "5.1",
+        "quote": "A query for a specific (or non-specific) label, class, and type, will always return all records in the associated RRSet - whether that be one or more RRs. The response must be marked as \"truncated\" if the entire RRSet will not fit in the response."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "query",
+          "explain": "A query for a name, class, and type asks for all records in the associated RRSet.",
+          "cite": {
+            "section": "5.1",
+            "quote": "A query for a specific (or non-specific) label, class, and type, will always return all records in the associated RRSet - whether that be one or more RRs. The response must be marked as \"truncated\" if the entire RRSet will not fit in the response."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "response",
+          "explain": "When a required RRSet cannot fit in full, the response sets TC. Optional extra information that does not fit does not by itself cause TC to be set.",
+          "cite": {
+            "section": "9",
+            "quote": "The TC bit should be set in responses only when an RRSet is required as a part of the response, but could not be included in its entirety. The TC bit should not be set merely because some extra information could have been included, but there was insufficient room."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "query again",
+          "explain": "The client ignores a truncated reply and queries again using a mechanism that permits larger replies, such as a TCP connection.",
+          "cite": {
+            "section": "9",
+            "quote": "When a DNS client receives a reply with TC set, it should ignore that response, and query again, using a mechanism, such as a TCP connection, that will permit larger replies."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ttl-field",
+      "title": "Resource Record TTL Field",
+      "intro": {
+        "section": "8",
+        "quote": "The TTL specifies a maximum time to live, not a mandatory time to live."
+      },
+      "fields": [
+        {
+          "name": "TTL",
+          "bits": 32,
+          "explain": "The TTL is an unsigned value from 0 through 2147483647. It is transmitted in the less significant 31 bits of the 32-bit TTL field.",
+          "cite": {
+            "section": "8",
+            "quote": "It is hereby specified that a TTL value is an unsigned number, with a minimum value of 0, and a maximum value of 2147483647. That is, a maximum of 2^31 - 1. When transmitted, this value shall be encoded in the less significant 31 bits of the 32 bit TTL field"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The complete DNS message layout and the position of the TC bit",
+    "RRSet handling for differing TTLs, cache merging, source ranking, and SIG and NXT exceptions",
+    "Zone-cut delegation, zone authority, and parent-versus-child DNSSEC behavior",
+    "SOA record placement, SOA TTL handling, and the MNAME requirement",
+    "CNAME, PTR, NS, and MX canonical-name rules",
+    "DNS label and full-name syntax restrictions",
+    "Security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:46:41.007Z",
+    "dropped": 0
+  }
+}

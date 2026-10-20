@@ -1,0 +1,132 @@
+{
+  "rfc": 3597,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "transparent-unknown-rr",
+      "title": "Transparent handling of an unknown RR",
+      "participants": {
+        "a": "DNS server",
+        "b": "DNS resolver"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "To enable new RR types to be deployed without server changes, name servers and resolvers MUST handle RRs of unknown type transparently."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RRs of unknown type",
+          "explain": "The sender treats the RDATA as unstructured binary data and transmits it without change.",
+          "cite": {
+            "section": "3",
+            "quote": "To enable new RR types to be deployed without server changes, name servers and resolvers MUST handle RRs of unknown type transparently. That is, they must treat the RDATA section of such RRs as unstructured binary data, storing and transmitting it without change [RFC1123]."
+          }
+        }
+      ]
+    },
+    {
+      "id": "preserve-known-rdata",
+      "title": "Preserving known-type RDATA",
+      "participants": {
+        "a": "DNS server",
+        "b": "DNS peer"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "To ensure the correct operation of equality comparison (section 6) and of the DNSSEC canonical form (section 7) when an RR type is known to some but not all of the servers involved, servers MUST also exactly preserve the RDATA of RRs of known type, except for changes due to compression or decompression where allowed by section 4 of this memo."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RRs of known type",
+          "explain": "The sender preserves the known-type RDATA exactly, except for compression or decompression changes allowed by the RFC.",
+          "cite": {
+            "section": "3",
+            "quote": "To ensure the correct operation of equality comparison (section 6) and of the DNSSEC canonical form (section 7) when an RR type is known to some but not all of the servers involved, servers MUST also exactly preserve the RDATA of RRs of known type, except for changes due to compression or decompression where allowed by section 4 of this memo."
+          }
+        }
+      ]
+    },
+    {
+      "id": "known-type-generic-parsing",
+      "title": "Generic parsing of a known RR type",
+      "participants": {
+        "a": "Master file",
+        "b": "DNS server"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "An implementation MAY also choose to represent some RRs of known type using the above generic representations for the type, class and/or RDATA, which carries the benefit of making the resulting master file portable to servers where these types are unknown."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "RR of known type",
+          "explain": "After generic parsing, the server still treats the record as a known type and applies the applicable compression, canonicalization, and other type-specific rules.",
+          "cite": {
+            "section": "5",
+            "quote": "Even though an RR of known type represented in the \\# format is effectively treated as an unknown type for the purpose of parsing the RDATA text representation, all further processing by the server MUST treat it as a known type and take into account any applicable type-specific rules regarding compression, canonicalization, etc."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "generic-master-file",
+      "title": "Generic class, type, and RDATA representation",
+      "intro": {
+        "section": "5",
+        "quote": "This convention allows types and classes to be distinguished from each other and from TTL values, allowing the \"[<TTL>] [<class>] <type> <RDATA>\" and \"[<class>] [<TTL>] <type> <RDATA>\" forms of [RFC1035] to both be unambiguously parsed."
+      },
+      "fields": [
+        {
+          "name": "CLASS",
+          "bits": "var",
+          "explain": "An unknown class is written as CLASS followed by its decimal class number.",
+          "cite": {
+            "section": "5",
+            "quote": "In the \"class\" field, an unknown class is similarly represented as the word \"CLASS\" immediately followed by the decimal class number."
+          }
+        },
+        {
+          "name": "TYPE",
+          "bits": "var",
+          "explain": "An unknown RR type is written as TYPE followed by its decimal type number without intervening whitespace.",
+          "cite": {
+            "section": "5",
+            "quote": "In the \"type\" field of a master file line, an unknown RR type is represented by the word \"TYPE\" immediately followed by the decimal RR type number, with no intervening whitespace."
+          }
+        },
+        {
+          "name": "RDATA",
+          "bits": "var",
+          "explain": "The generic text starts with a marker token, then gives an unsigned decimal octet length, followed by zero or more hexadecimal words with an even number of digits each.",
+          "cite": {
+            "section": "5",
+            "quote": "The special token \\# (a backslash immediately followed by a hash sign), which identifies the RDATA as having the generic encoding defined herein rather than a traditional type-specific encoding. An unsigned decimal integer specifying the RDATA length in octets. Zero or more words of hexadecimal data encoding the actual RDATA field, each containing an even number of hexadecimal digits."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The equality-comparison rule for unknown RRs and its case-sensitive effect on embedded domain names",
+    "The detailed DNSSEC canonical-form and RR-ordering algorithms referenced from RFC 2535",
+    "The list of previously published RR types that retain embedded-name downcasing in canonical form",
+    "The compression rules for well-known, class-specific, unknown, and listed legacy RR types",
+    "The rule that the owner name of an RR is always eligible for compression",
+    "Optional additional-section processing rules that future RR specifications may define",
+    "The RFC's security and IANA considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T03:14:27.383Z",
+    "dropped": 0
+  }
+}

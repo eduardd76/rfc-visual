@@ -1,0 +1,188 @@
+{
+  "rfc": 4035,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "signed-authoritative-response",
+      "title": "Obtaining DNSSEC records from an authoritative server",
+      "participants": {
+        "a": "Security-aware resolver",
+        "b": "Security-aware authoritative name server"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "Upon receiving a relevant query that has the EDNS ([RFC2671]) OPT pseudo-RR DO bit ([RFC3225]) set, a security-aware authoritative name server for a signed zone MUST include additional RRSIG, NSEC, and DS RRs, according to the following rules:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPT pseudo-RR",
+          "explain": "The resolver requests DNSSEC records by including the EDNS OPT pseudo-RR with the DO bit set.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A security-aware resolver MUST include an EDNS ([RFC2671]) OPT pseudo-RR with the DO ([RFC3225]) bit set when sending queries."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "RRSIG, NSEC, and DS RRs",
+          "explain": "For a relevant signed-zone query with the DO bit set, the authoritative server includes the additional DNSSEC records required by the response rules.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Upon receiving a relevant query that has the EDNS ([RFC2671]) OPT pseudo-RR DO bit ([RFC3225]) set, a security-aware authoritative name server for a signed zone MUST include additional RRSIG, NSEC, and DS RRs, according to the following rules:"
+          }
+        }
+      ]
+    },
+    {
+      "id": "delegation-chain",
+      "title": "Authenticating a delegation",
+      "participants": {
+        "a": "Security-aware resolver",
+        "b": "Parent and child authoritative name servers"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "To use DNSSEC RRs for authentication, a security-aware resolver requires configured knowledge of at least one authenticated DNSKEY or DS RR."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "DS RRset",
+          "explain": "The resolver queries the parent zone for the DS RRset when the referral contains neither a DS RRset nor an NSEC RRset proving that no DS RRset exists.",
+          "cite": {
+            "section": "5.2",
+            "quote": "A security-aware resolver MUST query the name servers for the parent zone for the DS RRset if the referral includes neither a DS RRset nor a NSEC RRset proving that the DS RRset does not exist (see Section 4)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DS RRset",
+          "explain": "When a DS RRset exists at the delegation point, the parent server returns it and its associated signatures in the Authority section with the NS RRset.",
+          "cite": {
+            "section": "3.1.4",
+            "quote": "If a DS RRset is present at the delegation point, the name server MUST return both the DS RRset and its associated RRSIG RR(s) in the Authority section along with the NS RRset."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "query",
+          "explain": "The resolver queries for the zone apex SOA or NS records with the DO bit set.",
+          "cite": {
+            "section": "3.1.2",
+            "quote": "When responding to a query that has the DO bit set and that requests the SOA or NS RRs at the apex of a signed zone, a security-aware authoritative name server for that zone MAY return the zone apex DNSKEY RRset in the Additional section."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DNSKEY RRset",
+          "explain": "The child server may return the zone apex DNSKEY RRset in the Additional section so that the resolver can authenticate the delegation.",
+          "cite": {
+            "section": "3.1.2",
+            "quote": "When responding to a query that has the DO bit set and that requests the SOA or NS RRs at the apex of a signed zone, a security-aware authoritative name server for that zone MAY return the zone apex DNSKEY RRset in the Additional section."
+          }
+        }
+      ]
+    },
+    {
+      "id": "authenticated-denial",
+      "title": "Proving that a name or type does not exist",
+      "participants": {
+        "a": "Security-aware resolver",
+        "b": "Security-aware authoritative name server"
+      },
+      "intro": {
+        "section": "5.4",
+        "quote": "A resolver can use authenticated NSEC RRs to prove that an RRset is not present in a signed zone."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "query",
+          "explain": "The resolver may query for missing security records when the original response does not contain enough material to validate it.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Security-aware resolvers MAY query for missing security RRs in an attempt to perform validation; implementations that choose to do so must be aware that the answers received may not be sufficient to validate the original response."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "NSEC RRs",
+          "explain": "For a name error, the server includes NSEC records and their associated signatures to prove that neither an exact name nor an applicable wildcard matches the request.",
+          "cite": {
+            "section": "3.1.3.2",
+            "quote": "If the zone does not contain any RRsets matching <SNAME, SCLASS> either exactly or via wildcard name expansion, then the name server MUST include the following NSEC RRs in the Authority section, along with their associated RRSIG RRs:\n\n   o  An NSEC RR proving that there is no exact match for <SNAME,\n      SCLASS>.\n\n   o  An NSEC RR proving that the zone contains no RRsets that would\n      match <SNAME, SCLASS> via wildcard name expansion."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "resend the query",
+          "explain": "If the response lacks the complete denial proof, the resolver resends the query to obtain the full collection of NSEC records.",
+          "cite": {
+            "section": "5.4",
+            "quote": "If the complete set of necessary NSEC RRsets is not present in a response (perhaps due to message truncation), then a security-aware resolver MUST resend the query in order to attempt to obtain the full collection of NSEC RRs necessary to verify the non-existence of the requested RRset."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "NSEC RRs",
+          "explain": "The renewed response supplies the NSEC proof records and their associated signatures.",
+          "cite": {
+            "section": "3.1.3.2",
+            "quote": "If the zone does not contain any RRsets matching <SNAME, SCLASS> either exactly or via wildcard name expansion, then the name server MUST include the following NSEC RRs in the Authority section, along with their associated RRSIG RRs:\n\n   o  An NSEC RR proving that there is no exact match for <SNAME,\n      SCLASS>.\n\n   o  An NSEC RR proving that the zone contains no RRsets that would\n      match <SNAME, SCLASS> via wildcard name expansion."
+          }
+        }
+      ]
+    },
+    {
+      "id": "failed-validation",
+      "title": "Handling a response whose signatures do not validate",
+      "participants": {
+        "a": "Security-aware resolver",
+        "b": "Security-aware recursive name server"
+      },
+      "intro": {
+        "section": "5.5",
+        "quote": "If for whatever reason none of the RRSIGs can be validated, the response SHOULD be considered BAD."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "recursive query",
+          "explain": "The client sends a recursive query so that the recursive name server performs validation.",
+          "cite": {
+            "section": "5.5",
+            "quote": "If for whatever reason none of the RRSIGs can be validated, the response SHOULD be considered BAD. If the validation was being done to service a recursive query, the name server MUST return RCODE 2 to the originating client. However, it MUST return the full response if and only if the original query had the CD bit set."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "RCODE 2",
+          "explain": "When no signature validates for a recursive query, the recursive name server returns server failure. It returns the full response only when the original query had the CD bit set.",
+          "cite": {
+            "section": "5.5",
+            "quote": "If for whatever reason none of the RRSIGs can be validated, the response SHOULD be considered BAD. If the validation was being done to service a recursive query, the name server MUST return RCODE 2 to the originating client. However, it MUST return the full response if and only if the original query had the CD bit set."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [],
+  "notShown": [
+    "The four RRset security classifications and their determination rules: Secure, Insecure, Bogus, and Indeterminate",
+    "Detailed zone-signing requirements for DNSKEY, RRSIG, NSEC, and DS records",
+    "Full RRSIG validity checks, signed-data reconstruction, cryptographic signature verification, and wildcard-expansion validation",
+    "Caching rules for authenticated and BAD data, trust-anchor provisioning, and local-policy exceptions",
+    "DNSSEC resource-record wire formats, which are specified in RFC 4034 rather than RFC 4035",
+    "Zone-transfer behavior and special handling of DS queries sent to a child-zone server"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:42:02.288Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "rfc": 3471,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "generalized-label-request",
+      "title": "Generalized Label Request",
+      "intro": {
+        "section": "3.1",
+        "quote": "The Generalized Label Request supports communication of characteristics required to support the LSP being requested. These characteristics include LSP encoding and LSP payload."
+      },
+      "fields": [
+        {
+          "name": "LSP Encoding Type",
+          "bits": 8,
+          "explain": "Identifies the encoding used by the data associated with the requested LSP.",
+          "cite": {
+            "section": "3.1.1",
+            "quote": "LSP Encoding Type: 8 bits Indicates the encoding of the LSP being requested."
+          }
+        },
+        {
+          "name": "Switching Type",
+          "bits": 8,
+          "explain": "Requests the type of switching to perform on a particular link.",
+          "cite": {
+            "section": "3.1.1",
+            "quote": "Switching Type: 8 bits Indicates the type of switching that should be performed on a particular link. This field is needed for links that advertise more than one type of switching capability."
+          }
+        },
+        {
+          "name": "Generalized PID (G-PID)",
+          "bits": 16,
+          "explain": "Identifies the payload carried by the LSP, or its client layer.",
+          "cite": {
+            "section": "3.1.1",
+            "quote": "Generalized PID (G-PID): 16 bits An identifier of the payload carried by an LSP, i.e., an identifier of the client layer of that LSP."
+          }
+        }
+      ]
+    },
+    {
+      "id": "label-set",
+      "title": "Label Set",
+      "intro": {
+        "section": "3.5",
+        "quote": "The Label Set is used to limit the label choices of a downstream node to a set of acceptable labels. This limitation applies on a per hop basis."
+      },
+      "fields": [
+        {
+          "name": "Action",
+          "bits": 8,
+          "explain": "Identifies how the Label Set treats its subchannel elements.",
+          "cite": {
+            "section": "3.5.1",
+            "quote": "Action: 8 bits 0 - Inclusive List Indicates that the object/TLV contains one or more subchannel elements that are included in the Label Set."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 10,
+          "explain": "This field is reserved and must be set to zero on transmission and ignored on receipt.",
+          "cite": {
+            "section": "3.5.1",
+            "quote": "Reserved: 10 bits This field is reserved. It MUST be set to zero on transmission and MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "Label Type",
+          "bits": 14,
+          "explain": "Indicates the type and format of the labels carried in the object or TLV.",
+          "cite": {
+            "section": "3.5.1",
+            "quote": "Label Type: 14 bits Indicates the type and format of the labels carried in the object/TLV. Values are signaling protocol specific."
+          }
+        },
+        {
+          "name": "Subchannel",
+          "bits": "var",
+          "explain": "Identifies an eligible label, such as a wavelength or fiber, using the generalized label format.",
+          "cite": {
+            "section": "3.5.1",
+            "quote": "The subchannel represents the label (wavelength, fiber ... ) which is eligible for allocation. This field has the same format as described for labels under section 3.2."
+          }
+        }
+      ]
+    },
+    {
+      "id": "protection-information",
+      "title": "Protection Information",
+      "intro": {
+        "section": "7",
+        "quote": "Protection Information is carried in a new object/TLV. It is used to indicate link related protection attributes of a requested LSP. The use of Protection Information for a particular LSP is optional."
+      },
+      "fields": [
+        {
+          "name": "Secondary (S)",
+          "bits": 1,
+          "explain": "When set, identifies the requested LSP as a secondary LSP.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Secondary (S): 1 bit When set, indicates that the requested LSP is a secondary LSP."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 25,
+          "explain": "This field is reserved and must be set to zero on transmission and ignored on receipt.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Reserved: 25 bits This field is reserved. It MUST be set to zero on transmission and MUST be ignored on receipt. These bits SHOULD be pass through unmodified by transit nodes."
+          }
+        },
+        {
+          "name": "Link Flags",
+          "bits": 6,
+          "explain": "Indicates the desired link protection type for the requested LSP.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Link Flags: 6 bits Indicates desired link protection type. As previously mentioned, protection capabilities of a link may be advertised in routing."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The protocol-specific RSVP-TE and CR-LDP message formats and exchanges defined in RFC 3472 and RFC 3473",
+    "Bidirectional LSP setup, upstream-label signaling, and contention resolution",
+    "Port and wavelength, waveband, Suggested Label, and Acceptable Label Set specializations",
+    "Explicit Label Control, Administrative Status Information, and Interface_ID formats",
+    "Control-channel fault handling and state resynchronization",
+    "Detailed bandwidth encoding values and technology-specific parameters"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:17:17.761Z",
+    "dropped": 1
+  }
+}

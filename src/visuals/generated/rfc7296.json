@@ -1,0 +1,372 @@
+{
+  "rfc": 7296,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "eap-initial-establishment",
+      "title": "Initial IKE SA and EAP-authenticated Child SA Setup",
+      "participants": {
+        "a": "IKE Initiator",
+        "b": "IKE Responder"
+      },
+      "intro": {
+        "section": "2.16",
+        "quote": "In the case of a minimal EAP method, the initial SA establishment will appear as follows:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "HDR, SAi1, KEi, Ni",
+          "explain": "The initiator starts IKE_SA_INIT with its SA offer, Diffie-Hellman public value, and nonce.",
+          "cite": {
+            "section": "2.16",
+            "quote": "HDR, SAi1, KEi, Ni  -->"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HDR, SAr1, KEr, Nr, [CERTREQ]",
+          "explain": "The responder returns its selected SA, Diffie-Hellman public value, nonce, and an optional certificate request.",
+          "cite": {
+            "section": "2.16",
+            "quote": "<--  HDR, SAr1, KEr, Nr, [CERTREQ]"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "HDR, SK {IDi, [CERTREQ,] [IDr,] SAi2, TSi, TSr}",
+          "explain": "The initiator starts IKE_AUTH with its identity, optional certificate request, optional responder identity, Child SA offer, and traffic selectors. It omits AUTH to request EAP.",
+          "cite": {
+            "section": "2.16",
+            "quote": "HDR, SK {IDi, [CERTREQ,]\n       [IDr,] SAi2,\n       TSi, TSr}  -->"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HDR, SK {IDr, [CERT,] AUTH, EAP}",
+          "explain": "The responder authenticates itself, includes an EAP payload, and defers completion of the Child SA until the initiator finishes authentication.",
+          "cite": {
+            "section": "2.16",
+            "quote": "<--  HDR, SK {IDr, [CERT,] AUTH,\n                                         EAP}"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "HDR, SK {EAP}",
+          "explain": "The initiator sends its EAP response.",
+          "cite": {
+            "section": "2.16",
+            "quote": "HDR, SK {EAP}  -->"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HDR, SK {EAP (success)}",
+          "explain": "The responder reports that the EAP method succeeded.",
+          "cite": {
+            "section": "2.16",
+            "quote": "<--  HDR, SK {EAP (success)}"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "HDR, SK {AUTH}",
+          "explain": "After EAP succeeds, the initiator sends its AUTH payload.",
+          "cite": {
+            "section": "2.16",
+            "quote": "HDR, SK {AUTH}  -->"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HDR, SK {AUTH, SAr2, TSi, TSr}",
+          "explain": "The responder returns AUTH together with the selected Child SA and its traffic selectors.",
+          "cite": {
+            "section": "2.16",
+            "quote": "<--  HDR, SK {AUTH, SAr2, TSi, TSr}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "remote-access-configuration",
+      "title": "Remote-Access Address Assignment",
+      "participants": {
+        "a": "IPsec Remote Access Client",
+        "b": "IPsec Remote Access Server"
+      },
+      "intro": {
+        "section": "2.19",
+        "quote": "Since the IKE_AUTH exchange creates an IKE SA and a Child SA, the IRAC MUST request the IRAS-controlled address (and optionally other information concerning the protected network) in the IKE_AUTH exchange."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "HDR, SK {IDi, [CERT,] [CERTREQ,] [IDr,] AUTH, CP(CFG_REQUEST), SAi2, TSi, TSr}",
+          "explain": "The client requests an internal address or other configuration, presents its identity and AUTH, and proposes the Child SA and traffic selectors.",
+          "cite": {
+            "section": "2.19",
+            "quote": "HDR, SK {IDi, [CERT,]\n       [CERTREQ,] [IDr,] AUTH,\n       CP(CFG_REQUEST), SAi2,\n       TSi, TSr}  -->"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HDR, SK {IDr, [CERT,] AUTH, CP(CFG_REPLY), SAr2, TSi, TSr}",
+          "explain": "The server returns its identity and AUTH, provides the requested configuration, and supplies the selected Child SA and traffic selectors.",
+          "cite": {
+            "section": "2.19",
+            "quote": "<--  HDR, SK {IDr, [CERT,] AUTH,\n                                         CP(CFG_REPLY), SAr2,\n                                         TSi, TSr}"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ike-header",
+      "title": "IKE Header",
+      "intro": {
+        "section": "3.1",
+        "quote": "Each IKE message begins with the IKE header, denoted HDR in this document."
+      },
+      "fields": [
+        {
+          "name": "Initiator's SPI",
+          "bits": 64,
+          "explain": "Identifies the IKE SA chosen by the initiator and must not be zero.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Initiator's SPI (8 octets) - A value chosen by the initiator to identify a unique IKE Security Association. This value MUST NOT be zero."
+          }
+        },
+        {
+          "name": "Responder's SPI",
+          "bits": 64,
+          "explain": "Identifies the IKE SA chosen by the responder. It is zero in the first message of an initial exchange.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Responder's SPI (8 octets) - A value chosen by the responder to identify a unique IKE Security Association. This value MUST be zero in the first message of an IKE initial exchange (including repeats of that message including a cookie)."
+          }
+        },
+        {
+          "name": "Next Payload",
+          "bits": 8,
+          "explain": "Identifies the type of payload that immediately follows the IKE header.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Next Payload (1 octet) - Indicates the type of payload that immediately follows the header. The format and value of each payload are defined below."
+          }
+        },
+        {
+          "name": "Major Version",
+          "bits": 4,
+          "explain": "Carries the major IKE protocol version. IKEv2 uses major version 2.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Major Version (4 bits) - Indicates the major version of the IKE protocol in use. Implementations based on this version of IKE MUST set the major version to 2."
+          }
+        },
+        {
+          "name": "Minor Version",
+          "bits": 4,
+          "explain": "Carries the minor IKE protocol version. This document uses minor version 0.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Minor Version (4 bits) - Indicates the minor version of the IKE protocol in use. Implementations based on this version of IKE MUST set the minor version to 0. They MUST ignore the minor version number of received messages."
+          }
+        },
+        {
+          "name": "Exchange Type",
+          "bits": 8,
+          "explain": "Identifies the exchange being used and constrains the payloads carried by each message in that exchange.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Exchange Type (1 octet) - Indicates the type of exchange being used. This constrains the payloads sent in each message in an exchange."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "Carries per-message options, including the response, version, and initiator bits.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Flags (1 octet) - Indicates specific options that are set for the message."
+          }
+        },
+        {
+          "name": "Message ID",
+          "bits": 32,
+          "explain": "Matches requests with responses, controls retransmission, and helps prevent replay attacks.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Message ID (4 octets, unsigned integer) - Message identifier used to control retransmission of lost packets and matching of requests and responses. It is essential to the security of the protocol because it is used to prevent message replay attacks. See Sections 2.1 and 2.2."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 32,
+          "explain": "Gives the total length of the IKE message, including its header and payloads.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Length (4 octets, unsigned integer) - Length of the total message (header + payloads) in octets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "generic-payload-header",
+      "title": "Generic Payload Header",
+      "intro": {
+        "section": "3.2",
+        "quote": "Each IKE payload defined in Sections 3.3 through 3.16 begins with a generic payload header, shown in Figure 5."
+      },
+      "fields": [
+        {
+          "name": "Next Payload",
+          "bits": 8,
+          "explain": "Chains payloads by identifying the next payload type. Zero means that the current payload is the last one.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Next Payload (1 octet) - Identifier for the payload type of the next payload in the message. If the current payload is the last in the message, then this field will be 0."
+          }
+        },
+        {
+          "name": "Critical",
+          "bits": 1,
+          "explain": "Controls whether an unrecognized payload is skipped or causes the entire message to be rejected.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Critical (1 bit) - MUST be set to zero if the sender wants the recipient to skip this payload if it does not understand the payload type code in the Next Payload field of the previous payload. MUST be set to one if the sender wants the recipient to reject this entire message if it does not understand the payload type."
+          }
+        },
+        {
+          "name": "RESERVED",
+          "bits": 7,
+          "explain": "Is reserved for future use. Senders send zero and receivers ignore it.",
+          "cite": {
+            "section": "3.2",
+            "quote": "RESERVED (7 bits) - MUST be sent as zero; MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "Payload Length",
+          "bits": 16,
+          "explain": "Gives the payload length in octets, including the generic payload header.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Payload Length (2 octets, unsigned integer) - Length in octets of the current payload, including the generic payload header."
+          }
+        }
+      ]
+    },
+    {
+      "id": "encrypted-payload",
+      "title": "Encrypted Payload",
+      "intro": {
+        "section": "3.14",
+        "quote": "The Encrypted payload, denoted SK {...} in this document, contains other payloads in encrypted form."
+      },
+      "fields": [
+        {
+          "name": "Next Payload",
+          "bits": 8,
+          "explain": "Identifies the type of the first payload encrypted inside the Encrypted payload.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Next Payload - The payload type of the first embedded payload. Note that this is an exception in the standard header format, since the Encrypted payload is the last payload in the message and therefore the Next Payload field would normally be zero. But because the content of this payload is embedded payloads and there was no natural place to put the type of the first one, that type is placed here."
+          }
+        },
+        {
+          "name": "Critical",
+          "bits": 1,
+          "explain": "Controls whether an unrecognized payload is skipped or causes the entire message to be rejected.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Critical (1 bit) - MUST be set to zero if the sender wants the recipient to skip this payload if it does not understand the payload type code in the Next Payload field of the previous payload. MUST be set to one if the sender wants the recipient to reject this entire message if it does not understand the payload type."
+          }
+        },
+        {
+          "name": "RESERVED",
+          "bits": 7,
+          "explain": "Is reserved for future use. Senders send zero and receivers ignore it.",
+          "cite": {
+            "section": "3.2",
+            "quote": "RESERVED (7 bits) - MUST be sent as zero; MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "Payload Length",
+          "bits": 16,
+          "explain": "Gives the total length of the Encrypted payload, including its header, initialization vector, embedded payloads, padding, pad length, and integrity checksum data.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Payload Length - Includes the lengths of the header, initialization vector (IV), Encrypted IKE payloads, Padding, Pad Length, and Integrity Checksum Data."
+          }
+        },
+        {
+          "name": "Initialization Vector",
+          "bits": "var",
+          "explain": "Carries the CBC initialization vector, whose length is the cipher block length. Each message uses a new unpredictable value.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Initialization Vector - For CBC mode ciphers, the length of the initialization vector (IV) is equal to the block length of the underlying encryption algorithm. Senders MUST select a new unpredictable IV for every message; recipients MUST accept any value."
+          }
+        },
+        {
+          "name": "Encrypted IKE Payloads",
+          "bits": "var",
+          "explain": "Contains the embedded IKE payloads protected by the negotiated cipher.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Payload Length - Includes the lengths of the header, initialization vector (IV), Encrypted IKE payloads, Padding, Pad Length, and Integrity Checksum Data."
+          }
+        },
+        {
+          "name": "Padding",
+          "bits": "var",
+          "explain": "Holds padding used to align the encrypted content to the cipher block size.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Padding MAY contain any value chosen by the sender, and MUST have a length that makes the combination of the payloads, the Padding, and the Pad Length to be a multiple of the encryption block size. This field is encrypted with the negotiated cipher."
+          }
+        },
+        {
+          "name": "Pad Length",
+          "bits": 8,
+          "explain": "Gives the length of the Padding field and allows the recipient to recover the boundary between the payloads and padding.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Pad Length is the length of the Padding field. The sender SHOULD set the Pad Length to the minimum value that makes the combination of the payloads, the Padding, and the Pad Length a multiple of the block size, but the recipient MUST accept any length that results in proper alignment. This field is encrypted with the negotiated cipher."
+          }
+        },
+        {
+          "name": "Integrity Checksum Data",
+          "bits": "var",
+          "explain": "Carries the cryptographic checksum computed over the encrypted message. Its length is determined by the negotiated integrity algorithm.",
+          "cite": {
+            "section": "3.14",
+            "quote": "Integrity Checksum Data is the cryptographic checksum of the entire message starting with the Fixed IKE header through the Pad Length. The checksum MUST be computed over the encrypted message. Its length is determined by the integrity algorithm negotiated."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The non-EAP IKE_AUTH variants and detailed certificate, shared-secret, and signature authentication methods",
+    "CREATE_CHILD_SA exchanges for creating additional Child SAs and rekeying Child or IKE SAs",
+    "INFORMATIONAL exchanges for liveness checks, notifications, and SA deletion",
+    "COOKIE and INVALID_KE_PAYLOAD retries, authentication failures, and other error handling",
+    "NAT traversal, transport-mode address substitution, and ECN requirements",
+    "EAP method-specific exchanges beyond the minimal example",
+    "Payload formats other than those shown, cryptographic suite selection, and key derivation"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:54:01.322Z",
+    "dropped": 0
+  }
+}

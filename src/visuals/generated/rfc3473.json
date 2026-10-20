@@ -1,0 +1,203 @@
+{
+  "rfc": 3473,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "generalized-label-setup",
+      "title": "Generalized Label Setup",
+      "participants": {
+        "a": "Ingress LSR",
+        "b": "Egress LSR"
+      },
+      "intro": {
+        "section": "2.1",
+        "quote": "A Path message SHOULD contain as specific an LSP (Label Switched Path) Encoding Type as possible to allow the maximum flexibility in switching by transit LSRs. A Generalized Label Request object is set by the ingress node, transparently passed by transit nodes, and used by the egress node."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Path message",
+          "explain": "The ingress node sets a generalized label request in the Path message. Transit nodes pass it onward, and the egress node uses it.",
+          "cite": {
+            "section": "2.1",
+            "quote": "A Path message SHOULD contain as specific an LSP (Label Switched Path) Encoding Type as possible to allow the maximum flexibility in switching by transit LSRs. A Generalized Label Request object is set by the ingress node, transparently passed by transit nodes, and used by the egress node."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Resv message",
+          "explain": "The generalized label is carried upstream in the Resv message.",
+          "cite": {
+            "section": "2.3.1",
+            "quote": "The Generalized Label travels in the upstream direction in Resv messages."
+          }
+        }
+      ]
+    },
+    {
+      "id": "targeted-failure-notification",
+      "title": "Targeted LSP Failure Notification",
+      "participants": {
+        "a": "LSR generating the notification",
+        "b": "Requested notify node"
+      },
+      "intro": {
+        "section": "4.3",
+        "quote": "The Notify message provides a mechanism to inform non-adjacent nodes of LSP related events. Notify messages are normally generated only after a Notify Request object has been received."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Notify message",
+          "explain": "When an error will generate a PathErr and a matching Notify Request was received, the node sends a Notify message to the recorded target.",
+          "cite": {
+            "section": "4.3.2",
+            "quote": "Notify messages are most commonly generated at nodes that detect an error that will trigger the generation of a PathErr or ResvErr message. If a PathErr message is to be generated and a Notify Request object has been received in the corresponding Path message, then a Notify message destined to the recorded node SHOULD be generated."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Ack message",
+          "explain": "The notification target acknowledges the Notify message with an Ack message.",
+          "cite": {
+            "section": "4.3.2",
+            "quote": "Upon receiving a Notify message, the Notify Node SHOULD send a corresponding Ack message."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "generalized-label-request",
+      "title": "Generalized Label Request Object",
+      "intro": {
+        "section": "2.1",
+        "quote": "The format of a Generalized Label Request object is:"
+      },
+      "fields": [
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Carries the length of the object.",
+          "cite": {
+            "section": "2.1",
+            "quote": "|            Length             | Class-Num (19)|  C-Type (4)   |"
+          }
+        },
+        {
+          "name": "Class-Num",
+          "bits": 8,
+          "explain": "Identifies the object as class number 19.",
+          "cite": {
+            "section": "2.1",
+            "quote": "|            Length             | Class-Num (19)|  C-Type (4)   |"
+          }
+        },
+        {
+          "name": "C-Type",
+          "bits": 8,
+          "explain": "Identifies this object as C-Type 4.",
+          "cite": {
+            "section": "2.1",
+            "quote": "|            Length             | Class-Num (19)|  C-Type (4)   |"
+          }
+        },
+        {
+          "name": "LSP Enc. Type",
+          "bits": 8,
+          "explain": "Carries the requested LSP encoding type.",
+          "cite": {
+            "section": "2.1",
+            "quote": "| LSP Enc. Type |Switching Type |             G-PID             |"
+          }
+        },
+        {
+          "name": "Switching Type",
+          "bits": 8,
+          "explain": "Carries the switching type that must be supported on the corresponding incoming interface.",
+          "cite": {
+            "section": "2.1.1",
+            "quote": "Nodes MUST verify that the type indicated in the Switching Type parameter is supported on the corresponding incoming interface."
+          }
+        },
+        {
+          "name": "G-PID",
+          "bits": 16,
+          "explain": "Carries the G-PID parameter that is normally examined at the egress.",
+          "cite": {
+            "section": "2.1.1",
+            "quote": "The G-PID parameter is normally only examined at the egress."
+          }
+        }
+      ]
+    },
+    {
+      "id": "generalized-label",
+      "title": "Generalized Label Object",
+      "intro": {
+        "section": "2.3",
+        "quote": "The format of a Generalized Label object is:"
+      },
+      "fields": [
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Carries the length of the object.",
+          "cite": {
+            "section": "2.3",
+            "quote": "|            Length             | Class-Num (16)|   C-Type (2)  |"
+          }
+        },
+        {
+          "name": "Class-Num",
+          "bits": 8,
+          "explain": "Identifies the object as class number 16.",
+          "cite": {
+            "section": "2.3",
+            "quote": "|            Length             | Class-Num (16)|   C-Type (2)  |"
+          }
+        },
+        {
+          "name": "C-Type",
+          "bits": 8,
+          "explain": "Identifies this object as C-Type 2.",
+          "cite": {
+            "section": "2.3",
+            "quote": "|            Length             | Class-Num (16)|   C-Type (2)  |"
+          }
+        },
+        {
+          "name": "Label",
+          "bits": "var",
+          "explain": "Carries the generalized label value propagated upstream in a Resv message.",
+          "cite": {
+            "section": "2.3.1",
+            "quote": "The Generalized Label travels in the upstream direction in Resv messages."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Bidirectional LSP setup and upstream-label allocation",
+    "Waveband Switching Object and Suggested_Label handling",
+    "Label_Set and Acceptable_Label_Set object procedures",
+    "Protection Object and unsupported-link-protection processing",
+    "Admin_Status object and administrative LSP deletion procedures",
+    "Control-channel separation with IF_ID RSVP_HOP and ERROR_SPEC objects",
+    "Graceful restart, nodal-fault recovery, and control-channel fault recovery",
+    "Explicit Label Control ERO and RRO subobjects",
+    "Bandwidth encoding for TDM, wavelength, and spatial switching",
+    "Complete RSVP message grammar, security considerations, and IANA assignments"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:02:09.643Z",
+    "dropped": 0
+  }
+}

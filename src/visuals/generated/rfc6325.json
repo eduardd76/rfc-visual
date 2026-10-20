@@ -1,0 +1,202 @@
+{
+  "rfc": 6325,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "known-unicast-encapsulation",
+      "title": "Known-Unicast Frame Encapsulation",
+      "participants": {
+        "a": "Ingress RBridge",
+        "b": "Next-hop RBridge toward egress"
+      },
+      "intro": {
+        "section": "2.4.1",
+        "quote": "These frames have a unicast inner MAC destination address (Inner.MacDA) and are those for which the ingress RBridge knows the egress RBridge for the destination MAC address in the frame's VLAN. Such frames are forwarded Rbridge hop by Rbridge hop to their egress Rbridge."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "TRILL Data frame",
+          "explain": "The ingress RBridge converts the native frame to a TRILL Data frame, sets the next-hop outer destination, and places the ingress and egress nicknames in the TRILL header before queuing it for transmission.",
+          "cite": {
+            "section": "4.6.1.1",
+            "quote": "If the destination is known to be on a different local link for which RBm is the appointed forwarder, then RB1 converts the native frame to a TRILL Data frame with an Outer.MacDA of the next hop RBridge towards RBm, a TRILL header with M = 0, an ingress nickname for RB1, and the egress nickname for RBm. If ingress RB1 has multiple nicknames, it SHOULD use the same nickname in the ingress nickname field whenever it encapsulates a native frame from any particular source MAC address and VLAN. This simplifies end node learning. If RBm is RB1, processing then proceeds as in Section 4.6.2.4; otherwise, the Outer.MacSA is set to the MAC address of the RB1 port on the path to the next hop RBridge towards RBm and the frame is queued for transmission out of that port."
+          }
+        }
+      ]
+    },
+    {
+      "id": "drb-election",
+      "title": "Designated RBridge Election over TRILL Hellos",
+      "participants": {
+        "a": "RBridge RB2",
+        "b": "RBridge RB1"
+      },
+      "intro": {
+        "section": "4.4.1",
+        "quote": "In TRILL (unlike in Layer 3 IS-IS), the DRB is selected based solely on priority and MAC address."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "TRILL-Hello",
+          "explain": "RB2 sends a TRILL-Hello carrying its priority for becoming the link's DRB.",
+          "cite": {
+            "section": "4.4.2",
+            "quote": "The TRILL-Hello has a new IS-IS message type. It starts with the same fixed header as an IS-IS LAN Hello, which includes the 7-bit priority for the issuing RBridge to be DRB on that link. TRILL-Hellos are sent with the same timing as IS-IS LAN Hellos."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "TRILL-Hello",
+          "explain": "RB1 sends its TRILL-Hello. If its priority and MAC address rank above RB2's, RB2 defers to RB1 as the link's DRB.",
+          "cite": {
+            "section": "4.4.1",
+            "quote": "In other words, if RB2 receives a TRILL-Hello from RB1 with higher (priority, MAC), RB2 defers to RB1 as DRB, regardless of whether RB1 lists RB2 in RB1's TRILL-Hello."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "trill-header",
+      "title": "TRILL Header",
+      "intro": {
+        "section": "3.1",
+        "quote": "The TRILL header is shown in Figure 5 and is independent of the data link layer used. When that layer is IEEE [802.3], it is prefixed with the 16-bit TRILL Ethertype [RFC5342], making it 64-bit aligned. If Op-Length is a multiple of 64 bits, then 64-bit alignment is normally maintained for the content of an encapsulated frame."
+      },
+      "fields": [
+        {
+          "name": "V",
+          "bits": 2,
+          "explain": "Identifies the TRILL version. Version zero is the version specified by this document.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Version (V) is a 2-bit field. Version zero of TRILL is specified in this document."
+          }
+        },
+        {
+          "name": "R",
+          "bits": 2,
+          "explain": "Reserved for future extensions. An ingress RBridge sets it to zero, transit RBridges copy it unchanged and otherwise ignore it, and egress RBridges ignore it.",
+          "cite": {
+            "section": "3.3",
+            "quote": "The two R bits are reserved for future use in extensions to this version zero of the TRILL protocol. They MUST be set to zero when the TRILL header is added by an ingress RBridge, transparently copied but otherwise ignored by transit RBridges, and ignored by egress RBridges."
+          }
+        },
+        {
+          "name": "M",
+          "bits": 1,
+          "explain": "Zero identifies a known-unicast egress RBridge, while one identifies a distribution tree for multi-destination delivery.",
+          "cite": {
+            "section": "3.1",
+            "quote": "M (Multi-destination): 1 bit. See Section 3.4."
+          }
+        },
+        {
+          "name": "Op-Length",
+          "bits": 5,
+          "explain": "Gives the length of the options area in four-octet chunks. A zero value means no options are present.",
+          "cite": {
+            "section": "3.5",
+            "quote": "The Op-Length header field gives the length of the TRILL header options in units of 4 octets, which allows up to 124 octets of options area. If Op-Length is zero, there are no options present. If options are present, they follow immediately after the Ingress Rbridge Nickname field."
+          }
+        },
+        {
+          "name": "Hop Count",
+          "bits": 6,
+          "explain": "Counts the remaining hops. A received value of zero causes the frame to be dropped; otherwise, the value is decremented.",
+          "cite": {
+            "section": "3.6",
+            "quote": "The Hop Count field is a 6-bit unsigned integer. An Rbridge drops frames received with a hop count of zero, otherwise it decrements the hop count."
+          }
+        },
+        {
+          "name": "Egress RBridge Nickname",
+          "bits": 16,
+          "explain": "Identifies the RBridge that removes the TRILL encapsulation and forwards the native frame for known-unicast data. Transit RBridges must not change it.",
+          "cite": {
+            "section": "3.7.1",
+            "quote": "For known unicast TRILL Data frames, M == 0 and the egress RBridge nickname field specifies the egress RBridge; that is, it specifies the RBridge that needs to remove the TRILL encapsulation and forward the native frame. Once the egress nickname field is set, it MUST NOT be changed by any subsequent transit RBridge."
+          }
+        },
+        {
+          "name": "Ingress RBridge Nickname",
+          "bits": 16,
+          "explain": "Names the ingress RBridge for TRILL Data frames or the source RBridge for TRILL ESADI frames.",
+          "cite": {
+            "section": "3.7.2",
+            "quote": "The ingress RBridge nickname is set to a nickname of the ingress RBridge for TRILL Data frames and to a nickname of the source RBridge for TRILL ESADI frames."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": "var",
+          "explain": "Optional variable-length area following the ingress nickname. Op-Length gives its length in four-octet chunks, and a zero value means the area is absent.",
+          "cite": {
+            "section": "3.5",
+            "quote": "The Op-Length header field gives the length of the TRILL header options in units of 4 octets, which allows up to 124 octets of options area. If Op-Length is zero, there are no options present. If options are present, they follow immediately after the Ingress Rbridge Nickname field."
+          }
+        }
+      ]
+    },
+    {
+      "id": "trill-options-flags",
+      "title": "TRILL Header Options Initial Flags Octet",
+      "intro": {
+        "section": "3.8",
+        "quote": "the top two bits of the first octet of the options area are specified as follows:"
+      },
+      "fields": [
+        {
+          "name": "CHbH",
+          "bits": 1,
+          "explain": "Set when critical hop-by-hop options are present. A transit RBridge that does not support all of them drops the frame.",
+          "cite": {
+            "section": "3.8",
+            "quote": "If the CHbH (Critical Hop-by-Hop) bit is one, one or more critical hop-by-hop options are present. Transit RBridges that do not support all of the critical hop-by-hop options present, for example, an RBridge that supported no options, MUST drop the frame."
+          }
+        },
+        {
+          "name": "CItE",
+          "bits": 1,
+          "explain": "Set when critical ingress-to-egress options are present.",
+          "cite": {
+            "section": "3.8",
+            "quote": "If the CItE (Critical Ingress-to-Egress) bit is one, one or more critical ingress-to-egress options are present."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 6,
+          "explain": "Reserved for later option definitions.",
+          "cite": {
+            "section": "3.8",
+            "quote": "Options, including the meaning of the bits labeled as Reserved in Figure 6, will be further specified in other documents and are expected to include provisions for hop-by-hop and ingress-to-egress options as well as critical and non-critical options."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Full Ethernet encapsulation fields, outer and inner VLAN handling, and FCS recomputation",
+    "Transit forwarding and egress decapsulation rules beyond known-unicast ingress encapsulation",
+    "Multi-destination distribution-tree calculation, pruning, and forwarding checks",
+    "TRILL IS-IS adjacency formation, pseudonodes, LSP flooding, and nickname acquisition",
+    "TRILL ESADI address distribution and end-station address learning",
+    "Detailed port, VLAN, BPDU, and root-bridge inhibition behavior",
+    "MTU-probe and MTU-ack exchange",
+    "TRILL option types beyond the initial critical flags",
+    "Multipathing, incremental deployment, management parameters, and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:00:20.566Z",
+    "dropped": 0
+  }
+}

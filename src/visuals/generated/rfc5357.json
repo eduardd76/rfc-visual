@@ -1,0 +1,366 @@
+{
+  "rfc": 5357,
+  "reviewed": false,
+  "initial": "TCP connection",
+  "terminal": [
+    "stop all test sessions"
+  ],
+  "stateMachineTitle": "TWAMP session lifecycle",
+  "states": [
+    {
+      "id": "TCP connection",
+      "cite": {
+        "section": "3.1",
+        "quote": "A Client opens a TCP connection to the Server on well-known port 862."
+      }
+    },
+    {
+      "id": "Greeting message",
+      "cite": {
+        "section": "2",
+        "quote": "the Server (its role now established) responds with its Greeting message, indicating the security/integrity mode(s) it is willing to support."
+      }
+    },
+    {
+      "id": "control-connection setup",
+      "cite": {
+        "section": "2",
+        "quote": "The Server responds to accept the mode and give its start time.  This completes the control-connection setup."
+      }
+    },
+    {
+      "id": "test session",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client requests (and describes) a test session with a unique TWAMP-Control message.  The Server responds with its acceptance and supporting information."
+      }
+    },
+    {
+      "id": "requested testing",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client initiates all requested testing with a Start-Sessions message, and the Server acknowledges."
+      }
+    },
+    {
+      "id": "test packets",
+      "cite": {
+        "section": "2",
+        "quote": "The Session-Sender and the Session-Reflector exchange test packets according to the TWAMP-Test protocol for each active session."
+      }
+    },
+    {
+      "id": "stop all test sessions",
+      "cite": {
+        "section": "2",
+        "quote": "When appropriate, the Control-Client sends a message to stop all test sessions."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "TCP connection",
+      "to": "Greeting message",
+      "event": "control connection established",
+      "action": "snd Greeting",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client initiates a TCP connection on TWAMP's well-known port, and the Server (its role now established) responds with its Greeting message, indicating the security/integrity mode(s) it is willing to support."
+      }
+    },
+    {
+      "from": "Greeting message",
+      "to": "control-connection setup",
+      "event": "server accepts mode",
+      "action": "snd start time",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client responds with the chosen mode of communication and information supporting integrity protection and encryption, if the mode requires them.  The Server responds to accept the mode and give its start time.  This completes the control-connection setup."
+      }
+    },
+    {
+      "from": "control-connection setup",
+      "to": "test session",
+      "event": "session requested",
+      "action": "snd Request-TW-Session",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client requests (and describes) a test session with a unique TWAMP-Control message.  The Server responds with its acceptance and supporting information.  More than one test session may be requested with additional messages."
+      }
+    },
+    {
+      "from": "test session",
+      "to": "requested testing",
+      "event": "session accepted",
+      "action": "snd Start-Sessions",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The Control-Client initiates all requested testing with a Start-Sessions message, and the Server acknowledges."
+      }
+    },
+    {
+      "from": "requested testing",
+      "to": "test packets",
+      "event": "sessions started",
+      "action": "exchange test packets",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "The Session-Sender and the Session-Reflector exchange test packets according to the TWAMP-Test protocol for each active session."
+      }
+    },
+    {
+      "from": "test packets",
+      "to": "stop all test sessions",
+      "event": "stop requested",
+      "action": "snd Stop-Sessions",
+      "layer": "happy",
+      "cite": {
+        "section": "2",
+        "quote": "When appropriate, the Control-Client sends a message to stop all test sessions."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "control",
+      "title": "TWAMP-Control exchange",
+      "participants": {
+        "a": "Control-Client",
+        "b": "Server and Session-Reflector"
+      },
+      "intro": {
+        "section": "1.1",
+        "quote": "TWAMP-Control is used to initiate, start, and stop test sessions, whereas TWAMP-Test is used to exchange test packets between two TWAMP entities."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "TCP connection",
+          "explain": "The Control-Client opens the TWAMP-Control TCP connection to the Server on the well-known TWAMP port.",
+          "cite": {
+            "section": "3.1",
+            "quote": "A Client opens a TCP connection to the Server on well-known port 862."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Greeting message",
+          "explain": "The Server greets the Control-Client and states which security and integrity modes it is willing to support.",
+          "cite": {
+            "section": "2",
+            "quote": "the Server (its role now established) responds with its Greeting message, indicating the security/integrity mode(s) it is willing to support."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Server-Start",
+          "explain": "The Server sends the Server-Start message during the initial control exchange. That message does not end with an HMAC.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Note that the Server-Start message (sent by a Server during the initial control-connection exchanges) does not terminate with an HMAC field.  Therefore, the HMAC in the first Accept-Session message also covers the Server-Start message and includes the Start-Time field in the HMAC calculation."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Request-TW-Session",
+          "explain": "The Control-Client asks the Server to create a two-way test session that uses the TWAMP-Test protocol.",
+          "cite": {
+            "section": "3.5",
+            "quote": "The Command Number value of 5 indicates a Request-TW-Session command, and the Server MUST interpret this command as a request for a two-way test session using the TWAMP-Test protocol."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Accept-Session",
+          "explain": "The Session-Reflector returns an Accept-Session response for the requested two-way session.",
+          "cite": {
+            "section": "3.5",
+            "quote": "The Session-Reflector MUST respond to each Request-TW-Session command with an Accept-Session message as defined in OWAMP [RFC4656]."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Start-Sessions",
+          "explain": "The Control-Client starts the requested testing and the Server acknowledges the request.",
+          "cite": {
+            "section": "2",
+            "quote": "The Control-Client initiates all requested testing with a Start-Sessions message, and the Server acknowledges."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Stop-Sessions",
+          "explain": "The Control-Client issues Stop-Sessions without session description records or skip ranges. The command ends with one HMAC block.",
+          "cite": {
+            "section": "3.8",
+            "quote": "The Stop-Sessions command can only be issued by the Control-Client.  The message MUST NOT contain any session description records or skip ranges.  The message is terminated with a single block HMAC to complete the Stop-Sessions command."
+          }
+        }
+      ]
+    },
+    {
+      "id": "test-reflection",
+      "title": "TWAMP-Test packet reflection",
+      "participants": {
+        "a": "Session-Sender",
+        "b": "Session-Reflector"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "The TWAMP-Test protocol is similar to the OWAMP-test protocol [RFC4656] with the exception that the Session-Reflector transmits test packets to the Session-Sender in response to each test packet it receives."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "test packets",
+          "explain": "The Session-Sender begins by sending a test packet, and the Session-Reflector receives it before taking its sending role.",
+          "cite": {
+            "section": "3.5",
+            "quote": "In TWAMP, both endpoints send and receive test packets, with the Session-Sender first sending and then receiving test packets, complimented by the Session-Reflector first receiving and then sending."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "test packets",
+          "explain": "For every received test packet, the Session-Reflector transmits a test packet back to the Session-Sender.",
+          "cite": {
+            "section": "4",
+            "quote": "The TWAMP-Test protocol is similar to the OWAMP-test protocol [RFC4656] with the exception that the Session-Reflector transmits test packets to the Session-Sender in response to each test packet it receives."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "reflector-test-packet",
+      "title": "Session-Reflector Unauthenticated Test Packet",
+      "intro": {
+        "section": "4.2.1",
+        "quote": "The test packet will have the necessary information for calculating two-way metrics by the Session-Sender.  The format of the test packet depends on the mode being used.  The two formats are presented below."
+      },
+      "fields": [
+        {
+          "name": "Sequence Number",
+          "bits": 32,
+          "explain": "Identifies a reflected test packet in the reflector's transmit order. The reflector uses a sequence number independent of the incoming packet's number.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Sequence Number is the sequence number of the test packet according to its transmit order.  It starts with zero and is incremented by one for each subsequent packet.  The Sequence Number generated by the Session-Reflector is independent from the sequence number of the arriving packets."
+          }
+        },
+        {
+          "name": "Timestamp",
+          "bits": 64,
+          "explain": "Records the Session-Reflector's transmit time for the reflected packet.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Timestamp and Error Estimate are the Session-Reflector's transmit timestamp and error estimate for the reflected test packet, respectively."
+          }
+        },
+        {
+          "name": "Error Estimate",
+          "bits": 16,
+          "explain": "Carries the error estimate associated with the reflector's transmit timestamp.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Timestamp and Error Estimate are the Session-Reflector's transmit timestamp and error estimate for the reflected test packet, respectively."
+          }
+        },
+        {
+          "name": "MBZ",
+          "bits": 16,
+          "explain": "Reserved bits that must be zero. Senders set them to zero and receivers ignore them.",
+          "cite": {
+            "section": "2",
+            "quote": "Throughout this memo, the bits marked MBZ (Must Be Zero) MUST be set to zero by senders and MUST be ignored by receivers."
+          }
+        },
+        {
+          "name": "Receive Timestamp",
+          "bits": 64,
+          "explain": "Records when the reflector received the packet, allowing the packet's transit time through the reflector to be determined.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Receive Timestamp is the time the test packet was received by the reflector.  The difference between Timestamp and Receive Timestamp is the amount of time the packet was in transition in the Session-Reflector.  The Error Estimate associated with the Timestamp field also applies to the Receive Timestamp."
+          }
+        },
+        {
+          "name": "Sender Sequence Number",
+          "bits": 32,
+          "explain": "Copies the sequence number from the sender packet that caused the reflector to generate this response.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Sender Sequence Number is a copy of the Sequence Number of the packet transmitted by the Session-Sender that caused the Session-Reflector to generate and send this test packet."
+          }
+        },
+        {
+          "name": "Sender Timestamp",
+          "bits": 64,
+          "explain": "Copies the sender's original transmit timestamp into the reflected response.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Sender Timestamp and Sender Error Estimate are exact copies of the timestamp and error estimate from the Session-Sender test packet that corresponds to this test packet."
+          }
+        },
+        {
+          "name": "Sender Error Estimate",
+          "bits": 16,
+          "explain": "Copies the sender's original error estimate into the reflected response.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Sender Timestamp and Sender Error Estimate are exact copies of the timestamp and error estimate from the Session-Sender test packet that corresponds to this test packet."
+          }
+        },
+        {
+          "name": "MBZ",
+          "bits": 16,
+          "explain": "Reserved bits that must be zero. Senders set them to zero and receivers ignore them.",
+          "cite": {
+            "section": "2",
+            "quote": "Throughout this memo, the bits marked MBZ (Must Be Zero) MUST be set to zero by senders and MUST be ignored by receivers."
+          }
+        },
+        {
+          "name": "Sender TTL",
+          "bits": 8,
+          "explain": "Shows the TTL value observed by the reflector in the received packet. A sender initially writes 255.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Sender TTL is 255 when transmitted by the Session-Sender.  Sender TTL is set to the Time To Live (or Hop Count) value of the received packet from the IP packet header when transmitted by the Session-Reflector."
+          }
+        },
+        {
+          "name": "Packet Padding",
+          "bits": "var",
+          "explain": "Adds trailing padding to the packet. It should be pseudo-random, may be configured as all zeros, and is neither covered by the HMAC nor encrypted.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Packet Padding in TWAMP-Test SHOULD be pseudo-random (it MUST be generated independently of any other pseudo-random numbers mentioned in this document).  However, implementations MUST provide a configuration parameter, an option, or a different means of making Packet Padding consist of all zeros.  Packet Padding MUST NOT be covered by the HMAC and MUST NOT be encrypted."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "A formal normative TWAMP state machine is not defined; the state view summarizes the lifecycle described in Section 2.",
+    "The Session-Sender packet format and the detailed control-message formats inherited from RFC 4656.",
+    "The authenticated and encrypted Session-Reflector packet layouts, including their additional MBZ areas and HMAC field.",
+    "Detailed AES key derivation, encryption, and integrity procedures for TWAMP-Test sessions.",
+    "Failure handling for SERVWAIT and REFWAIT timeouts and control-connection loss.",
+    "TWAMP Light's non-standard responder-control and key-generation procedures.",
+    "The Fetch-Session command, which RFC 5357 explicitly excludes.",
+    "The IPv4 or IPv6 and UDP headers that carry the test packet."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T03:00:39.941Z",
+    "dropped": 0
+  }
+}

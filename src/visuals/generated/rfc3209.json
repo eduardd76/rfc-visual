@@ -1,0 +1,192 @@
+{
+  "rfc": 3209,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "lsp-tunnel-establishment",
+      "title": "LSP Tunnel Establishment",
+      "participants": {
+        "a": "Ingress node",
+        "b": "Egress node"
+      },
+      "intro": {
+        "section": "1.1",
+        "quote": "The signaling protocol model uses downstream-on-demand label distribution. A request to bind labels to a specific LSP tunnel is initiated by an ingress node through the RSVP Path message. For this purpose, the RSVP Path message is augmented with a LABEL_REQUEST object. Labels are allocated downstream and distributed (propagated upstream) by means of the RSVP Resv message. For this purpose, the RSVP Resv message is extended with a special LABEL object."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Path message",
+          "explain": "The ingress node creates a Path message for an LSP tunnel and includes LABEL_REQUEST to request a label binding and identify the carried network-layer protocol.",
+          "cite": {
+            "section": "2.2",
+            "quote": "To create an LSP tunnel, the first MPLS node on the path -- that is, the sender node with respect to the path -- creates an RSVP Path message with a session type of LSP_TUNNEL_IPv4 or LSP_TUNNEL_IPv6 and inserts a LABEL_REQUEST object into the Path message."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Resv message",
+          "explain": "The destination returns a Resv message with a LABEL object associated with the applicable filter.",
+          "cite": {
+            "section": "2.2",
+            "quote": "The destination node of a label-switched path responds to a LABEL_REQUEST by including a LABEL object in its response RSVP Resv message. The LABEL object is inserted in the filter spec list immediately following the filter spec to which it pertains."
+          }
+        }
+      ]
+    },
+    {
+      "id": "make-before-break-reroute",
+      "title": "Make-Before-Break Reroute",
+      "participants": {
+        "a": "Ingress node",
+        "b": "Egress node"
+      },
+      "intro": {
+        "section": "2.5",
+        "quote": "In general, it is highly desirable not to disrupt traffic, or adversely impact network operations while TE tunnel rerouting is in progress. This adaptive and smooth rerouting requirement necessitates establishing a new LSP tunnel and transferring traffic from the old LSP tunnel onto it before tearing down the old LSP tunnel. This concept is called \"make-before-break.\""
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Path Message",
+          "explain": "The ingress keeps the original session but creates a new sender template and explicit route, then signals the replacement path while continuing to refresh the old path.",
+          "cite": {
+            "section": "2.5",
+            "quote": "To effect a reroute, the ingress node picks a new LSP ID and forms a new SENDER_TEMPLATE. The ingress node then creates a new ERO to define the new path. Thereafter the node sends a new Path Message using the original SESSION object and the new SENDER_TEMPLATE and ERO. It continues to use the old LSP and refresh the old Path message."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Resv message",
+          "explain": "The reservation for the new path returns to the ingress, enabling traffic to move to the replacement.",
+          "cite": {
+            "section": "2.5",
+            "quote": "Once the ingress node receives a Resv message for the new LSP, it can transition traffic to it and tear down the old LSP."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PathTear message",
+          "explain": "After the new reservation arrives, the ingress may use the new route and should remove the old route with a PathTear message.",
+          "cite": {
+            "section": "4.6.4",
+            "quote": "When the ingress node receives the Resv Message(s), it may begin using the new route. It SHOULD send a PathTear message for the old route."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "label-request-no-range",
+      "title": "LABEL_REQUEST Object without Label Range",
+      "intro": {
+        "section": "4.2",
+        "quote": "Type 1 is a Label Request without label range."
+      },
+      "fields": [
+        {
+          "name": "Reserved",
+          "bits": 16,
+          "explain": "This reserved area is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "Reserved This field is reserved. It MUST be set to zero on transmission and MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "L3PID",
+          "bits": 16,
+          "explain": "Identifies the layer-three protocol carried on the path using standard Ethertype values.",
+          "cite": {
+            "section": "4.2.1",
+            "quote": "L3PID an identifier of the layer 3 protocol using this path. Standard Ethertype values are used."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ero-ipv4-subobject",
+      "title": "IPv4 Prefix Explicit Route Subobject",
+      "intro": {
+        "section": "4.3.3.2",
+        "quote": "The contents of an IPv4 prefix subobject are a 4-octet IPv4 address, a 1-octet prefix length, and a 1-octet pad."
+      },
+      "fields": [
+        {
+          "name": "L",
+          "bits": 1,
+          "explain": "Indicates whether the subobject represents a loose or strict hop in the explicit route.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "The L bit is an attribute of the subobject. The L bit is set if the subobject represents a loose hop in the explicit route. If the bit is not set, the subobject represents a strict hop in the explicit route."
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 7,
+          "explain": "Identifies the subobject as an IPv4 address.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "Type 0x01 IPv4 address"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Gives the total subobject length in bytes.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "Length The Length contains the total length of the subobject in bytes, including the Type and Length fields. The Length is always 8."
+          }
+        },
+        {
+          "name": "IPv4 address",
+          "bits": 32,
+          "explain": "Holds the IPv4 address treated as a prefix, with bits outside the prefix ignored on receipt.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "IPv4 address An IPv4 address. This address is treated as a prefix based on the prefix length value below. Bits beyond the prefix are ignored on receipt and SHOULD be set to zero on transmission."
+          }
+        },
+        {
+          "name": "Prefix Length",
+          "bits": 8,
+          "explain": "Gives the IPv4 prefix length in bits.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "Prefix length Length in bits of the IPv4 prefix"
+          }
+        },
+        {
+          "name": "Padding",
+          "bits": 8,
+          "explain": "Is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "4.3.3.2",
+            "quote": "Padding Zero on transmission. Ignored on receipt."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The base RSVP session and refresh state machine from RFC 2205",
+    "The LABEL object format and detailed label-allocation and binding rules",
+    "The full EXPLICIT_ROUTE processing algorithm, loose and strict node semantics, and non-IPv4 subobjects",
+    "RECORD_ROUTE object formats, route recording, and loop detection",
+    "LSP_TUNNEL SESSION, SENDER_TEMPLATE, FILTER_SPEC, and SESSION_ATTRIBUTE object formats",
+    "The HELLO extension and neighbor failure detection",
+    "Path MTU handling, reservation styles, preemption, local protection, and resource-affinity procedures",
+    "IPv6, ATM, Frame Relay, and Autonomous System variants"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:19:59.565Z",
+    "dropped": 0
+  }
+}

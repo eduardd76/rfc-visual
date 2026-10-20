@@ -1,0 +1,355 @@
+{
+  "rfc": 4253,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "initial-transport-handshake",
+      "title": "Initial SSH Transport Handshake",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "1",
+        "quote": "The protocol has been designed to be simple and flexible to allow parameter negotiation, and to minimize the number of round-trips."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "identification string",
+          "explain": "The client sends its SSH identification string once the transport connection is established.",
+          "cite": {
+            "section": "4.2",
+            "quote": "When the connection has been established, both sides MUST send an identification string."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "identification string",
+          "explain": "The server sends its SSH identification string once the transport connection is established.",
+          "cite": {
+            "section": "4.2",
+            "quote": "When the connection has been established, both sides MUST send an identification string."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "SSH_MSG_KEXINIT",
+          "explain": "The client begins algorithm negotiation by sending SSH_MSG_KEXINIT.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Key exchange begins by each side sending the following packet: byte SSH_MSG_KEXINIT"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "SSH_MSG_KEXINIT",
+          "explain": "The server sends its own SSH_MSG_KEXINIT so both sides can select mutually supported algorithms.",
+          "cite": {
+            "section": "7.1",
+            "quote": "Key exchange begins by each side sending the following packet: byte SSH_MSG_KEXINIT"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "SSH_MSG_KEXDH_INIT",
+          "explain": "The client sends its Diffie-Hellman public value e.",
+          "cite": {
+            "section": "8",
+            "quote": "First, the client sends the following: byte SSH_MSG_KEXDH_INIT mpint e"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "SSH_MSG_KEXDH_REPLY",
+          "explain": "The server returns its host key, Diffie-Hellman public value f, and a signature over the exchange hash.",
+          "cite": {
+            "section": "8",
+            "quote": "The server then responds with the following: byte SSH_MSG_KEXDH_REPLY string server public host key and certificates (K_S) mpint f string signature of H"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "SSH_MSG_NEWKEYS",
+          "explain": "The client sends SSH_MSG_NEWKEYS to end key exchange and switch to the new keys.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Key exchange ends by each side sending an SSH_MSG_NEWKEYS message."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "SSH_MSG_NEWKEYS",
+          "explain": "The server sends SSH_MSG_NEWKEYS to end key exchange and switch to the new keys.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Key exchange ends by each side sending an SSH_MSG_NEWKEYS message."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "SSH_MSG_SERVICE_REQUEST",
+          "explain": "The client requests a named service after key exchange.",
+          "cite": {
+            "section": "10",
+            "quote": "byte SSH_MSG_SERVICE_REQUEST string service name"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "SSH_MSG_SERVICE_ACCEPT",
+          "explain": "The server accepts the requested service when it supports the service and permits the client to use it.",
+          "cite": {
+            "section": "10",
+            "quote": "If the server supports the service (and permits the client to use it), it MUST respond with the following: byte SSH_MSG_SERVICE_ACCEPT string service name"
+          }
+        }
+      ]
+    },
+    {
+      "id": "key-reexchange-initiation",
+      "title": "Key Re-Exchange Initiation",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "9",
+        "quote": "Either party MAY initiate the re-exchange, but roles MUST NOT be changed (i.e., the server remains the server, and the client remains the client)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "SSH_MSG_KEXINIT",
+          "explain": "The client initiates a key re-exchange by sending SSH_MSG_KEXINIT when no exchange is already in progress.",
+          "cite": {
+            "section": "9",
+            "quote": "Key re-exchange is started by sending an SSH_MSG_KEXINIT packet when not already doing a key exchange (as described in Section 7.1)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "SSH_MSG_KEXINIT",
+          "explain": "The server responds with its own SSH_MSG_KEXINIT while retaining its server role.",
+          "cite": {
+            "section": "9",
+            "quote": "When this message is received, a party MUST respond with its own SSH_MSG_KEXINIT message, except when the received SSH_MSG_KEXINIT already was a reply."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "binary-packet",
+      "title": "SSH Binary Packet",
+      "intro": {
+        "section": "6",
+        "quote": "Each packet is in the following format:"
+      },
+      "fields": [
+        {
+          "name": "packet_length",
+          "bits": 32,
+          "explain": "This is the byte length of the packet, excluding the MAC and the packet_length field itself.",
+          "cite": {
+            "section": "6",
+            "quote": "uint32 packet_length"
+          }
+        },
+        {
+          "name": "padding_length",
+          "bits": 8,
+          "explain": "This gives the length in bytes of the random padding.",
+          "cite": {
+            "section": "6",
+            "quote": "byte padding_length"
+          }
+        },
+        {
+          "name": "payload",
+          "bits": "var",
+          "explain": "This contains the useful packet contents and is compressed when compression has been negotiated.",
+          "cite": {
+            "section": "6",
+            "quote": "byte[n1] payload; n1 = packet_length - padding_length - 1"
+          }
+        },
+        {
+          "name": "random padding",
+          "bits": "var",
+          "explain": "This contains arbitrary-length padding used to align the encrypted packet.",
+          "cite": {
+            "section": "6",
+            "quote": "byte[n2] random padding; n2 = padding_length"
+          }
+        },
+        {
+          "name": "mac",
+          "bits": "var",
+          "explain": "This contains the Message Authentication Code when message authentication has been negotiated.",
+          "cite": {
+            "section": "6",
+            "quote": "byte[m] mac (Message Authentication Code - MAC); m = mac_length"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kexinit",
+      "title": "SSH_MSG_KEXINIT",
+      "intro": {
+        "section": "7.1",
+        "quote": "Key exchange begins by each side sending the following packet:"
+      },
+      "fields": [
+        {
+          "name": "SSH_MSG_KEXINIT",
+          "bits": 8,
+          "explain": "This identifies the message that begins key-exchange algorithm negotiation.",
+          "cite": {
+            "section": "7.1",
+            "quote": "byte SSH_MSG_KEXINIT"
+          }
+        },
+        {
+          "name": "cookie",
+          "bits": 128,
+          "explain": "This is a random value generated by the sender.",
+          "cite": {
+            "section": "7.1",
+            "quote": "byte[16] cookie (random bytes)"
+          }
+        },
+        {
+          "name": "kex_algorithms",
+          "bits": "var",
+          "explain": "This lists the supported key-exchange algorithms in preference order.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list kex_algorithms"
+          }
+        },
+        {
+          "name": "server_host_key_algorithms",
+          "bits": "var",
+          "explain": "This lists acceptable algorithms for the server's host key.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list server_host_key_algorithms"
+          }
+        },
+        {
+          "name": "encryption_algorithms_client_to_server",
+          "bits": "var",
+          "explain": "This lists acceptable symmetric encryption algorithms for the client-to-server direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list encryption_algorithms_client_to_server"
+          }
+        },
+        {
+          "name": "encryption_algorithms_server_to_client",
+          "bits": "var",
+          "explain": "This lists acceptable symmetric encryption algorithms for the server-to-client direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list encryption_algorithms_server_to_client"
+          }
+        },
+        {
+          "name": "mac_algorithms_client_to_server",
+          "bits": "var",
+          "explain": "This lists acceptable MAC algorithms for the client-to-server direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list mac_algorithms_client_to_server"
+          }
+        },
+        {
+          "name": "mac_algorithms_server_to_client",
+          "bits": "var",
+          "explain": "This lists acceptable MAC algorithms for the server-to-client direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list mac_algorithms_server_to_client"
+          }
+        },
+        {
+          "name": "compression_algorithms_client_to_server",
+          "bits": "var",
+          "explain": "This lists acceptable compression algorithms for the client-to-server direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list compression_algorithms_client_to_server"
+          }
+        },
+        {
+          "name": "compression_algorithms_server_to_client",
+          "bits": "var",
+          "explain": "This lists acceptable compression algorithms for the server-to-client direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list compression_algorithms_server_to_client"
+          }
+        },
+        {
+          "name": "languages_client_to_server",
+          "bits": "var",
+          "explain": "This lists the client's preferred language tags in the client-to-server direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list languages_client_to_server"
+          }
+        },
+        {
+          "name": "languages_server_to_client",
+          "bits": "var",
+          "explain": "This lists the server's preferred language tags in the server-to-client direction.",
+          "cite": {
+            "section": "7.1",
+            "quote": "name-list languages_server_to_client"
+          }
+        },
+        {
+          "name": "first_kex_packet_follows",
+          "bits": 8,
+          "explain": "This boolean indicates whether a guessed key-exchange packet follows the message.",
+          "cite": {
+            "section": "7.1",
+            "quote": "boolean first_kex_packet_follows"
+          }
+        },
+        {
+          "name": "reserved for future extension",
+          "bits": 32,
+          "explain": "This reserved field is set to zero for future extension.",
+          "cite": {
+            "section": "7.1",
+            "quote": "uint32 0 (reserved for future extension)"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "User authentication, which is provided by the higher-level SSH Authentication Protocol rather than this transport protocol",
+    "SSH connection-layer channels and application data transfer, which are defined in RFC 4254",
+    "The complete Diffie-Hellman exchange during a key re-exchange",
+    "Detailed cipher, MAC, compression, host-key, and Diffie-Hellman group algorithm catalogs",
+    "The complete key-derivation formulas and exchange-hash encoding rules",
+    "SSH_MSG_DISCONNECT, SSH_MSG_IGNORE, SSH_MSG_DEBUG, and SSH_MSG_UNIMPLEMENTED message formats and disconnect reason codes",
+    "Compatibility procedures for obsolete SSH 1.x peers",
+    "Maximum packet-length limits and packet-overhead analysis",
+    "RFC 4253 does not define a formal transport-layer state machine, so the ordered handshake is presented as a sequence instead"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:38:52.288Z",
+    "dropped": 0
+  }
+}

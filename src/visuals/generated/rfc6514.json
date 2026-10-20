@@ -1,0 +1,171 @@
+{
+  "rfc": 6514,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "mcast-vpn-nlri",
+      "title": "MCAST-VPN NLRI",
+      "intro": {
+        "section": "4",
+        "quote": "This document defines a new BGP NLRI, called the MCAST-VPN NLRI."
+      },
+      "fields": [
+        {
+          "name": "Route Type",
+          "bits": 8,
+          "explain": "Identifies the encoding used for the route-type-specific portion of the NLRI.",
+          "cite": {
+            "section": "4",
+            "quote": "The Route Type field defines the encoding of the rest of MCAST-VPN NLRI (Route Type specific MCAST-VPN NLRI)."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Gives the length in octets of the route-type-specific field.",
+          "cite": {
+            "section": "4",
+            "quote": "The Length field indicates the length in octets of the Route Type specific field of the MCAST-VPN NLRI."
+          }
+        },
+        {
+          "name": "Route Type specific",
+          "bits": "var",
+          "explain": "Carries the variable-length route encoding selected by the Route Type field.",
+          "cite": {
+            "section": "4",
+            "quote": "| Route Type specific (variable)    |"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c-multicast-route",
+      "title": "C-Multicast Route Type-Specific NLRI",
+      "intro": {
+        "section": "4.6",
+        "quote": "A Shared Tree Join route and a Source Tree Join Route Type specific MCAST-VPN NLRI consists of the following:"
+      },
+      "fields": [
+        {
+          "name": "RD",
+          "bits": 64,
+          "explain": "Carries the Route Distinguisher.",
+          "cite": {
+            "section": "4.6",
+            "quote": "The RD is encoded as described in [RFC4364]."
+          }
+        },
+        {
+          "name": "Source AS",
+          "bits": 32,
+          "explain": "Carries the source autonomous system number.",
+          "cite": {
+            "section": "4.6",
+            "quote": "The Source AS contains an ASN. Two-octet ASNs are encoded in the low-order two octets of the Source AS field."
+          }
+        },
+        {
+          "name": "Multicast Source Length",
+          "bits": 8,
+          "explain": "Gives the length of the multicast source address in bits.",
+          "cite": {
+            "section": "4.6",
+            "quote": "If the Multicast Source field contains an IPv4 address, then the value of the Multicast Source Length field is 32. If the Multicast Source field contains an IPv6 address, then the value of the Multicast Source Length field is 128."
+          }
+        },
+        {
+          "name": "Multicast Source",
+          "bits": "var",
+          "explain": "Carries the C-RP address for a shared-tree join or the C-S address for a source-tree join.",
+          "cite": {
+            "section": "4.6",
+            "quote": "For a Shared Tree Join route, the Multicast Source field contains the C-RP address; for a Source Tree Join route, the Multicast Source field contains the C-S address."
+          }
+        },
+        {
+          "name": "Multicast Group Length",
+          "bits": 8,
+          "explain": "Gives the length of the multicast group value in bits.",
+          "cite": {
+            "section": "4.6",
+            "quote": "If the Multicast Group field contains an IPv4 address, then the value of the Multicast Group Length field is 32. If the Multicast Group field contains an IPv6 address, then the value of the Multicast Group Length field is 128."
+          }
+        },
+        {
+          "name": "Multicast Group",
+          "bits": "var",
+          "explain": "Carries the C-G address or a C-MP opaque value.",
+          "cite": {
+            "section": "4.6",
+            "quote": "The Multicast Group field contains the C-G address or C-MP Opaque Value Element."
+          }
+        }
+      ]
+    },
+    {
+      "id": "pmsi-tunnel-attribute",
+      "title": "PMSI Tunnel Attribute",
+      "intro": {
+        "section": "5",
+        "quote": "This document defines and uses a new BGP attribute called the \"P-Multicast Service Interface Tunnel (PMSI Tunnel) attribute\"."
+      },
+      "fields": [
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "Holds the Leaf Information Required flag while the other bits are reserved.",
+          "cite": {
+            "section": "5",
+            "quote": "The Flags field has the following format:"
+          }
+        },
+        {
+          "name": "Tunnel Type",
+          "bits": 8,
+          "explain": "Identifies the tunneling technology and determines the syntax and meaning of the Tunnel Identifier.",
+          "cite": {
+            "section": "5",
+            "quote": "The Tunnel Type identifies the type of the tunneling technology used to establish the PMSI tunnel. The type determines the syntax and semantics of the Tunnel Identifier field."
+          }
+        },
+        {
+          "name": "MPLS Label",
+          "bits": 24,
+          "explain": "Carries an MPLS label in its high-order 20 bits; zero indicates the absence of a label.",
+          "cite": {
+            "section": "5",
+            "quote": "If the MPLS Label field is non-zero, then it contains an MPLS label encoded as 3 octets, where the high-order 20 bits contain the label value. Absence of an MPLS Label is indicated by setting the MPLS Label field to zero."
+          }
+        },
+        {
+          "name": "Tunnel Identifier",
+          "bits": "var",
+          "explain": "Carries a tunnel identifier whose syntax depends on the selected Tunnel Type.",
+          "cite": {
+            "section": "5",
+            "quote": "The Tunnel Type identifies the type of the tunneling technology used to establish the PMSI tunnel. The type determines the syntax and semantics of the Tunnel Identifier field."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Intra-AS I-PMSI, Inter-AS I-PMSI, Leaf A-D, S-PMSI A-D, and Source Active A-D route-specific NLRI encodings",
+    "Detailed auto-discovery and binding procedures, including inter-AS tunnel stitching and leaf discovery",
+    "Detailed C-multicast route construction, propagation, reception, aggregation, and filtering procedures beyond the advertisement lifecycle shown",
+    "Source AS and VRF Route Import extended communities",
+    "PE Distinguisher Labels attribute",
+    "Source-tree switching, carrier's carrier, scalability, and security details"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T02:05:08.505Z",
+    "dropped": 1
+  }
+}

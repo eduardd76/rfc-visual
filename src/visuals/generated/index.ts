@@ -1,7 +1,30 @@
 // Written by scripts/generate-visuals.ts — do not edit by hand.
+import rfc1122 from "./rfc1122.json";
+import rfc1350 from "./rfc1350.json";
+import rfc2181 from "./rfc2181.json";
+import rfc2865 from "./rfc2865.json";
+import rfc3032 from "./rfc3032.json";
+import rfc3209 from "./rfc3209.json";
+import rfc3261 from "./rfc3261.json";
+import rfc3471 from "./rfc3471.json";
+import rfc3473 from "./rfc3473.json";
+import rfc3550 from "./rfc3550.json";
+import rfc3597 from "./rfc3597.json";
+import rfc4035 from "./rfc4035.json";
+import rfc4120 from "./rfc4120.json";
+import rfc4253 from "./rfc4253.json";
+import rfc4291 from "./rfc4291.json";
+import rfc4791 from "./rfc4791.json";
+import rfc5155 from "./rfc5155.json";
+import rfc5280 from "./rfc5280.json";
 import rfc5340 from "./rfc5340.json";
+import rfc5357 from "./rfc5357.json";
+import rfc5545 from "./rfc5545.json";
 import rfc5905 from "./rfc5905.json";
+import rfc6325 from "./rfc6325.json";
+import rfc6514 from "./rfc6514.json";
+import rfc7296 from "./rfc7296.json";
 import rfc7348 from "./rfc7348.json";
 import type { RfcVisualModel } from "~/visuals/types";
 
-export const GENERATED: RfcVisualModel[] = [rfc5340, rfc5905, rfc7348] as RfcVisualModel[];
+export const GENERATED: RfcVisualModel[] = [rfc1122, rfc1350, rfc2181, rfc2865, rfc3032, rfc3209, rfc3261, rfc3471, rfc3473, rfc3550, rfc3597, rfc4035, rfc4120, rfc4253, rfc4291, rfc4791, rfc5155, rfc5280, rfc5340, rfc5357, rfc5545, rfc5905, rfc6325, rfc6514, rfc7296, rfc7348] as RfcVisualModel[];

@@ -1,0 +1,231 @@
+{
+  "rfc": 2865,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "access-success",
+      "title": "Successful Access Authentication",
+      "participants": {
+        "a": "Network Access Server",
+        "b": "RADIUS Server"
+      },
+      "intro": {
+        "section": "7.1",
+        "quote": "The NAS at 192.168.1.16 sends an Access-Request UDP packet to the RADIUS Server for a user named nemo logging in on port 3 with password \"arctangent\"."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Access-Request",
+          "explain": "The NAS sends an Access-Request containing the user, password, and NAS port information used for authentication.",
+          "cite": {
+            "section": "7.1",
+            "quote": "The NAS at 192.168.1.16 sends an Access-Request UDP packet to the RADIUS Server for a user named nemo logging in on port 3 with password \"arctangent\"."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Access-Accept",
+          "explain": "The server authenticates the user and returns an Access-Accept telling the NAS which host to use for the service.",
+          "cite": {
+            "section": "7.1",
+            "quote": "The RADIUS server authenticates nemo, and sends an Access-Accept UDP packet to the NAS telling it to telnet nemo to host 192.168.1.3."
+          }
+        }
+      ]
+    },
+    {
+      "id": "access-reject",
+      "title": "Rejected Access Request",
+      "participants": {
+        "a": "Network Access Server",
+        "b": "RADIUS Server"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "If any condition is not met, the RADIUS server sends an \"Access-Reject\" response indicating that this user request is invalid."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Access-Request",
+          "explain": "The NAS asks the server to determine whether the user may access the NAS and whether any special service is requested.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Access-Request packets are sent to a RADIUS server, and convey information used to determine whether a user is allowed access to a specific NAS, and any special services requested for that user."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Access-Reject",
+          "explain": "The server sends Access-Reject when a received attribute value is not acceptable.",
+          "cite": {
+            "section": "4.3",
+            "quote": "If any value of the received Attributes is not acceptable, then the RADIUS server MUST transmit a packet with the Code field set to 3 (Access-Reject)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "challenge-response",
+      "title": "Challenge-Response Authentication",
+      "participants": {
+        "a": "Network Access Server",
+        "b": "RADIUS Server"
+      },
+      "intro": {
+        "section": "2.1",
+        "quote": "The user then enters the challenge into his device (or software) and it calculates a response, which the user enters into the client which forwards it to the RADIUS server via a second Access-Request.  If the response matches the expected response the RADIUS server replies with an Access-Accept, otherwise an Access-Reject."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Access-Request",
+          "explain": "The NAS sends the initial Access-Request with NAS, port, and user information; its User-Password may be a fixed placeholder for the challenge flow.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Example: The NAS sends an Access-Request packet to the RADIUS Server with NAS-Identifier, NAS-Port, User-Name, User-Password (which may just be a fixed string like \"challenge\" or ignored)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Access-Challenge",
+          "explain": "The server returns Access-Challenge with State and a Reply-Message, and the NAS displays the challenge prompt.",
+          "cite": {
+            "section": "2.1",
+            "quote": "The server sends back an Access-Challenge packet with State and a Reply-Message along the lines of \"Challenge 12345678, enter your response at the prompt\" which the NAS displays."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Access-Request",
+          "explain": "The NAS prompts for the user's response and sends a new Access-Request with a new request ID, new Request Authenticator, encrypted response, and any State from the challenge.",
+          "cite": {
+            "section": "4.4",
+            "quote": "If the NAS supports challenge/response, receipt of a valid Access-Challenge indicates that a new Access-Request SHOULD be sent.  The NAS MAY display the text message, if any, to the user, and then prompt the user for a response.  It then sends its original Access-Request with a new request ID and Request Authenticator, with the User-Password Attribute replaced by the user's response (encrypted), and including the State Attribute from the Access-Challenge, if any."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Access-Accept",
+          "explain": "In the successful branch, the server returns Access-Accept; it may instead return Access-Reject or another Access-Challenge.",
+          "cite": {
+            "section": "2.1",
+            "quote": "The server then sends back either an Access-Accept or Access-Reject based on whether the response matches the required value, or it can even send another Access-Challenge."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "radius-packet",
+      "title": "RADIUS Packet Format",
+      "intro": {
+        "section": "3",
+        "quote": "A summary of the RADIUS data format is shown below.  The fields are transmitted from left to right."
+      },
+      "fields": [
+        {
+          "name": "Code",
+          "bits": 8,
+          "explain": "The one-octet code identifies the RADIUS packet type. A packet with an invalid code is silently discarded.",
+          "cite": {
+            "section": "3",
+            "quote": "The Code field is one octet, and identifies the type of RADIUS packet.  When a packet is received with an invalid Code field, it is silently discarded."
+          }
+        },
+        {
+          "name": "Identifier",
+          "bits": 8,
+          "explain": "The one-octet identifier helps match a response with its pending request.",
+          "cite": {
+            "section": "3",
+            "quote": "The Identifier field is one octet, and aids in matching requests and replies."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "The two-octet length covers the entire packet, including its fixed fields and attributes.",
+          "cite": {
+            "section": "3",
+            "quote": "The Length field is two octets.  It indicates the length of the packet including the Code, Identifier, Length, Authenticator and Attribute fields."
+          }
+        },
+        {
+          "name": "Authenticator",
+          "bits": 128,
+          "explain": "The sixteen-octet authenticator is used to authenticate a server reply and in the password-hiding algorithm.",
+          "cite": {
+            "section": "3",
+            "quote": "The Authenticator field is sixteen (16) octets.  The most significant octet is transmitted first.  This value is used to authenticate the reply from the RADIUS server, and is used in the password hiding algorithm."
+          }
+        },
+        {
+          "name": "Attributes",
+          "bits": "var",
+          "explain": "This variable-length area contains the attributes required for the service and any desired optional attributes.",
+          "cite": {
+            "section": "4.1",
+            "quote": "The Attribute field is variable in length, and contains the list of Attributes that are required for the type of service, as well as any desired optional Attributes."
+          }
+        }
+      ]
+    },
+    {
+      "id": "radius-attribute",
+      "title": "RADIUS Attribute Format",
+      "intro": {
+        "section": "5",
+        "quote": "A summary of the Attribute format is shown below.  The fields are transmitted from left to right."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The one-octet Type identifies the kind of RADIUS attribute.",
+          "cite": {
+            "section": "5",
+            "quote": "The Type field is one octet."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "The one-octet Length gives the total attribute size, including the Type, Length, and Value fields.",
+          "cite": {
+            "section": "5",
+            "quote": "The Length field is one octet, and indicates the length of this Attribute including the Type, Length and Value fields."
+          }
+        },
+        {
+          "name": "Value",
+          "bits": "var",
+          "explain": "The Value contains attribute-specific information, with its format and length determined by the Type and Length fields.",
+          "cite": {
+            "section": "5",
+            "quote": "The Value field is zero or more octets and contains information specific to the Attribute.  The format and length of the Value field is determined by the Type and Length fields."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "RADIUS Accounting packet types and accounting attributes, which are covered by RFC 2866.",
+    "Proxy chaining, forwarding-server policy changes, and detailed Proxy-State handling.",
+    "Detailed meanings and permitted packet types for every standard and vendor-specific attribute.",
+    "CHAP-specific challenge construction and the server-side CHAP comparison procedure.",
+    "UDP retransmission, fallback, and timeout details.",
+    "IANA registration policy and security considerations."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-20T03:16:51.737Z",
+    "dropped": 0
+  }
+}

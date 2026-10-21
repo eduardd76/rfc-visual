@@ -1,10 +1,11 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { parseModelReply } from "~/generator/parse";
 import { pruneModel } from "~/generator/prune";
+import { NETWORKING_FIRST } from "~/generator/networking";
 import { pickQueue } from "~/generator/queue";
-import type { RfcEntry } from "~/rfc/types";
+import type { RfcEntry, RfcIndex } from "~/rfc/types";
 import { rfc768 } from "~/visuals/rfc768";
 import { rfc9293 } from "~/visuals/rfc9293";
 import type { RfcVisualModel } from "~/visuals/types";
@@ -105,6 +106,19 @@ describe("pickQueue", () => {
 
   it("skips curated RFCs that are obsoleted, unusable or already have a visual", () => {
     expect(pickQueue(entries, new Set([3]), 10, [2, 3, 7, 8, 99, 4])).toEqual([4, 6, 5]);
+  });
+
+  it("lists each curated networking RFC once", () => {
+    expect(new Set(NETWORKING_FIRST).size).toBe(NETWORKING_FIRST.length);
+  });
+
+  it.skipIf(!existsSync("data/rfc-index.json"))("lists only current RFCs in the curated networking list", () => {
+    const index = JSON.parse(readFileSync("data/rfc-index.json", "utf8")) as RfcIndex;
+    const stale = NETWORKING_FIRST.filter((num) => {
+      const e = index.entries[num];
+      return !e || e.obsoletedBy.length > 0 || !e.formats.includes("TXT");
+    });
+    expect(stale).toEqual([]);
   });
 
   it("ranks networking titles ahead of other RFCs", () => {

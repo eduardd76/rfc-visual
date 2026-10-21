@@ -1,97 +1,8 @@
 {
   "rfc": 7432,
   "reviewed": false,
-  "initial": "T1",
-  "terminal": [
-    "T2",
-    "T2'",
-    "T2''",
-    "T3"
-  ],
-  "stateMachineTitle": "Remote MAC next-hop outcomes",
-  "states": [
-    {
-      "id": "T1",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T1 When the MAC/IP Advertisement route from PE1 and the set of Ethernet A-D per ES routes and Ethernet A-D per EVI routes from PE1 and PE2 are received, PE3 can forward traffic destined to M1 to both PE1 and PE2."
-      }
-    },
-    {
-      "id": "T2",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only."
-      }
-    },
-    {
-      "id": "T2'",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only."
-      }
-    },
-    {
-      "id": "T2''",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast."
-      }
-    },
-    {
-      "id": "T3",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T3 PE2 also advertises a MAC route for M1, and then PE1 withdraws its MAC route for M1. PE3 continues forwarding traffic destined to M1 to both PE1 and PE2."
-      }
-    }
-  ],
-  "transitions": [
-    {
-      "from": "T1",
-      "to": "T2",
-      "event": "PE1 withdraws Ethernet A-D per ES routes",
-      "action": "Forward M1 via PE2 only",
-      "layer": "happy",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only."
-      }
-    },
-    {
-      "from": "T1",
-      "to": "T2'",
-      "event": "PE2 withdraws Ethernet A-D per ES routes",
-      "action": "Forward M1 via PE1 only",
-      "layer": "happy",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only."
-      }
-    },
-    {
-      "from": "T1",
-      "to": "T2''",
-      "event": "PE1 withdraws MAC route",
-      "action": "Treat M1 as unknown unicast",
-      "layer": "happy",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast."
-      }
-    },
-    {
-      "from": "T1",
-      "to": "T3",
-      "event": "PE2 advertises MAC route and PE1 withdraws",
-      "action": "Forward M1 via PE1 and PE2",
-      "layer": "happy",
-      "cite": {
-        "section": "9.2.2",
-        "quote": "T1 When the MAC/IP Advertisement route from PE1 and the set of Ethernet A-D per ES routes and Ethernet A-D per EVI routes from PE1 and PE2 are received, PE3 can forward traffic destined to M1 to both PE1 and PE2. T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only. T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only. T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast. T3 PE2 also advertises a MAC route for M1, and then PE1 withdraws its MAC route for M1. PE3 continues forwarding traffic destined to M1 to both PE1 and PE2."
-      }
-    }
-  ],
+  "states": [],
+  "transitions": [],
   "sequences": [
     {
       "id": "remote-mac-advertisement",
@@ -198,7 +109,7 @@
         {
           "name": "Route Distinguisher (RD)",
           "bits": 64,
-          "explain": "Uses a type 1 route distinguisher whose value identifies the advertising PE and is unique on that PE.",
+          "explain": "For the Ethernet A-D per Ethernet Segment route, a Type 1 RD built from the PE address and a number unique on that PE. (The per-EVI A-D route uses the MAC-VRF RD instead.)",
           "cite": {
             "section": "8.2.1",
             "quote": "The Route Distinguisher (RD) MUST be a Type 1 RD [RFC4364]. The value field comprises an IP address of the PE (typically, the loopback address) followed by a number unique to the PE."
@@ -316,7 +227,7 @@
         {
           "name": "MPLS Label2",
           "bits": "var",
-          "explain": "Carries an optional second MPLS label.",
+          "explain": "Optional second label: absent, or 3 octets (24 bits) when present, with the label value in the high-order 20 bits.",
           "cite": {
             "section": "9.2.1",
             "quote": "The MPLS Label2 field is an optional field. If it is present, then it is encoded as 3 octets, where the high-order 20 bits contain the label value."
@@ -372,6 +283,7 @@
     }
   ],
   "notShown": [
+    "A forwarding state machine (an earlier draft invented one from the §9.2.2 example; removed after expert review)",
     "A complete BGP session FSM and the full PE forwarding-table state machine",
     "Inclusive Multicast Ethernet Tag route encoding and PMSI Tunnel construction",
     "Ethernet A-D per EVI route encoding and aliasing behavior",

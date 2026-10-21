@@ -98,6 +98,23 @@ describe("pickQueue", () => {
   it("respects the limit", () => {
     expect(pickQueue(entries, new Set(), 2)).toEqual([4, 3]);
   });
+
+  it("puts the curated networking RFCs first, in the listed order", () => {
+    expect(pickQueue(entries, new Set(), 10, [5, 3])).toEqual([5, 3, 4, 6]);
+  });
+
+  it("skips curated RFCs that are obsoleted, unusable or already have a visual", () => {
+    expect(pickQueue(entries, new Set([3]), 10, [2, 3, 7, 8, 99, 4])).toEqual([4, 6, 5]);
+  });
+
+  it("ranks networking titles ahead of other RFCs", () => {
+    const mixed = {
+      20: entry(20, { title: "Sieve: An Email Filtering Language", updatedBy: [1, 2, 3, 4] }),
+      21: entry(21, { title: "Multiprotocol Extensions for BGP-4", updatedBy: [1] }),
+      22: entry(22, { title: "IPv6 Stateless Address Autoconfiguration" }),
+    };
+    expect(pickQueue(mixed, new Set(), 10, [])).toEqual([21, 22, 20]);
+  });
 });
 
 describe("pruneModel for generated drafts", () => {

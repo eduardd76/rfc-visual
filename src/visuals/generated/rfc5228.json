@@ -1,0 +1,132 @@
+{
+  "rfc": 5228,
+  "reviewed": false,
+  "initial": "message",
+  "terminal": [
+    "fileinto",
+    "keep",
+    "redirect",
+    "discard",
+    "implicit keep"
+  ],
+  "stateMachineTitle": "Sieve message disposition outcomes",
+  "states": [
+    {
+      "id": "message",
+      "cite": {
+        "section": "1",
+        "quote": "Scripts written in Sieve are executed during final delivery, when the message is moved to the user-accessible mailbox."
+      }
+    },
+    {
+      "id": "fileinto",
+      "cite": {
+        "section": "4.1",
+        "quote": "The \"fileinto\" action delivers the message into the specified mailbox."
+      }
+    },
+    {
+      "id": "keep",
+      "cite": {
+        "section": "4.3",
+        "quote": "The \"keep\" action is whatever action is taken in lieu of all other actions, if no filtering happens at all; generally, this simply means to file the message into the user's main mailbox."
+      }
+    },
+    {
+      "id": "redirect",
+      "cite": {
+        "section": "4.2",
+        "quote": "The \"redirect\" action is used to send the message to another user at a supplied address, as a mail forwarding feature does."
+      }
+    },
+    {
+      "id": "discard",
+      "cite": {
+        "section": "4.4",
+        "quote": "Discard is used to silently throw away the message."
+      }
+    },
+    {
+      "id": "implicit keep",
+      "cite": {
+        "section": "2.10.2",
+        "quote": "An implicit keep is a keep action"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "message",
+      "to": "fileinto",
+      "event": "fileinto selected",
+      "action": "deliver to mailbox",
+      "layer": "happy",
+      "cite": {
+        "section": "4.1",
+        "quote": "The \"fileinto\" action delivers the message into the specified mailbox."
+      }
+    },
+    {
+      "from": "message",
+      "to": "keep",
+      "event": "keep selected",
+      "action": "file in main mailbox",
+      "layer": "happy",
+      "cite": {
+        "section": "4.3",
+        "quote": "The \"keep\" action is whatever action is taken in lieu of all other actions, if no filtering happens at all; generally, this simply means to file the message into the user's main mailbox."
+      }
+    },
+    {
+      "from": "message",
+      "to": "redirect",
+      "event": "redirect selected",
+      "action": "send to another user",
+      "layer": "happy",
+      "cite": {
+        "section": "4.2",
+        "quote": "The \"redirect\" action is used to send the message to another user at a supplied address, as a mail forwarding feature does."
+      }
+    },
+    {
+      "from": "message",
+      "to": "discard",
+      "event": "discard selected",
+      "action": "silently throw away",
+      "layer": "happy",
+      "cite": {
+        "section": "4.4",
+        "quote": "Discard is used to silently throw away the message. It does so by simply canceling the implicit keep. If discard is used with other actions, the other actions still happen."
+      },
+      "note": "Discard can be combined with another action, in which case the other action still happens."
+    },
+    {
+      "from": "message",
+      "to": "implicit keep",
+      "event": "no delivery action",
+      "action": "take implicit keep",
+      "layer": "happy",
+      "cite": {
+        "section": "2.10.2",
+        "quote": "An implicit keep is performed if a message is not written to a mailbox, redirected to a new address, or explicitly thrown out. That is, if a fileinto, a keep, a redirect, or a discard is performed, an implicit keep is not."
+      },
+      "note": "An explicit fileinto, keep, redirect, or discard cancels the implicit keep."
+    }
+  ],
+  "sequences": [],
+  "headers": [],
+  "notShown": [
+    "The complete if, elsif, and else control flow",
+    "The test command set, string match types, and comparator behavior",
+    "The stop command and compile-time or run-time error handling",
+    "How multiple actions in one script interact",
+    "Extension capability declarations, including the require command",
+    "The lexical and grammatical syntax, transmission format, and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:46:38.593Z",
+    "dropped": 0
+  }
+}

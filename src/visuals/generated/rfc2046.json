@@ -1,0 +1,118 @@
+{
+  "rfc": 2046,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "multipart-alternative",
+      "title": "Choosing a multipart/alternative representation",
+      "participants": {
+        "a": "Composing user agent",
+        "b": "Receiving user agent"
+      },
+      "intro": {
+        "section": "5.1.4",
+        "quote": "The \"multipart/alternative\" type is syntactically identical to \"multipart/mixed\", but the semantics are different. In particular, each of the body parts is an \"alternative\" version of the same information."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "multipart/alternative",
+          "explain": "The sender orders alternatives by increasing preference, with the preferred format last. The recipient displays the last format it can render.",
+          "cite": {
+            "section": "5.1.4",
+            "quote": "In general, user agents that compose \"multipart/alternative\" entities must place the body parts in increasing order of preference, that is, with the preferred format last. For fancy text, the sending user agent should put the plainest format first and the richest format last. Receiving user agents should pick and display the last format they are capable of displaying."
+          }
+        }
+      ]
+    },
+    {
+      "id": "partial-fragments",
+      "title": "message/partial fragmentation and reassembly",
+      "participants": {
+        "a": "Sending agent",
+        "b": "Receiving user agent"
+      },
+      "intro": {
+        "section": "5.2.2",
+        "quote": "The \"partial\" subtype is defined to allow large entities to be delivered as several separate pieces of mail and automatically reassembled by a receiving user agent. (The concept is similar to IP fragmentation and reassembly in the basic Internet Protocols.) This mechanism can be used when intermediate transport agents limit the size of individual messages that can be sent. The media type \"message/partial\" thus indicates that the body contains a fragment of a larger entity."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "message/partial",
+          "explain": "The fragment carries an id used to match related fragments and a number that gives its position in the sequence. The total parameter can also state the number of fragments.",
+          "cite": {
+            "section": "5.2.2",
+            "quote": "Three parameters must be specified in the Content-Type field of type \"message/partial\": The first, \"id\", is a unique identifier, as close to a world-unique identifier as possible, to be used to match the fragments together. (In general, the identifier is essentially a message-id; if placed in double quotes, it can be ANY message-id, in accordance with the BNF for \"parameter\" given in RFC 2045.) The second, \"number\", an integer, is the fragment number, which indicates where this fragment fits into the sequence of fragments. The third, \"total\", another integer, is the total number of fragments."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "message/partial",
+          "explain": "Another fragment carries the matching id and its own fragment number, allowing the recipient to match and order the pieces.",
+          "cite": {
+            "section": "5.2.2",
+            "quote": "Three parameters must be specified in the Content-Type field of type \"message/partial\": The first, \"id\", is a unique identifier, as close to a world-unique identifier as possible, to be used to match the fragments together. (In general, the identifier is essentially a message-id; if placed in double quotes, it can be ANY message-id, in accordance with the BNF for \"parameter\" given in RFC 2045.) The second, \"number\", an integer, is the fragment number, which indicates where this fragment fits into the sequence of fragments. The third, \"total\", another integer, is the total number of fragments."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "content-type",
+      "title": "Content-Type media type selection",
+      "intro": {
+        "section": "1",
+        "quote": "The first document in this set, RFC 2045, defines a number of header fields, including Content-Type. The Content-Type field is used to specify the nature of the data in the body of a MIME entity, by giving media type and subtype identifiers, and by providing auxiliary information that may be required for certain media types."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": "var",
+          "explain": "Declares the general kind of data carried by a MIME entity.",
+          "cite": {
+            "section": "1",
+            "quote": "In general, the top-level media type is used to declare the general type of data, while the subtype specifies a specific format for that type of data."
+          }
+        },
+        {
+          "name": "Subtype",
+          "bits": "var",
+          "explain": "Identifies the specific format within the declared top-level type.",
+          "cite": {
+            "section": "1",
+            "quote": "In general, the top-level media type is used to declare the general type of data, while the subtype specifies a specific format for that type of data."
+          }
+        },
+        {
+          "name": "Parameters",
+          "bits": "var",
+          "explain": "Supplies auxiliary information after the type and subtype names using attribute/value notation.",
+          "cite": {
+            "section": "1",
+            "quote": "The Content-Type field is used to specify the nature of the data in the body of a MIME entity, by giving media type and subtype identifiers, and by providing auxiliary information that may be required for certain media types. After the type and subtype names, the remainder of the header field is simply a set of parameters, specified in an attribute/value notation."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The common multipart body grammar, including boundary delimiters, transport padding, preambles, and epilogues",
+    "The semantics of the multipart/mixed, multipart/digest, and multipart/parallel subtypes",
+    "The message/rfc822 and message/external-body subtypes, including external access mechanisms and their security concerns",
+    "Detailed message/partial header-merging and reassembly rules",
+    "Character-set definitions, text line-break rules, and content-transfer-encoding requirements",
+    "The discrete text, image, audio, video, and application media types and their registered subtypes",
+    "The PostScript security analysis and the IANA media type registration procedures defined in RFC 2048"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:11:37.988Z",
+    "dropped": 0
+  }
+}

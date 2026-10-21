@@ -1,0 +1,267 @@
+{
+  "rfc": 6376,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "signing-and-key-retrieval",
+      "title": "DKIM Signing and Public-Key Retrieval",
+      "participants": {
+        "a": "Signing domain",
+        "b": "Verifier"
+      },
+      "intro": {
+        "section": "1",
+        "quote": "Assertion of responsibility is validated through a cryptographic signature and by querying the Signer's domain directly to retrieve the appropriate public key."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "DKIM-Signature",
+          "explain": "The signing domain sends the email after inserting the completed DKIM-Signature header field.",
+          "cite": {
+            "section": "5.6",
+            "quote": "Finally, the Signer MUST insert the DKIM-Signature header field created in the previous step prior to transmitting the email."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DNS query",
+          "explain": "The verifier forms the DNS query from the signing domain and selector carried by the signature.",
+          "cite": {
+            "section": "3.6.2.1",
+            "quote": "Given a DKIM-Signature field with a \"d=\" tag of \"example.com\" and an \"s=\" tag of \"foo.bar\", the DNS query will be for \"foo.bar._domainkey.example.com\"."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "TXT RR",
+          "explain": "The signing domain's DNS returns the public key in the TXT resource record used for key storage.",
+          "cite": {
+            "section": "3.6.2.2",
+            "quote": "The DNS Resource Record type used is specified by an option to the query-type (\"q=\") tag. The only option defined in this base specification is \"txt\", indicating the use of a TXT RR."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "dkim-signature",
+      "title": "DKIM-Signature Header Field",
+      "intro": {
+        "section": "3.5",
+        "quote": "The signature of the email is stored in the DKIM-Signature header field. This header field contains all of the signature and key-fetching data. The DKIM-Signature value is a tag-list as described in Section 3.2."
+      },
+      "fields": [
+        {
+          "name": "v=",
+          "bits": "var",
+          "explain": "Identifies the applicable DKIM signature specification version. Compliant implementations use version 1.",
+          "cite": {
+            "section": "3.5",
+            "quote": "v= Version (plain-text; REQUIRED). This tag defines the version of this specification that applies to the signature record. It MUST have the value \"1\" for implementations compliant with this version of DKIM."
+          }
+        },
+        {
+          "name": "a=",
+          "bits": "var",
+          "explain": "Names the signature algorithm. Verifiers support both listed RSA algorithms, and signers should use rsa-sha256.",
+          "cite": {
+            "section": "3.5",
+            "quote": "a= The algorithm used to generate the signature (plain-text; REQUIRED). Verifiers MUST support \"rsa-sha1\" and \"rsa-sha256\"; Signers SHOULD sign using \"rsa-sha256\"."
+          }
+        },
+        {
+          "name": "b=",
+          "bits": "var",
+          "explain": "Carries the base64-encoded signature data. Whitespace is ignored when the original signature is reassembled.",
+          "cite": {
+            "section": "3.5",
+            "quote": "b= The signature data (base64; REQUIRED). Whitespace is ignored in this value and MUST be ignored when reassembling the original signature."
+          }
+        },
+        {
+          "name": "bh=",
+          "bits": "var",
+          "explain": "Carries the base64-encoded hash of the canonicalized body, limited by the length declared in the l= tag.",
+          "cite": {
+            "section": "3.5",
+            "quote": "bh= The hash of the canonicalized body part of the message as limited by the \"l=\" tag (base64; REQUIRED). Whitespace is ignored in this value and MUST be ignored when reassembling the original signature."
+          }
+        },
+        {
+          "name": "d=",
+          "bits": "var",
+          "explain": "Names the signing domain that claims responsibility for the message. It is also used to form the public-key query.",
+          "cite": {
+            "section": "3.5",
+            "quote": "d= The SDID claiming responsibility for an introduction of a message into the mail stream (plain-text; REQUIRED). Hence, the SDID value is used to form the query for the public key. The SDID MUST correspond to a valid DNS name under which the DKIM key record is published."
+          }
+        },
+        {
+          "name": "h=",
+          "bits": "var",
+          "explain": "Lists the header fields included in the signature in the order presented to the signing algorithm.",
+          "cite": {
+            "section": "3.5",
+            "quote": "h= Signed header fields (plain-text, but see description; REQUIRED). A colon-separated list of header field names that identify the header fields presented to the signing algorithm. The field MUST contain the complete list of header fields in the order presented to the signing algorithm."
+          }
+        },
+        {
+          "name": "i=",
+          "bits": "var",
+          "explain": "Carries the optional Agent or User Identifier on whose behalf the signing domain takes responsibility.",
+          "cite": {
+            "section": "3.5",
+            "quote": "i= The Agent or User Identifier (AUID) on behalf of which the SDID is taking responsibility (dkim-quoted-printable; OPTIONAL, default is an empty local-part followed by an \"@\" followed by the domain from the \"d=\" tag)."
+          }
+        },
+        {
+          "name": "l=",
+          "bits": "var",
+          "explain": "Gives the number of canonicalized body octets covered by the cryptographic hash. The default covers the entire body.",
+          "cite": {
+            "section": "3.5",
+            "quote": "l= Body length count (plain-text unsigned decimal integer; OPTIONAL, default is entire body). This tag informs the Verifier of the number of octets in the body of the email after canonicalization included in the cryptographic hash, starting from 0 immediately following the CRLF preceding the body."
+          }
+        },
+        {
+          "name": "q=",
+          "bits": "var",
+          "explain": "Lists the methods used to retrieve the public key. The default method is dns/txt.",
+          "cite": {
+            "section": "3.5",
+            "quote": "q= A colon-separated list of query methods used to retrieve the public key (plain-text; OPTIONAL, default is \"dns/txt\"). Each query method is of the form \"type[/options]\", where the syntax and semantics of the options depend on the type and specified options."
+          }
+        },
+        {
+          "name": "s=",
+          "bits": "var",
+          "explain": "Names the selector that subdivides the signing domain's key namespace.",
+          "cite": {
+            "section": "3.5",
+            "quote": "s= The selector subdividing the namespace for the \"d=\" (domain) tag (plain-text; REQUIRED)."
+          }
+        },
+        {
+          "name": "t=",
+          "bits": "var",
+          "explain": "Records the time when the signature was created as unsigned decimal seconds since the Unix epoch.",
+          "cite": {
+            "section": "3.5",
+            "quote": "t= Signature Timestamp (plain-text unsigned decimal integer; RECOMMENDED, default is an unknown creation time). The time that this signature was created. The format is the number of seconds since 00:00:00 on January 1, 1970 in the UTC time zone."
+          }
+        },
+        {
+          "name": "x=",
+          "bits": "var",
+          "explain": "Records an absolute expiration time for the signature. It is not intended as an anti-replay defense.",
+          "cite": {
+            "section": "3.5",
+            "quote": "x= Signature Expiration (plain-text unsigned decimal integer; RECOMMENDED, default is no expiration). The format is the same as in the \"t=\" tag, represented as an absolute date, not as a time delta from the signing timestamp."
+          }
+        },
+        {
+          "name": "z=",
+          "bits": "var",
+          "explain": "Carries optional copies of selected header fields for diagnostic use. Copied fields are separated by vertical bars.",
+          "cite": {
+            "section": "3.5",
+            "quote": "z= Copied header fields (dkim-quoted-printable, but see description; OPTIONAL, default is null). A vertical-bar-separated list of selected header fields present when the message was signed, including both the field name and value."
+          }
+        }
+      ]
+    },
+    {
+      "id": "domainkey-record",
+      "title": "_domainkey DNS TXT Public-Key Record",
+      "intro": {
+        "section": "3.6.1",
+        "quote": "The overall syntax is a tag-list as described in Section 3.2. The current valid tags are described below. Other tags MAY be present and MUST be ignored by any implementation that does not understand them."
+      },
+      "fields": [
+        {
+          "name": "v=",
+          "bits": "var",
+          "explain": "Identifies the key-record version. When present, it must be the first tag and have the value DKIM1.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "v= Version of the DKIM key record (plain-text; RECOMMENDED, default is \"DKIM1\"). If specified, this tag MUST be set to \"DKIM1\" (without the quotes). This tag MUST be the first tag in the record."
+          }
+        },
+        {
+          "name": "h=",
+          "bits": "var",
+          "explain": "Lists the hash algorithms that the key record permits. The default allows all algorithms.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "h= Acceptable hash algorithms (plain-text; OPTIONAL, defaults to allowing all algorithms). A colon-separated list of hash algorithms that might be used."
+          }
+        },
+        {
+          "name": "k=",
+          "bits": "var",
+          "explain": "Names the public-key type. The default and currently required type is rsa.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "k= Key type (plain-text; OPTIONAL, default is \"rsa\"). Signers and Verifiers MUST support the \"rsa\" key type. The \"rsa\" key type indicates that an ASN.1 DER-encoded [ITU-X660-1997] RSAPublicKey (see [RFC3447], Sections 3.1 and A.1.1) is being used in the \"p=\" tag."
+          }
+        },
+        {
+          "name": "n=",
+          "bits": "var",
+          "explain": "Carries optional notes for human readers. Programs do not interpret this field.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "n= Notes that might be of interest to a human (qp-section; OPTIONAL, default is empty). No interpretation is made by any program."
+          }
+        },
+        {
+          "name": "p=",
+          "bits": "var",
+          "explain": "Carries the base64-encoded public key. An empty value indicates that the key has been revoked.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "p= Public-key data (base64; REQUIRED). An empty value means that this public key has been revoked."
+          }
+        },
+        {
+          "name": "s=",
+          "bits": "var",
+          "explain": "Lists the service types to which the key record applies. The default applies to all service types.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "s= Service Type (plain-text; OPTIONAL; default is \"*\"). A colon-separated list of service types to which this record applies."
+          }
+        },
+        {
+          "name": "t=",
+          "bits": "var",
+          "explain": "Carries optional selector flags. Unrecognized flags must be ignored.",
+          "cite": {
+            "section": "3.6.1",
+            "quote": "t= Flags, represented as a colon-separated list of names (plain-text; OPTIONAL, default is no flags set). Unrecognized flags MUST be ignored."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The simple and relaxed header and body canonicalization algorithms",
+    "The detailed body-hash and header-hash computation procedure",
+    "The policy for selecting which header fields to sign, including the required From field",
+    "Multiple-signature selection and interpretation semantics",
+    "Verifier result-code handling, SMTP rejection replies, and local trust policy",
+    "Key rotation and operational security guidance",
+    "MIME transfer-encoding and message-normalization details"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:33:08.004Z",
+    "dropped": 1
+  }
+}

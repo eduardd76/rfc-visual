@@ -1,0 +1,403 @@
+{
+  "rfc": 6066,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "server-name-negotiation",
+      "title": "Server Name Indication Negotiation",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "TLS does not provide a mechanism for a client to tell a server the name of the server it is contacting."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "client hello",
+          "explain": "The client may include the contacted server name in the extended ClientHello.",
+          "cite": {
+            "section": "3",
+            "quote": "In order to provide any of the server names, clients MAY include an extension of type \"server_name\" in the (extended) client hello."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "server hello",
+          "explain": "When the server uses the name for certificate or security-policy selection, it includes a server_name extension with empty extension_data in the extended ServerHello.",
+          "cite": {
+            "section": "3",
+            "quote": "A server that receives a client hello containing the \"server_name\" extension MAY use the information contained in the extension to guide its selection of an appropriate certificate to return to the client, and/or other aspects of security policy. In this event, the server SHALL include an extension of type \"server_name\" in the (extended) server hello. The \"extension_data\" field of this extension SHALL be empty."
+          }
+        }
+      ]
+    },
+    {
+      "id": "maximum-fragment-negotiation",
+      "title": "Maximum Fragment Length Negotiation",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "Without this extension, TLS specifies a fixed maximum plaintext fragment length of 2^14 bytes. It may be desirable for constrained clients to negotiate a smaller maximum fragment length due to memory limitations or bandwidth limitations."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "client hello",
+          "explain": "The client may request a smaller maximum fragment length in the extended ClientHello.",
+          "cite": {
+            "section": "4",
+            "quote": "In order to negotiate smaller maximum fragment lengths, clients MAY include an extension of type \"max_fragment_length\" in the (extended) client hello."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "server hello",
+          "explain": "If the server accepts the request, it returns the same requested length in a max_fragment_length extension in the extended ServerHello.",
+          "cite": {
+            "section": "4",
+            "quote": "Servers that receive an extended client hello containing a \"max_fragment_length\" extension MAY accept the requested maximum fragment length by including an extension of type \"max_fragment_length\" in the (extended) server hello. The \"extension_data\" field of this extension SHALL contain a \"MaxFragmentLength\" whose value is the same as the requested maximum fragment length."
+          }
+        }
+      ]
+    },
+    {
+      "id": "client-certificate-urls",
+      "title": "Client Certificate URL Exchange",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "Without this extension, TLS specifies that when client authentication is performed, client certificates are sent by clients to servers during the TLS handshake. It may be desirable for constrained clients to send certificate URLs in place of certificates, so that they do not need to store their certificates and can therefore save memory."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "client hello",
+          "explain": "The client offers to use certificate URLs by placing a client_certificate_url extension with empty extension_data in the extended ClientHello.",
+          "cite": {
+            "section": "5",
+            "quote": "In order to negotiate sending certificate URLs to a server, clients MAY include an extension of type \"client_certificate_url\" in the (extended) client hello. The \"extension_data\" field of this extension SHALL be empty."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "server hello",
+          "explain": "The server indicates that it accepts certificate URLs by returning a client_certificate_url extension with empty extension_data in the extended ServerHello.",
+          "cite": {
+            "section": "5",
+            "quote": "Servers that receive an extended client hello containing a \"client_certificate_url\" extension MAY indicate that they are willing to accept certificate URLs by including an extension of type \"client_certificate_url\" in the (extended) server hello. The \"extension_data\" field of this extension SHALL be empty."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "CertificateURL",
+          "explain": "After both sides negotiate the extension, the client may send a CertificateURL message instead of a Certificate message.",
+          "cite": {
+            "section": "5",
+            "quote": "After negotiation of the use of client certificate URLs has been successfully completed (by exchanging hellos including \"client_certificate_url\" extensions), clients MAY send a \"CertificateURL\" message in place of a \"Certificate\" message as follows (see also Section 2):"
+          }
+        }
+      ]
+    },
+    {
+      "id": "certificate-status",
+      "title": "Certificate Status Exchange",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "8",
+        "quote": "Constrained clients may wish to use a certificate-status protocol such as OCSP [RFC2560] to check the validity of server certificates, in order to avoid transmission of CRLs and therefore save bandwidth on constrained networks. This extension allows for such information to be sent in the TLS handshake, saving roundtrips and resources."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "client hello",
+          "explain": "The client requests certificate-status information by including a status_request extension in the extended ClientHello.",
+          "cite": {
+            "section": "8",
+            "quote": "In order to indicate their desire to receive certificate status information, clients MAY include an extension of type \"status_request\" in the (extended) client hello. The \"extension_data\" field of this extension SHALL contain \"CertificateStatusRequest\" where:"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "server hello",
+          "explain": "Before returning a CertificateStatus message, the server must have included a status_request extension with empty extension_data in its extended ServerHello.",
+          "cite": {
+            "section": "8",
+            "quote": "If a server returns a \"CertificateStatus\" message, then the server MUST have included an extension of type \"status_request\" with empty \"extension_data\" in the extended server hello."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Certificate",
+          "explain": "The server sends its Certificate message before the certificate-status response.",
+          "cite": {
+            "section": "8",
+            "quote": "Servers return a certificate response along with their certificate by sending a \"CertificateStatus\" message immediately after the \"Certificate\" message (and before any \"ServerKeyExchange\" or \"CertificateRequest\" messages)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "CertificateStatus",
+          "explain": "The server sends a CertificateStatus handshake message whose status type selects the OCSP response.",
+          "cite": {
+            "section": "8",
+            "quote": "struct {\n          CertificateStatusType status_type;\n          select (status_type) {\n              case ocsp: OCSPResponse;\n          } response;\n      } CertificateStatus;"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "server-name",
+      "title": "server_name Extension Data",
+      "intro": {
+        "section": "3",
+        "quote": "TLS does not provide a mechanism for a client to tell a server the name of the server it is contacting. It may be desirable for clients to provide this information to facilitate secure connections to servers that host multiple 'virtual' servers at a single underlying network address."
+      },
+      "fields": [
+        {
+          "name": "name_type",
+          "bits": 8,
+          "explain": "Identifies the name form. The only defined name type is host_name.",
+          "cite": {
+            "section": "3",
+            "quote": "struct {\n          NameType name_type;\n          select (name_type) {\n              case host_name: HostName;\n          } name;\n      } ServerName;"
+          }
+        },
+        {
+          "name": "HostName",
+          "bits": "var",
+          "explain": "Contains the fully qualified DNS hostname as an ASCII byte string with no trailing dot.",
+          "cite": {
+            "section": "3",
+            "quote": "\"HostName\" contains the fully qualified DNS hostname of the server, as understood by the client. The hostname is represented as a byte string using ASCII encoding without a trailing dot."
+          }
+        }
+      ]
+    },
+    {
+      "id": "maximum-fragment-length",
+      "title": "max_fragment_length Extension Data",
+      "intro": {
+        "section": "4",
+        "quote": "Without this extension, TLS specifies a fixed maximum plaintext fragment length of 2^14 bytes. It may be desirable for constrained clients to negotiate a smaller maximum fragment length due to memory limitations or bandwidth limitations."
+      },
+      "fields": [
+        {
+          "name": "MaxFragmentLength",
+          "bits": 8,
+          "explain": "Selects the desired maximum fragment length. The allowed values are 2^9, 2^10, 2^11, and 2^12.",
+          "cite": {
+            "section": "4",
+            "quote": "enum{\n          2^9(1), 2^10(2), 2^11(3), 2^12(4), (255)\n      } MaxFragmentLength;"
+          }
+        }
+      ]
+    },
+    {
+      "id": "certificate-url",
+      "title": "CertificateURL Handshake Message",
+      "intro": {
+        "section": "5",
+        "quote": "Here, \"url_and_hash_list\" contains a sequence of URLs and hashes."
+      },
+      "fields": [
+        {
+          "name": "msg_type",
+          "bits": 8,
+          "explain": "Identifies the handshake message type.",
+          "cite": {
+            "section": "2",
+            "quote": "HandshakeType msg_type;"
+          }
+        },
+        {
+          "name": "length",
+          "bits": 24,
+          "explain": "Gives the number of bytes in the handshake message.",
+          "cite": {
+            "section": "2",
+            "quote": "uint24 length;"
+          }
+        },
+        {
+          "name": "type",
+          "bits": 8,
+          "explain": "Selects individual_certs or pkipath for the certificate chain represented by the URL list.",
+          "cite": {
+            "section": "5",
+            "quote": "enum {\n          individual_certs(0), pkipath(1), (255)\n      } CertChainType;\n\n      struct {\n          CertChainType type;\n          URLAndHash url_and_hash_list<1..2^16-1>;\n      } CertificateURL;"
+          }
+        },
+        {
+          "name": "url",
+          "bits": "var",
+          "explain": "Contains an absolute URI that can immediately be used to fetch the certificate or chain.",
+          "cite": {
+            "section": "5",
+            "quote": "Each \"url\" MUST be an absolute URI reference according to [RFC3986] that can be immediately used to fetch the certificate(s)."
+          }
+        },
+        {
+          "name": "padding",
+          "bits": 8,
+          "explain": "Is one byte and MUST be 0x01 for backward compatibility.",
+          "cite": {
+            "section": "5",
+            "quote": "The \"padding\" byte MUST be 0x01.  It is present to make the structure backwards compatible."
+          }
+        },
+        {
+          "name": "SHA1Hash",
+          "bits": 160,
+          "explain": "Stores the 20-byte SHA-1 hash associated with the certificate or chain represented by the URL.",
+          "cite": {
+            "section": "5",
+            "quote": "struct {\n          opaque url<1..2^16-1>;\n          unint8 padding;\n          opaque SHA1Hash[20];\n      } URLAndHash;\n\n   Here, \"url_and_hash_list\" contains a sequence of URLs and hashes.\n   Each \"url\" MUST be an absolute URI reference according to [RFC3986]\n   that can be immediately used to fetch the certificate(s).\n\n   When X.509 certificates are used, there are two possibilities:\n\n   -  If CertificateURL.type is \"individual_certs\", each URL refers to a\n      single DER-encoded X.509v3 certificate, with the URL for the\n      client's certificate first.\n\n   -  If CertificateURL.type is \"pkipath\", the list contains a single\n      URL referring to a DER-encoded certificate chain, using the type\n      PkiPath described in Section 10.1.\n\n   When any other certificate format is used, the specification that\n   describes use of that format in TLS should define the encoding format\n   of certificates or certificate chains, and any constraint on their\n   ordering.\n\n   The \"padding\" byte MUST be 0x01.  It is present to make the structure\n   backwards compatible.\n\n   The hash corresponding to each URL is the SHA-1 hash of the\n   certificate or certificate chain (in the case of X.509 certificates,\n   the DER-encoded certificate or the DER-encoded PkiPath)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "trusted-ca-keys",
+      "title": "trusted_ca_keys Extension Data",
+      "intro": {
+        "section": "6",
+        "quote": "Here, \"TrustedAuthorities\" provides a list of CA root key identifiers that the client possesses."
+      },
+      "fields": [
+        {
+          "name": "identifier_type",
+          "bits": 8,
+          "explain": "Selects how the following trusted-authority identifier is encoded.",
+          "cite": {
+            "section": "6",
+            "quote": "struct {\n          IdentifierType identifier_type;\n          select (identifier_type) {\n              case pre_agreed: struct {};\n              case key_sha1_hash: SHA1Hash;\n              case x509_name: DistinguishedName;\n              case cert_sha1_hash: SHA1Hash;\n          } identifier;\n      } TrustedAuthority;"
+          }
+        },
+        {
+          "name": "identifier",
+          "bits": "var",
+          "explain": "Carries the selected identity: no identity, a key hash, an X.509 name, or a certificate hash.",
+          "cite": {
+            "section": "6",
+            "quote": "struct {\n          IdentifierType identifier_type;\n          select (identifier_type) {\n              case pre_agreed: struct {};\n              case key_sha1_hash: SHA1Hash;\n              case x509_name: DistinguishedName;\n              case cert_sha1_hash: SHA1Hash;\n          } identifier;\n      } TrustedAuthority;"
+          }
+        }
+      ]
+    },
+    {
+      "id": "status-request",
+      "title": "status_request Extension Data",
+      "intro": {
+        "section": "8",
+        "quote": "In order to indicate their desire to receive certificate status information, clients MAY include an extension of type \"status_request\" in the (extended) client hello. The \"extension_data\" field of this extension SHALL contain \"CertificateStatusRequest\" where:"
+      },
+      "fields": [
+        {
+          "name": "status_type",
+          "bits": 8,
+          "explain": "Selects the status request format. The defined request type is ocsp.",
+          "cite": {
+            "section": "8",
+            "quote": "struct {\n          CertificateStatusType status_type;\n          select (status_type) {\n              case ocsp: OCSPStatusRequest;\n          } request;\n      } CertificateStatusRequest;"
+          }
+        },
+        {
+          "name": "ResponderID",
+          "bits": "var",
+          "explain": "Carries one variable-length OCSP responder identifier.",
+          "cite": {
+            "section": "8",
+            "quote": "opaque ResponderID<1..2^16-1>;"
+          }
+        },
+        {
+          "name": "request_extensions",
+          "bits": "var",
+          "explain": "Carries DER-encoded OCSP request extensions. A zero-length value means that no extensions are requested.",
+          "cite": {
+            "section": "8",
+            "quote": "Both \"ResponderID\" and \"Extensions\" are DER-encoded ASN.1 types as defined in [RFC2560]. \"Extensions\" is imported from [RFC5280]. A zero-length \"request_extensions\" value means that there are no extensions (as opposed to a zero-length ASN.1 SEQUENCE, which is not valid for the \"Extensions\" type)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "certificate-status",
+      "title": "CertificateStatus Handshake Message",
+      "intro": {
+        "section": "8",
+        "quote": "Servers return a certificate response along with their certificate by sending a \"CertificateStatus\" message immediately after the \"Certificate\" message (and before any \"ServerKeyExchange\" or \"CertificateRequest\" messages)."
+      },
+      "fields": [
+        {
+          "name": "msg_type",
+          "bits": 8,
+          "explain": "Identifies the handshake message type.",
+          "cite": {
+            "section": "2",
+            "quote": "HandshakeType msg_type;"
+          }
+        },
+        {
+          "name": "length",
+          "bits": 24,
+          "explain": "Gives the number of bytes in the handshake message.",
+          "cite": {
+            "section": "2",
+            "quote": "uint24 length;"
+          }
+        },
+        {
+          "name": "type",
+          "bits": 8,
+          "explain": "Selects the status response format. The defined response type is ocsp.",
+          "cite": {
+            "section": "8",
+            "quote": "struct {\n          CertificateStatusType status_type;\n          select (status_type) {\n              case ocsp: OCSPResponse;\n          } response;\n      } CertificateStatus;"
+          }
+        },
+        {
+          "name": "OCSPResponse",
+          "bits": "var",
+          "explain": "Contains one complete DER-encoded OCSP response.",
+          "cite": {
+            "section": "8",
+            "quote": "An \"ocsp_response\" contains a complete, DER-encoded OCSP response (using the ASN.1 type OCSPResponse defined in [RFC2560]). Only one OCSP response may be sent."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The generic TLS extension envelope and complete ClientHello and ServerHello structures defined in RFC 5246",
+    "The truncated_hmac extension and its switch to 80-bit record-layer MAC tags",
+    "Extension-specific failure alerts and handshake abort paths",
+    "Session-resumption handling for the extensions",
+    "Detailed certificate retrieval, URI caching, and OCSP response-validation behavior",
+    "The application/pkix-pkipath MIME registration and the RFC's security considerations",
+    "Length prefixes for the variable-length vectors shown in the extension and handshake formats"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:38:11.459Z",
+    "dropped": 0
+  }
+}

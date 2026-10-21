@@ -1,0 +1,253 @@
+{
+  "rfc": 4121,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "context-establishment-framing",
+      "title": "Generic GSS-API Context Establishment Framing",
+      "intro": {
+        "section": "4.1",
+        "quote": "All context establishment tokens emitted by the Kerberos Version 5 GSS-API mechanism SHALL have the framing described in section 3.1 of [RFC2743], as illustrated by the following pseudo-ASN.1 structures:"
+      },
+      "fields": [
+        {
+          "name": "thisMech",
+          "bits": "var",
+          "explain": "This field identifies the mechanism to which the token belongs.",
+          "cite": {
+            "section": "4.1",
+            "quote": "thisMech MechType,"
+          }
+        },
+        {
+          "name": "innerToken",
+          "bits": "var",
+          "explain": "This field carries the mechanism-specific token. It starts with a two-octet token identifier and is followed by a Kerberos message.",
+          "cite": {
+            "section": "4.1",
+            "quote": "The innerToken field starts with a two-octet token-identifier (TOK_ID) expressed in big-endian order, followed by a Kerberos message."
+          }
+        }
+      ]
+    },
+    {
+      "id": "authenticator-checksum",
+      "title": "Authenticator Checksum",
+      "intro": {
+        "section": "4.1.1",
+        "quote": "The authenticator checksum field SHALL have the following format:"
+      },
+      "fields": [
+        {
+          "name": "Lgth",
+          "bits": 32,
+          "explain": "This field gives the number of octets in the Bnd field in little-endian order.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "0..3 Lgth Number of octets in Bnd field; Represented in little-endian order; Currently contains hex value 10 00 00 00 (16)."
+          }
+        },
+        {
+          "name": "Bnd",
+          "bits": 128,
+          "explain": "This field carries channel-binding information.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "4..19 Bnd Channel binding information, as described in section 4.1.1.2."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 32,
+          "explain": "This field carries the context-establishment flags in little-endian order.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "20..23 Flags Four-octet context-establishment flags in little-endian order as described in section 4.1.1.1."
+          }
+        },
+        {
+          "name": "DlgOpt",
+          "bits": 16,
+          "explain": "This optional field identifies delegation with the value 1. It is present when GSS_C_DELEG_FLAG is set.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "24..25 DlgOpt The delegation option identifier (=1) in little-endian order [optional]. This field and the next two fields are present if and only if GSS_C_DELEG_FLAG is set as described in section 4.1.1.1."
+          }
+        },
+        {
+          "name": "Dlgth",
+          "bits": 16,
+          "explain": "This optional field gives the length of the Deleg field in little-endian order.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "26..27 Dlgth The length of the Deleg field in little-endian order [optional]."
+          }
+        },
+        {
+          "name": "Deleg",
+          "bits": "var",
+          "explain": "This optional field carries a KRB_CRED message.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "28..(n-1) Deleg A KRB_CRED message (n = Dlgth + 28) [optional]."
+          }
+        },
+        {
+          "name": "Exts",
+          "bits": "var",
+          "explain": "This optional trailing field carries extension information.",
+          "cite": {
+            "section": "4.1.1",
+            "quote": "n..last Exts Extensions [optional]."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mic-token",
+      "title": "MIC Token",
+      "intro": {
+        "section": "4.2.6.1",
+        "quote": "Use of the GSS_GetMIC() call yields a token (referred as the MIC token in this document), separate from the user data being protected, which can be used to verify the integrity of that data as received."
+      },
+      "fields": [
+        {
+          "name": "TOK_ID",
+          "bits": 16,
+          "explain": "This field identifies a token emitted by GSS_GetMIC() with the big-endian value 04 04.",
+          "cite": {
+            "section": "4.2.6.1",
+            "quote": "0..1 TOK_ID Identification field. Tokens emitted by GSS_GetMIC() contain the hex value 04 04 expressed in big-endian order in this field."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "This field contains attributes of the protected message.",
+          "cite": {
+            "section": "4.2.6.1",
+            "quote": "2 Flags Attributes field, as described in section 4.2.2."
+          }
+        },
+        {
+          "name": "Filler",
+          "bits": 40,
+          "explain": "This field contains five octets with the value FF.",
+          "cite": {
+            "section": "4.2.6.1",
+            "quote": "3..7 Filler Contains five octets of hex value FF."
+          }
+        },
+        {
+          "name": "SND_SEQ",
+          "bits": 64,
+          "explain": "This field contains the sender's sequence number in clear text and big-endian order.",
+          "cite": {
+            "section": "4.2.6.1",
+            "quote": "8..15 SND_SEQ Sequence number field in clear text, expressed in big-endian order."
+          }
+        },
+        {
+          "name": "SGN_CKSUM",
+          "bits": "var",
+          "explain": "This field contains the checksum of the data to be signed and octets 0 through 15.",
+          "cite": {
+            "section": "4.2.6.1",
+            "quote": "16..last SGN_CKSUM Checksum of the \"to-be-signed\" data and octet 0..15, as described in section 4.2.4."
+          }
+        }
+      ]
+    },
+    {
+      "id": "wrap-token",
+      "title": "Wrap Token",
+      "intro": {
+        "section": "4.2.6.2",
+        "quote": "Use of the GSS_Wrap() call yields a token (referred as the Wrap token in this document), which consists of a descriptive header, followed by a body portion that contains either the input user data in plaintext concatenated with the checksum, or the input user data encrypted."
+      },
+      "fields": [
+        {
+          "name": "TOK_ID",
+          "bits": 16,
+          "explain": "This field identifies a token emitted by GSS_Wrap() with the big-endian value 05 04.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "0..1 TOK_ID Identification field. Tokens emitted by GSS_Wrap() contain the hex value 05 04 expressed in big-endian order in this field."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "This field contains attributes of the protected message.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "2 Flags Attributes field, as described in section 4.2.2."
+          }
+        },
+        {
+          "name": "Filler",
+          "bits": 8,
+          "explain": "This field contains the value FF.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "3 Filler Contains the hex value FF."
+          }
+        },
+        {
+          "name": "EC",
+          "bits": 16,
+          "explain": "This field contains the extra count in big-endian order.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "4..5 EC Contains the \"extra count\" field, in big-endian order as described in section 4.2.3."
+          }
+        },
+        {
+          "name": "RRC",
+          "bits": 16,
+          "explain": "This field contains the right rotation count in big-endian order.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "6..7 RRC Contains the \"right rotation count\" in big-endian order, as described in section 4.2.5."
+          }
+        },
+        {
+          "name": "SND_SEQ",
+          "bits": 64,
+          "explain": "This field contains the sender's sequence number in clear text and big-endian order.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "8..15 SND_SEQ Sequence number field in clear text, expressed in big-endian order."
+          }
+        },
+        {
+          "name": "Data",
+          "bits": "var",
+          "explain": "This field contains encrypted data when confidentiality is provided, or plaintext data followed by a checksum when confidentiality is not provided.",
+          "cite": {
+            "section": "4.2.6.2",
+            "quote": "16..last Data Encrypted data for Wrap tokens with confidentiality, or plaintext data followed by the checksum for Wrap tokens without confidentiality, as described in section 4.2.4."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The complete Kerberos context-establishment exchange and its local GSS-API state transitions",
+    "The KDC interactions and Kerberos message formats defined by RFC 4120",
+    "Key derivation and the directional acceptor and initiator key usages",
+    "Quality of Protection selection and negotiation",
+    "Channel-binding computation details and the per-message flag definitions",
+    "The generic GSS-API status, error, and minor-status interfaces"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:56:41.737Z",
+    "dropped": 0
+  }
+}

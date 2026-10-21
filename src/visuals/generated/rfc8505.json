@@ -1,0 +1,291 @@
+{
+  "rfc": 8505,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "direct-registration",
+      "title": "Direct Registration with a Routing Registrar",
+      "participants": {
+        "a": "6LoWPAN Node (6LN)",
+        "b": "Routing Registrar"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "The EARO (see Section 4.1) updates the ARO used within NS and NA messages between a 6LN and a 6LR. The update enables a registration to a Routing Registrar in order to obtain additional services, such as return routability to the Registered Address by such means as routing and/or proxy ND, as illustrated in Figure 4."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "NS(EARO)",
+          "explain": "The 6LoWPAN node sends a Neighbor Solicitation carrying an EARO to register its address with the Routing Registrar.",
+          "cite": {
+            "section": "5",
+            "quote": "|   NS(EARO)     |\n                  |--------------->|"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "NA(EARO)",
+          "explain": "The Routing Registrar returns a Neighbor Advertisement carrying an EARO while injecting or maintaining a host route or IPv6 Neighbor Discovery proxy state for the registered address.",
+          "cite": {
+            "section": "5",
+            "quote": "|                | Inject/maintain\n                  |                | host route or\n                  |                | IPv6 ND proxy state\n                  |                | <----------------->\n                  |   NA(EARO)     |\n                  |<---------------|"
+          }
+        }
+      ]
+    },
+    {
+      "id": "mesh-duplicate-address",
+      "title": "Extended Duplicate Address Exchange Across the LLN Mesh",
+      "participants": {
+        "a": "6LoWPAN Router (6LR)",
+        "b": "6LoWPAN Border Router (6LBR)"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "Similarly, the EDAR and EDAC update the DAR and DAC messages so as to transport the new information between 6LRs and 6LBRs across an LLN mesh. The extensions to the ARO are the DAR and the DAC, as used in the Duplicate Address messages. They convey the additional information all the way to the 6LBR."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Extended DAR",
+          "explain": "The 6LoWPAN router sends an extended duplicate-address request to the border router so that the new registration information crosses the LLN mesh.",
+          "cite": {
+            "section": "5",
+            "quote": "|            | Extended DAR |            |\n       |            |------------->|            |"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Extended DAC",
+          "explain": "The 6LoWPAN border router returns the extended duplicate-address confirmation to the 6LoWPAN router.",
+          "cite": {
+            "section": "5",
+            "quote": "|            | Extended DAC |<-----------|"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "earo",
+      "title": "Extended Address Registration Option",
+      "intro": {
+        "section": "4.1",
+        "quote": "This specification introduces the EARO; the EARO is based on the ARO for use in NS and NA messages. The EARO includes a sequence counter called the Transaction ID (TID), which is used to determine the latest location of a registering mobile device."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "Identifies the option as the Extended Address Registration Option.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Type:       33"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Gives the option length in eight-byte units and determines the ROVR size.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Length:     8-bit unsigned integer. The length of the option in units of 8 bytes."
+          }
+        },
+        {
+          "name": "Status",
+          "bits": 8,
+          "explain": "Reports the registration status in an NA response; it is zero in an NS.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Status:     8-bit unsigned integer. Indicates the status of a registration in the NA response. MUST be set to 0 in NS messages. See Table 1 below."
+          }
+        },
+        {
+          "name": "Opaque",
+          "bits": 8,
+          "explain": "Carries information that is opaque to Neighbor Discovery and can be passed transparently to another process.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Opaque:     An octet opaque to ND. The 6LN MAY pass it transparently to another process. It MUST be set to 0 when not used."
+          }
+        },
+        {
+          "name": "Rsvd",
+          "bits": 4,
+          "explain": "This field is unused; the sender initializes it to zero and the receiver ignores it.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Rsvd (Reserved): This field is unused. It MUST be initialized to 0 by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "I",
+          "bits": 2,
+          "explain": "Classifies the opaque value; zero denotes an abstract index used to select a routing topology.",
+          "cite": {
+            "section": "4.1",
+            "quote": "I:          2-bit integer. A value of 0 indicates that the Opaque field carries an abstract index that is used to decide in which routing topology the address is expected to be injected."
+          }
+        },
+        {
+          "name": "R",
+          "bits": 1,
+          "explain": "Requests reachability services for the Registered Address from a Routing Registrar.",
+          "cite": {
+            "section": "4.1",
+            "quote": "R:          The Registering Node sets the R flag to request reachability services for the Registered Address from a Routing Registrar."
+          }
+        },
+        {
+          "name": "T",
+          "bits": 1,
+          "explain": "Indicates that the following octet contains the Transaction ID.",
+          "cite": {
+            "section": "4.1",
+            "quote": "T:          1-bit flag. Set if the next octet is used as a TID."
+          }
+        },
+        {
+          "name": "TID",
+          "bits": 8,
+          "explain": "Carries the node-maintained Transaction ID for registration transactions and is ignored unless the T flag is set.",
+          "cite": {
+            "section": "4.1",
+            "quote": "TID:        1-byte unsigned integer. A Transaction ID that is maintained by the node and incremented with each transaction of one or more registrations performed at the same time to one or more 6LRs. This field MUST be ignored if the T flag is not set."
+          }
+        },
+        {
+          "name": "Registration Lifetime",
+          "bits": 16,
+          "explain": "Expresses the registration lifetime in minutes; zero ends the registration and requires removal of associated state.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Registration Lifetime: 16-bit integer, expressed in minutes. A value of 0 indicates that the registration has ended and that the associated state MUST be removed."
+          }
+        },
+        {
+          "name": "Registration Ownership Verifier (ROVR)",
+          "bits": "var",
+          "explain": "Correlates multiple attempts to register the same IPv6 address.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Registration Ownership Verifier (ROVR): Enables the correlation between multiple attempts to register the same IPv6 Address. The ROVR size MUST be 64 bits when backward compatibility is needed; otherwise, the size MAY be 128, 192, or 256 bits."
+          }
+        }
+      ]
+    },
+    {
+      "id": "extended-duplicate-address",
+      "title": "Extended Duplicate Address Request and Confirmation",
+      "intro": {
+        "section": "4.2",
+        "quote": "The DAR and DAC messages share a common base format as defined in Section 4.4 of [RFC6775]. Those messages enable information from the ARO to be transported over multiple hops. The DAR and DAC are extended as shown in Figure 2:"
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "Identifies the ICMPv6 Duplicate Address Request or Confirmation message.",
+          "cite": {
+            "section": "4.2",
+            "quote": "|     Type      |CodePfx|CodeSfx|          Checksum             |"
+          }
+        },
+        {
+          "name": "Code Prefix",
+          "bits": 4,
+          "explain": "Holds the first four bits of the ICMP Code; the sender sets it to zero and the receiver ignores it.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The ICMP Code [RFC4443] for Duplicate Address messages is split into two 4-bit fields: the Code Prefix and the Code Suffix. The Code Prefix MUST be set to 0 by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "Code Suffix",
+          "bits": 4,
+          "explain": "A non-null value indicates support for the extended Duplicate Address message format.",
+          "cite": {
+            "section": "4.2",
+            "quote": "A non-null value of the Code Suffix indicates support for this specification."
+          }
+        },
+        {
+          "name": "Checksum",
+          "bits": 16,
+          "explain": "Carries the checksum for the Duplicate Address message.",
+          "cite": {
+            "section": "4.2",
+            "quote": "|     Type      |CodePfx|CodeSfx|          Checksum             |"
+          }
+        },
+        {
+          "name": "Status",
+          "bits": 8,
+          "explain": "Reports the result of the duplicate-address check, such as Success or Moved.",
+          "cite": {
+            "section": "5.7",
+            "quote": "Upon receiving the EDAR message, the 6LBR determines if this is the most recent TID it has received for that particular registry entry. If so, then the EDAR is answered with an EDAC message bearing a status code of 0 (\"Success\") [RFC6775], and the entry is scheduled to be removed. Otherwise, a status code of \"Moved\" is returned instead, and the existing entry is maintained."
+          }
+        },
+        {
+          "name": "TID",
+          "bits": 8,
+          "explain": "Carries the same one-byte Transaction ID and processing as the EARO and is ignored when the ICMP Code is null.",
+          "cite": {
+            "section": "4.2",
+            "quote": "TID:        1-byte integer. Same definition and processing as the TID in the EARO as defined in Section 4.1. This field MUST be ignored if the ICMP Code is null."
+          }
+        },
+        {
+          "name": "Registration Lifetime",
+          "bits": 16,
+          "explain": "Controls how long the registration remains valid; zero is used when the 6LR reports removal to the 6LBR.",
+          "cite": {
+            "section": "5.7",
+            "quote": "Upon receiving an NS(EARO) message with a Registration Lifetime of 0 and determining that this EARO is the most recent for a given NCE (see Section 5.2), a 6LR cleans up its NCE. If the address was registered to the 6LBR, then the 6LR MUST report to the 6LBR, through a Duplicate Address exchange with the 6LBR, indicating the null Registration Lifetime and the latest TID that this 6LR is aware of."
+          }
+        },
+        {
+          "name": "Registration Ownership Verifier (ROVR)",
+          "bits": "var",
+          "explain": "Carries the registration ownership verifier; its size is determined by the ICMP Code Suffix.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Registration Ownership Verifier (ROVR): The size of the ROVR is known from the ICMP Code Suffix. This field has the same definition and processing as the ROVR in the EARO as defined in Section 4.1."
+          }
+        },
+        {
+          "name": "Registered Address",
+          "bits": 128,
+          "explain": "Identifies the IPv6 address associated with the Registered Node.",
+          "cite": {
+            "section": "2.4",
+            "quote": "Registered Address:  An address registered for the Registered Node."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The original RFC 6775 ARO and base DAR/DAC formats",
+    "The detailed TID comparison, wraparound, and initialization rules",
+    "The full EARO status-code table and ownership-validation exchanges",
+    "The 6LoWPAN Capability Indication Option bits and EARO-support signaling",
+    "RFC 6775-only interoperability and administrator policy details",
+    "Resource-saturation recovery, stale-state cleanup timing, and DELAY-state handling",
+    "The 6LBR-to-Routing-Registrar proxy branch and complete four-party registration topology",
+    "Security and privacy considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:19:19.130Z",
+    "dropped": 0
+  }
+}

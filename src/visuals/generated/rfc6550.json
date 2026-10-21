@@ -1,0 +1,300 @@
+{
+  "rfc": 6550,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "dio-discovery",
+      "title": "DIO Advertisement and Solicitation",
+      "participants": {
+        "a": "DODAG member",
+        "b": "Probing node"
+      },
+      "intro": {
+        "section": "3.2.8",
+        "quote": "Nodes advertise their presence, affiliation with a DODAG, routing cost, and related metrics by sending link-local multicast DIO messages to all-RPL-nodes."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "DIO",
+          "explain": "A RPL node advertises its presence, DODAG affiliation, routing cost, and related metrics in a link-local multicast DIO to all RPL nodes.",
+          "cite": {
+            "section": "3.2.8",
+            "quote": "Nodes advertise their presence, affiliation with a DODAG, routing cost, and related metrics by sending link-local multicast DIO messages to all-RPL-nodes."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DIS",
+          "explain": "The probing node may send a unicast DIS to a potential DODAG parent to request its DODAG configuration and other parameters.",
+          "cite": {
+            "section": "8.3",
+            "quote": "Thus, a node MAY transmit a unicast DIS message to a potential DODAG parent in order to probe for DODAG Configuration and other parameters."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "DIO",
+          "explain": "The potential parent replies to a unicast DIS without a Solicited Information option by unicasting a DIO that includes a DODAG Configuration option.",
+          "cite": {
+            "section": "8.3",
+            "quote": "When a node receives a unicast DIS without a Solicited Information option, it MUST unicast a DIO to the sender in response. This DIO MUST include a DODAG Configuration option."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dao-exchange",
+      "title": "DAO Propagation and Acknowledgment",
+      "participants": {
+        "a": "DAO originator",
+        "b": "DAO recipient"
+      },
+      "intro": {
+        "section": "6.4",
+        "quote": "The DAO message may optionally, upon explicit request or error, be acknowledged by its destination with a Destination Advertisement Acknowledgement (DAO-ACK) message back to the sender of the DAO."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "DAO",
+          "explain": "The DAO propagates destination information upward. Its next hop is a selected parent in storing mode and the DODAG root in non-storing mode.",
+          "cite": {
+            "section": "6.4",
+            "quote": "The Destination Advertisement Object (DAO) is used to propagate destination information Upward along the DODAG. In Storing mode, the DAO message is unicast by the child to the selected parent(s). In Non-Storing mode, the DAO message is unicast to the DODAG root."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DAO-ACK",
+          "explain": "The DAO recipient sends a unicast DAO-ACK to the DAO sender in response.",
+          "cite": {
+            "section": "6.5",
+            "quote": "The DAO-ACK message is sent as a unicast packet by a DAO recipient (a DAO parent or DODAG root) in response to a unicast DAO message."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "dio-base",
+      "title": "DIO Base Object",
+      "intro": {
+        "section": "3.2",
+        "quote": "RPL provisions routes Up towards DODAG roots, forming a DODAG optimized according to an Objective Function (OF). RPL nodes construct and maintain these DODAGs through DODAG Information Object (DIO) messages."
+      },
+      "fields": [
+        {
+          "name": "RPLInstanceID",
+          "bits": 8,
+          "explain": "It identifies which RPL Instance the DODAG belongs to.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "RPLInstanceID: 8-bit field set by the DODAG root that indicates of which RPL Instance the DODAG is a part."
+          }
+        },
+        {
+          "name": "Version Number",
+          "bits": 8,
+          "explain": "The DODAG root sets it to the DODAG version number.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Version Number: 8-bit unsigned integer set by the DODAG root to the DODAGVersionNumber."
+          }
+        },
+        {
+          "name": "Rank",
+          "bits": 16,
+          "explain": "It carries the sending node's Rank within the DODAG.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Rank: 16-bit unsigned integer indicating the DODAG Rank of the node sending the DIO message."
+          }
+        },
+        {
+          "name": "G",
+          "bits": 1,
+          "explain": "It indicates whether the advertised DODAG is grounded or floating.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Grounded (G): The Grounded 'G' flag indicates whether the DODAG advertised can satisfy the application-defined goal. If the flag is set, the DODAG is grounded. If the flag is cleared, the DODAG is floating."
+          }
+        },
+        {
+          "name": "0",
+          "bits": 1,
+          "explain": "The DIO base diagram shows this as the unused zero bit between the Grounded flag and the Mode of Operation field.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "|G|0| MOP | Prf |     DTSN      |     Flags     |   Reserved    |"
+          }
+        },
+        {
+          "name": "MOP",
+          "bits": 3,
+          "explain": "It identifies the RPL Instance's operating mode as provisioned and distributed by the DODAG root.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Mode of Operation (MOP): The Mode of Operation (MOP) field identifies the mode of operation of the RPL Instance as administratively provisioned at and distributed by the DODAG root."
+          }
+        },
+        {
+          "name": "Prf",
+          "bits": 3,
+          "explain": "It expresses how preferable this DODAG root is compared with other roots in the instance.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "DODAGPreference (Prf): A 3-bit unsigned integer that defines how preferable the root of this DODAG is compared to other DODAG roots within the instance."
+          }
+        },
+        {
+          "name": "DTSN",
+          "bits": 8,
+          "explain": "It carries the issuing node's trigger sequence for the downward-route maintenance procedure.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Destination Advertisement Trigger Sequence Number (DTSN): 8-bit unsigned integer set by the node issuing the DIO message. The Destination Advertisement Trigger Sequence Number (DTSN) flag is used as part of the procedure to maintain Downward routes."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "The flags are currently unused, must be initialized to zero, and are ignored by the receiver.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Flags: 8-bit unused field reserved for flags. The field MUST be initialized to zero by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "This unused field must be initialized to zero by the sender and ignored by the receiver.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "Reserved: 8-bit unused field. The field MUST be initialized to zero by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "DODAGID",
+          "bits": 128,
+          "explain": "It contains the DODAG root's unique, routable IPv6 address.",
+          "cite": {
+            "section": "6.3.1",
+            "quote": "DODAGID: 128-bit IPv6 address set by a DODAG root that uniquely identifies a DODAG. The DODAGID MUST be a routable IPv6 address belonging to the DODAG root."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": "var",
+          "explain": "The DIO can carry valid options.",
+          "cite": {
+            "section": "6.3.3",
+            "quote": "The DIO message MAY carry valid options."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dao-base",
+      "title": "DAO Base Object",
+      "intro": {
+        "section": "6.4",
+        "quote": "The Destination Advertisement Object (DAO) is used to propagate destination information Upward along the DODAG."
+      },
+      "fields": [
+        {
+          "name": "RPLInstanceID",
+          "bits": 8,
+          "explain": "It identifies the topology instance associated with the DODAG as learned from the DIO.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "RPLInstanceID: 8-bit field indicating the topology instance associated with the DODAG, as learned from the DIO."
+          }
+        },
+        {
+          "name": "K",
+          "bits": 1,
+          "explain": "The recipient is expected to return a DAO-ACK.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "K: The 'K' flag indicates that the recipient is expected to send a DAO-ACK back."
+          }
+        },
+        {
+          "name": "D",
+          "bits": 1,
+          "explain": "It indicates that the DODAGID field is present and must be set for a local RPLInstanceID.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "D: The 'D' flag indicates that the DODAGID field is present. This flag MUST be set when a local RPLInstanceID is used."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 6,
+          "explain": "The unused flag bits are reserved, must be initialized to zero, and are ignored by the receiver.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "Flags: The 6 bits remaining unused in the Flags field are reserved for flags. The field MUST be initialized to zero by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "This unused field must be initialized to zero by the sender and ignored by the receiver.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "Reserved: 8-bit unused field. The field MUST be initialized to zero by the sender and MUST be ignored by the receiver."
+          }
+        },
+        {
+          "name": "DAOSequence",
+          "bits": 8,
+          "explain": "The originator increments it for each unique DAO, and the recipient echoes it in a DAO-ACK.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "DAOSequence: Incremented at each unique DAO message from a node and echoed in the DAO-ACK message."
+          }
+        },
+        {
+          "name": "DODAGID",
+          "bits": 128,
+          "explain": "When present, it identifies the DODAG and is included according to the D flag.",
+          "cite": {
+            "section": "6.4.1",
+            "quote": "DODAGID (optional): 128-bit unsigned integer set by a DODAG root that uniquely identifies a DODAG. This field is only present when the 'D' flag is set."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": "var",
+          "explain": "The DAO can carry valid options.",
+          "cite": {
+            "section": "6.4.3",
+            "quote": "The DAO message MAY carry valid options."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "A formal node state machine, because RFC 6550 defines distributed DODAG operation rather than one protocol FSM",
+    "The ICMPv6 RPL Control Message envelope, including Type, Code, Checksum, and the Security section",
+    "DIS, DAO-ACK, and Consistency Check base-object layouts",
+    "Detailed RPL option formats, including metrics, route information, DODAG configuration, prefix information, targets, and transit information",
+    "Objective Function internals, supported metrics, and constraint processing",
+    "Secure-network joining, authenticated key distribution, and cryptographic operation",
+    "Trickle timer operation, sequence-counter comparison, loop detection, and DODAG repair procedures",
+    "Full source-routing construction and multicast forwarding procedures"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:48:27.695Z",
+    "dropped": 0
+  }
+}

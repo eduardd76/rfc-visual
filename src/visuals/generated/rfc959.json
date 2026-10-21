@@ -1,0 +1,256 @@
+{
+  "rfc": 959,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "control-login",
+      "title": "Control Connection Login and Logout",
+      "participants": {
+        "a": "User-PI",
+        "b": "Server-PI"
+      },
+      "intro": {
+        "section": "4.2",
+        "quote": "The replies show the existence of an intermediate state if all preceding commands have been successful. A failure at any point in the sequence necessitates the repetition of the entire sequence from the beginning."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "220",
+          "explain": "The server signals that the service is ready for a new user.",
+          "cite": {
+            "section": "4.2",
+            "quote": "220 Service ready for new user."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "USER",
+          "explain": "The client sends its user name so the server can identify the user for access control.",
+          "cite": {
+            "section": "4.1",
+            "quote": "USER NAME (USER) The argument field is a Telnet string identifying the user. The user identification is that which is required by the server for access to its file system."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "331",
+          "explain": "The server accepts the user name but requires a password before login can complete.",
+          "cite": {
+            "section": "4.2",
+            "quote": "331 User name okay, need password."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PASS",
+          "explain": "The client sends the password immediately after the user name as required by the protocol.",
+          "cite": {
+            "section": "4.1",
+            "quote": "PASSWORD (PASS) The argument field is a Telnet string specifying the user's password. This command must be immediately preceded by the user name command, and, for some sites, completes the user's identification for access control."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "230",
+          "explain": "The server confirms that the user is logged in and can proceed with FTP service.",
+          "cite": {
+            "section": "4.2",
+            "quote": "230 User logged in, proceed."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "QUIT",
+          "explain": "The client asks to end the FTP session, causing the server to close the control connection when no transfer is active.",
+          "cite": {
+            "section": "4.1",
+            "quote": "LOGOUT (QUIT) This command terminates a USER and if file transfer is not in progress, the server closes the control connection."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "221",
+          "explain": "The server reports that it is closing the control connection and notes the logout when appropriate.",
+          "cite": {
+            "section": "4.2",
+            "quote": "221 Service closing control connection. Logged out if appropriate."
+          }
+        }
+      ]
+    },
+    {
+      "id": "abort-transfer",
+      "title": "Abort a Transfer in Progress",
+      "participants": {
+        "a": "User-PI",
+        "b": "Server-PI"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "This command tells the server to abort the previous FTP service command and any associated transfer of data."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ABOR",
+          "explain": "The client asks the server to abort the previous service command and its associated data transfer.",
+          "cite": {
+            "section": "4.1",
+            "quote": "ABORT (ABOR) This command tells the server to abort the previous FTP service command and any associated transfer of data."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "426",
+          "explain": "The server aborts the service that was still in progress, closes the data connection, and reports an abnormal termination.",
+          "cite": {
+            "section": "4.1",
+            "quote": "In the second case, the server aborts the FTP service in progress and closes the data connection, returning a 426 reply to indicate that the service request terminated abnormally. The server then sends a 226 reply, indicating that the abort command was successfully processed."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "226",
+          "explain": "The server then confirms that the abort command was processed successfully.",
+          "cite": {
+            "section": "4.1",
+            "quote": "In the second case, the server aborts the FTP service in progress and closes the data connection, returning a 426 reply to indicate that the service request terminated abnormally. The server then sends a 226 reply, indicating that the abort command was successfully processed."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ftp-reply",
+      "title": "FTP Single-Line Reply",
+      "intro": {
+        "section": "4.2",
+        "quote": "An FTP reply consists of a three digit number (transmitted as three alphanumeric characters) followed by some text."
+      },
+      "fields": [
+        {
+          "name": "3-Digit Code",
+          "bits": 24,
+          "explain": "A three-digit code identifies the reply.",
+          "cite": {
+            "section": "4.2",
+            "quote": "A reply is defined to contain the 3-digit code, followed by Space"
+          }
+        },
+        {
+          "name": "Space",
+          "bits": 8,
+          "explain": "A space separates the code from the text.",
+          "cite": {
+            "section": "4.2",
+            "quote": "A reply is defined to contain the 3-digit code, followed by Space"
+          }
+        },
+        {
+          "name": "Text",
+          "bits": "var",
+          "explain": "A line of text follows the numeric code.",
+          "cite": {
+            "section": "4.2",
+            "quote": "followed by one line of text (where some maximum line length has been specified), and terminated by the Telnet end-of-line code."
+          }
+        },
+        {
+          "name": "Telnet End-of-Line Code",
+          "bits": "var",
+          "explain": "The reply line ends with the Telnet end-of-line code.",
+          "cite": {
+            "section": "4.2",
+            "quote": "followed by one line of text (where some maximum line length has been specified), and terminated by the Telnet end-of-line code."
+          }
+        }
+      ]
+    },
+    {
+      "id": "block-header",
+      "title": "Block Mode Data Block Header",
+      "intro": {
+        "section": "3.4",
+        "quote": "The header consists of the three bytes. Of the 24 bits of header information, the 16 low order bits shall represent byte count, and the 8 high order bits shall represent descriptor codes as shown below."
+      },
+      "fields": [
+        {
+          "name": "Descriptor",
+          "bits": 8,
+          "explain": "The descriptor byte identifies conditions such as end of file, end of record, a restart marker, or suspect data.",
+          "cite": {
+            "section": "3.4",
+            "quote": "The descriptor code defines: last block in the file (EOF) last block in the record (EOR), restart marker (see the Section on Error Recovery and Restart) or suspect data (i.e., the data being transferred is suspected of errors and is not reliable)."
+          }
+        },
+        {
+          "name": "Byte Count",
+          "bits": 16,
+          "explain": "The low-order 16 bits hold the data block's byte count.",
+          "cite": {
+            "section": "3.4",
+            "quote": "Of the 24 bits of header information, the 16 low order bits shall represent byte count, and the 8 high order bits shall represent descriptor codes as shown below."
+          }
+        }
+      ]
+    },
+    {
+      "id": "compressed-byte-string",
+      "title": "Compressed Mode Regular-Data Byte String",
+      "intro": {
+        "section": "3.4",
+        "quote": "There are three kinds of information to be sent: regular data, sent in a byte string; compressed data, consisting of replications or filler; and control information, sent in a two-byte escape sequence."
+      },
+      "fields": [
+        {
+          "name": "0",
+          "bits": 1,
+          "explain": "The leading bit is zero to identify a regular-data byte string.",
+          "cite": {
+            "section": "3.4",
+            "quote": "If n>0 bytes (up to 127) of regular data are sent, these n bytes are preceded by a byte with the left-most bit set to 0 and the right-most 7 bits containing the number n."
+          }
+        },
+        {
+          "name": "n",
+          "bits": 7,
+          "explain": "The count identifies how many regular data bytes follow.",
+          "cite": {
+            "section": "3.4",
+            "quote": "If n>0 bytes (up to 127) of regular data are sent, these n bytes are preceded by a byte with the left-most bit set to 0 and the right-most 7 bits containing the number n."
+          }
+        },
+        {
+          "name": "d(1),..., d(n)",
+          "bits": "var",
+          "explain": "The regular data bytes follow the count.",
+          "cite": {
+            "section": "3.4",
+            "quote": "String of n data bytes d(1),..., d(n) Count n must be positive."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "ACCT-based login, account errors, and the complete set of negative reply branches",
+    "Active PORT negotiation and the complete server-to-server data-connection choreography",
+    "Service and directory commands other than RETR, PASV, and ABOR, including STOR, STOU, APPE, LIST, NLST, DELE, CWD, CDUP, MKD, RMD, and PWD",
+    "ASCII, EBCDIC, image, and local-byte representation rules; non-print, Telnet-format, and carriage-control formats",
+    "Page-structure transfer, page headers, and optional page fields",
+    "The complete block and compressed encodings beyond the shown header and regular-data byte string",
+    "Restart markers and the Section 6 command-state diagrams, including the rename and restart sequences",
+    "Multi-line reply delimiters and the complete reply-code catalog"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:12:05.890Z",
+    "dropped": 1
+  }
+}

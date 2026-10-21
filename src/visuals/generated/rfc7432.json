@@ -1,0 +1,394 @@
+{
+  "rfc": 7432,
+  "reviewed": false,
+  "initial": "T1",
+  "terminal": [
+    "T2",
+    "T2'",
+    "T2''",
+    "T3"
+  ],
+  "stateMachineTitle": "Remote MAC next-hop outcomes",
+  "states": [
+    {
+      "id": "T1",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T1 When the MAC/IP Advertisement route from PE1 and the set of Ethernet A-D per ES routes and Ethernet A-D per EVI routes from PE1 and PE2 are received, PE3 can forward traffic destined to M1 to both PE1 and PE2."
+      }
+    },
+    {
+      "id": "T2",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only."
+      }
+    },
+    {
+      "id": "T2'",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only."
+      }
+    },
+    {
+      "id": "T2''",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast."
+      }
+    },
+    {
+      "id": "T3",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T3 PE2 also advertises a MAC route for M1, and then PE1 withdraws its MAC route for M1. PE3 continues forwarding traffic destined to M1 to both PE1 and PE2."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "T1",
+      "to": "T2",
+      "event": "PE1 withdraws Ethernet A-D per ES routes",
+      "action": "Forward M1 via PE2 only",
+      "layer": "happy",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only."
+      }
+    },
+    {
+      "from": "T1",
+      "to": "T2'",
+      "event": "PE2 withdraws Ethernet A-D per ES routes",
+      "action": "Forward M1 via PE1 only",
+      "layer": "happy",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only."
+      }
+    },
+    {
+      "from": "T1",
+      "to": "T2''",
+      "event": "PE1 withdraws MAC route",
+      "action": "Treat M1 as unknown unicast",
+      "layer": "happy",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast."
+      }
+    },
+    {
+      "from": "T1",
+      "to": "T3",
+      "event": "PE2 advertises MAC route and PE1 withdraws",
+      "action": "Forward M1 via PE1 and PE2",
+      "layer": "happy",
+      "cite": {
+        "section": "9.2.2",
+        "quote": "T1 When the MAC/IP Advertisement route from PE1 and the set of Ethernet A-D per ES routes and Ethernet A-D per EVI routes from PE1 and PE2 are received, PE3 can forward traffic destined to M1 to both PE1 and PE2. T2 If after T1 PE1 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE2 only. T2' If after T1 PE2 withdraws its set of Ethernet A-D per ES routes, then PE3 forwards traffic destined to M1 to PE1 only. T2'' If after T1 PE1 withdraws its MAC/IP Advertisement route, then PE3 treats traffic to M1 as unknown unicast. T3 PE2 also advertises a MAC route for M1, and then PE1 withdraws its MAC route for M1. PE3 continues forwarding traffic destined to M1 to both PE1 and PE2."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "remote-mac-advertisement",
+      "title": "Remote MAC Reachability Advertisement",
+      "participants": {
+        "a": "Advertising PE",
+        "b": "Remote PE"
+      },
+      "intro": {
+        "section": "9.2",
+        "quote": "A particular PE must be able to determine how to send traffic to MAC addresses that belong to or are behind CEs connected to other PEs, i.e., to remote CEs or hosts behind remote CEs."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "MAC/IP Advertisement route",
+          "explain": "The advertising PE uses MP-BGP to send other PEs in the EVPN instance the MAC addresses learned from its locally attached CEs.",
+          "cite": {
+            "section": "9.2",
+            "quote": "This document requires a PE to learn remote MAC addresses in the control plane. In order to achieve this, each PE advertises the MAC addresses it learns from its locally attached CEs in the control plane, to all the other PEs in that EVPN instance, using MP-BGP and, specifically, the MAC/IP Advertisement route."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ethernet-segment-exchange",
+      "title": "Multihomed Ethernet Segment Route Exchange",
+      "participants": {
+        "a": "PE1",
+        "b": "PE2"
+      },
+      "intro": {
+        "section": "8.1",
+        "quote": "PEs connected to the same Ethernet segment can automatically discover each other with minimal to no configuration through the exchange of the Ethernet Segment route."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Ethernet Segment route",
+          "explain": "PE1 advertises the Ethernet Segment route to PE2 with the ES-Import extended community.",
+          "cite": {
+            "section": "8.5",
+            "quote": "When a PE discovers the ESI of the attached Ethernet segment, it advertises an Ethernet Segment route with the associated ES-Import extended community attribute."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Ethernet Segment route",
+          "explain": "PE2 also advertises an Ethernet Segment route to PE1 with the ES-Import extended community.",
+          "cite": {
+            "section": "8.5",
+            "quote": "When a PE discovers the ESI of the attached Ethernet segment, it advertises an Ethernet Segment route with the associated ES-Import extended community attribute."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "evpn-nlri",
+      "title": "EVPN NLRI",
+      "intro": {
+        "section": "7",
+        "quote": "This document defines a new BGP Network Layer Reachability Information (NLRI) called the EVPN NLRI."
+      },
+      "fields": [
+        {
+          "name": "Route Type",
+          "bits": 8,
+          "explain": "Identifies the EVPN route encoding used for the route-specific payload.",
+          "cite": {
+            "section": "7",
+            "quote": "The Route Type field defines the encoding of the rest of the EVPN NLRI (Route Type specific EVPN NLRI)."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Gives the size in octets of the route-specific EVPN NLRI.",
+          "cite": {
+            "section": "7",
+            "quote": "The Length field indicates the length in octets of the Route Type specific field of the EVPN NLRI."
+          }
+        },
+        {
+          "name": "Route Type specific",
+          "bits": "var",
+          "explain": "Carries the fields selected by the route type.",
+          "cite": {
+            "section": "7",
+            "quote": "The Route Type field defines the encoding of the rest of the EVPN NLRI (Route Type specific EVPN NLRI)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ethernet-ad-route",
+      "title": "Ethernet A-D Route-Specific EVPN NLRI",
+      "intro": {
+        "section": "7.1",
+        "quote": "An Ethernet A-D route type specific EVPN NLRI consists of the following:"
+      },
+      "fields": [
+        {
+          "name": "Route Distinguisher (RD)",
+          "bits": 64,
+          "explain": "Uses a type 1 route distinguisher whose value identifies the advertising PE and is unique on that PE.",
+          "cite": {
+            "section": "8.2.1",
+            "quote": "The Route Distinguisher (RD) MUST be a Type 1 RD [RFC4364]. The value field comprises an IP address of the PE (typically, the loopback address) followed by a number unique to the PE."
+          }
+        },
+        {
+          "name": "Ethernet Segment Identifier",
+          "bits": 80,
+          "explain": "Identifies the Ethernet segment associated with the route.",
+          "cite": {
+            "section": "8.2.1",
+            "quote": "The Ethernet Segment Identifier MUST be a 10-octet entity as described in Section 5 (\"Ethernet Segment\")."
+          }
+        },
+        {
+          "name": "Ethernet Tag ID",
+          "bits": 32,
+          "explain": "Identifies the particular broadcast domain covered by the route.",
+          "cite": {
+            "section": "6",
+            "quote": "An Ethernet Tag ID is a 32-bit field containing either a 12-bit or 24-bit identifier that identifies a particular broadcast domain (e.g., a VLAN) in an EVPN instance."
+          }
+        },
+        {
+          "name": "MPLS Label",
+          "bits": 24,
+          "explain": "Carries a label while being treated as a route attribute rather than part of the BGP route key.",
+          "cite": {
+            "section": "7.1",
+            "quote": "The MPLS Label field is to be treated as a route attribute as opposed to being part of the route."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mac-ip-advertisement-route",
+      "title": "MAC/IP Advertisement Route-Specific EVPN NLRI",
+      "intro": {
+        "section": "7.2",
+        "quote": "A MAC/IP Advertisement route type specific EVPN NLRI consists of the following:"
+      },
+      "fields": [
+        {
+          "name": "RD",
+          "bits": 64,
+          "explain": "Uses the route distinguisher of the advertising PE's MAC-VRF, which is unique across that PE's MAC-VRFs.",
+          "cite": {
+            "section": "7.9",
+            "quote": "The Route Distinguisher (RD) MUST be set to the RD of the MAC-VRF that is advertising the NLRI. An RD MUST be assigned for a given MAC-VRF on a PE. This RD MUST be unique across all MAC-VRFs on a PE."
+          }
+        },
+        {
+          "name": "Ethernet Segment Identifier",
+          "bits": 80,
+          "explain": "Carries the 10-octet Ethernet Segment Identifier for the advertisement.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "The Ethernet Segment Identifier is set to the 10-octet ESI described in Section 5 (\"Ethernet Segment\")."
+          }
+        },
+        {
+          "name": "Ethernet Tag ID",
+          "bits": 32,
+          "explain": "Identifies the broadcast domain in the EVPN instance.",
+          "cite": {
+            "section": "6",
+            "quote": "An Ethernet Tag ID is a 32-bit field containing either a 12-bit or 24-bit identifier that identifies a particular broadcast domain (e.g., a VLAN) in an EVPN instance."
+          }
+        },
+        {
+          "name": "MAC Address Length",
+          "bits": 8,
+          "explain": "States the MAC address length in bits, which is set to 48.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "The MAC Address Length field is in bits, and it is set to 48."
+          }
+        },
+        {
+          "name": "MAC Address",
+          "bits": 48,
+          "explain": "Carries the advertised six-octet MAC address.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "The encoding of a MAC address MUST be the 6-octet MAC address specified by [802.1Q] and [802.1D-REV]."
+          }
+        },
+        {
+          "name": "IP Address Length",
+          "bits": 8,
+          "explain": "States the optional IP address length in bits, using 32 or 128.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "When an IP address is present, the IP Address Length field is in bits, and it is set to 32 or 128 bits."
+          }
+        },
+        {
+          "name": "IP Address",
+          "bits": "var",
+          "explain": "Optionally carries an IP address associated with the MAC address.",
+          "cite": {
+            "section": "10",
+            "quote": "The IP Address field in the MAC/IP Advertisement route may optionally carry one of the IP addresses associated with the MAC address."
+          }
+        },
+        {
+          "name": "MPLS Label1",
+          "bits": 24,
+          "explain": "Carries a downstream-assigned label associated with the advertised MAC address.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "The MPLS Label1 field is encoded as 3 octets, where the high-order 20 bits contain the label value. The MPLS Label1 MUST be downstream assigned, and it is associated with the MAC address being advertised by the advertising PE."
+          }
+        },
+        {
+          "name": "MPLS Label2",
+          "bits": "var",
+          "explain": "Carries an optional second MPLS label.",
+          "cite": {
+            "section": "9.2.1",
+            "quote": "The MPLS Label2 field is an optional field. If it is present, then it is encoded as 3 octets, where the high-order 20 bits contain the label value."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ethernet-segment-route",
+      "title": "Ethernet Segment Route-Specific EVPN NLRI",
+      "intro": {
+        "section": "7.4",
+        "quote": "An Ethernet Segment route type specific EVPN NLRI consists of the following:"
+      },
+      "fields": [
+        {
+          "name": "RD",
+          "bits": 64,
+          "explain": "Uses a type 1 route distinguisher whose value identifies the advertising PE and is unique on that PE.",
+          "cite": {
+            "section": "8.1.1",
+            "quote": "The Route Distinguisher (RD) MUST be a Type 1 RD [RFC4364]. The value field comprises an IP address of the PE (typically, the loopback address) followed by a number unique to the PE."
+          }
+        },
+        {
+          "name": "Ethernet Segment Identifier",
+          "bits": 80,
+          "explain": "Carries the 10-octet Ethernet Segment Identifier for the route.",
+          "cite": {
+            "section": "8.1.1",
+            "quote": "The Ethernet Segment Identifier (ESI) MUST be set to the 10-octet value described in Section 5."
+          }
+        },
+        {
+          "name": "IP Address Length",
+          "bits": 8,
+          "explain": "Reports the originating address length in bits and is part of the BGP route key.",
+          "cite": {
+            "section": "7.4",
+            "quote": "The IP address length is in bits. For the purpose of BGP route key processing, only the Ethernet Segment ID, IP Address Length, and Originating Router's IP Address fields are considered to be part of the prefix in the NLRI."
+          }
+        },
+        {
+          "name": "Originating Router's IP Address",
+          "bits": "var",
+          "explain": "Identifies the PE that originated the route and is part of the BGP route key.",
+          "cite": {
+            "section": "7.4",
+            "quote": "The IP address length is in bits. For the purpose of BGP route key processing, only the Ethernet Segment ID, IP Address Length, and Originating Router's IP Address fields are considered to be part of the prefix in the NLRI."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "A complete BGP session FSM and the full PE forwarding-table state machine",
+    "Inclusive Multicast Ethernet Tag route encoding and PMSI Tunnel construction",
+    "Ethernet A-D per EVI route encoding and aliasing behavior",
+    "Designated Forwarder election and service carving",
+    "Split-horizon filtering with ESI labels",
+    "BUM flooding, unknown-unicast handling, and ingress replication or P2MP forwarding",
+    "Load balancing for Single-Active and All-Active multihoming",
+    "ARP and Neighbor Discovery proxying and default-gateway advertisement",
+    "MAC mobility, sticky MAC addresses, and duplicate-MAC suppression",
+    "Convergence, frame ordering, security, and IANA procedures",
+    "ES-Import Route Target, ESI Label, and MAC Mobility extended-community encodings",
+    "VLAN-based, VLAN-bundle, and VLAN-aware service-interface rules"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:33:57.097Z",
+    "dropped": 0
+  }
+}

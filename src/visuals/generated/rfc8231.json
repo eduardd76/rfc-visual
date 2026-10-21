@@ -1,0 +1,420 @@
+{
+  "rfc": 8231,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "capability-negotiation",
+      "title": "Negotiate Stateful PCE Capability",
+      "participants": {
+        "a": "PCC",
+        "b": "PCE"
+      },
+      "intro": {
+        "section": "5.4",
+        "quote": "The PCEP extensions for stateful PCEs MUST NOT be used if one or both PCEP speakers have not included the STATEFUL-PCE-CAPABILITY TLV in their respective OPEN message."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPEN object",
+          "explain": "The PCC advertises that it is willing to send reports when LSP parameters or operational status change.",
+          "cite": {
+            "section": "5.4",
+            "quote": "The presence of the STATEFUL-PCE-CAPABILITY TLV in PCC's OPEN object indicates that the PCC is willing to send LSP State Reports whenever LSP parameters or operational status changes."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "OPEN message",
+          "explain": "The PCE advertises that it is interested in receiving reports when LSP parameters or operational status change.",
+          "cite": {
+            "section": "5.4",
+            "quote": "The presence of the STATEFUL-PCE-CAPABILITY TLV in PCE's OPEN message indicates that the PCE is interested in receiving LSP State Reports whenever LSP parameters or operational status changes."
+          }
+        }
+      ]
+    },
+    {
+      "id": "state-synchronization",
+      "title": "Synchronize LSP State",
+      "participants": {
+        "a": "PCC",
+        "b": "PCE"
+      },
+      "intro": {
+        "section": "5.6",
+        "quote": "The purpose of State Synchronization is to provide a checkpoint-in-time state replica of a PCC's LSP state in a PCE."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "LSP State Report",
+          "explain": "The PCC takes a snapshot of its LSP state and sends it as state reports with the synchronization flag enabled.",
+          "cite": {
+            "section": "5.6",
+            "quote": "During State Synchronization, a PCC first takes a snapshot of the state of its LSPs, then it sends the snapshot to a PCE in a sequence of LSP State Reports. Each LSP State Report sent during State Synchronization has the SYNC flag in the LSP object set to 1."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PCRpt",
+          "explain": "The PCC sends a final PCRpt with synchronization disabled to mark the end of the state snapshot.",
+          "cite": {
+            "section": "5.6",
+            "quote": "The end of the synchronization marker is a PCRpt message with the SYNC flag set to 0 for an LSP object with PLSP-ID equal to the reserved value 0 (see Section 7.3)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "delegation-and-update",
+      "title": "Delegate and Update an LSP",
+      "participants": {
+        "a": "PCC",
+        "b": "PCE"
+      },
+      "intro": {
+        "section": "5.7",
+        "quote": "If during capability advertisement both the PCE and the PCC have indicated that they support LSP Update, then the PCC may choose to grant the PCE a temporary right to update (a subset of) LSP attributes on one or more LSPs. This is called \"LSP delegation\", and it MAY be performed at any time after the initialization phase, including during the State Synchronization phase."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "LSP State Report",
+          "explain": "The PCC delegates the LSP by setting the Delegate flag in the state report.",
+          "cite": {
+            "section": "5.7.1",
+            "quote": "A PCC delegates an LSP to a PCE by setting the Delegate flag in the LSP State Report to 1."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "LSP Update Request",
+          "explain": "The PCE can acknowledge acceptance with an empty update request that keeps delegation enabled.",
+          "cite": {
+            "section": "5.7.1",
+            "quote": "The PCE MAY also immediately acknowledge a delegation by sending an empty LSP Update Request that has the Delegate flag set to 1."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "PCUpd",
+          "explain": "After delegation, the PCE can send a PCUpd message to change the delegated LSP.",
+          "cite": {
+            "section": "5.8.3",
+            "quote": "To update an LSP, a PCE MUST send the PCC an LSP Update Request using a PCUpd message."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PCRpt",
+          "explain": "The PCC reports that the resulting LSP is up.",
+          "cite": {
+            "section": "5.8.3",
+            "quote": "Once an LSP is up, the PCC MUST send an LSP State Report (PCRpt message) to the PCE, indicating that the LSP's status is 'Up'."
+          }
+        }
+      ]
+    },
+    {
+      "id": "passive-path-computation",
+      "title": "Passive Stateful Path Computation",
+      "participants": {
+        "a": "PCC",
+        "b": "PCE"
+      },
+      "intro": {
+        "section": "5.8.1",
+        "quote": "Once a PCC has successfully established a PCEP session with a passive stateful PCE and the PCC's LSP state is synchronized with the PCE (i.e., the PCE knows about all of the PCC's existing LSPs), if an event is triggered that requires the computation of a set of paths, the PCC sends a path computation request to the PCE ([RFC5440], Section 4.2.3)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "PCReq message",
+          "explain": "The PCC asks the passive stateful PCE to compute paths and may identify the requested LSP.",
+          "cite": {
+            "section": "5.8.1",
+            "quote": "Once a PCC has successfully established a PCEP session with a passive stateful PCE and the PCC's LSP state is synchronized with the PCE (i.e., the PCE knows about all of the PCC's existing LSPs), if an event is triggered that requires the computation of a set of paths, the PCC sends a path computation request to the PCE ([RFC5440], Section 4.2.3). The PCReq message MAY contain the LSP object to identify the LSP for which the path computation is requested."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "PCRep message",
+          "explain": "The PCE returns a PCRep response and may carry the requested LSP object when the request included it.",
+          "cite": {
+            "section": "6.5",
+            "quote": "A PCE MAY include the LSP object in the PCRep message (see Section 7.3) if the stateful PCE capability has been negotiated on a PCEP session between the PCC, and the PCE and the LSP object were included in the corresponding PCReq message from the PCC."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "PCRpt",
+          "explain": "After setup, the PCC reports the LSP's operational state to the PCE.",
+          "cite": {
+            "section": "5.8.1",
+            "quote": "Once an LSP is up or active, the PCC MUST send an LSP State Report carried on a PCRpt message to the PCE, indicating that the LSP's status is 'Up' or 'Active', respectively."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "stateful-pce-capability-tlv",
+      "title": "STATEFUL-PCE-CAPABILITY TLV",
+      "intro": {
+        "section": "7.1.1",
+        "quote": "The STATEFUL-PCE-CAPABILITY TLV is an optional TLV for use in the OPEN object for stateful PCE capability advertisement."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "Identifies the TLV as the stateful PCE capability.",
+          "cite": {
+            "section": "7.1.1",
+            "quote": "The type (16 bits) of the TLV is 16."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the TLV length, which has a fixed value.",
+          "cite": {
+            "section": "7.1.1",
+            "quote": "The length field is 16 bits long and has a fixed value of 4."
+          }
+        },
+        {
+          "name": "Unassigned bits",
+          "bits": 31,
+          "explain": "These flag bits are reserved and must be zero on transmission and ignored on receipt.",
+          "cite": {
+            "section": "7.1.1",
+            "quote": "Unassigned bits are considered reserved. They MUST be set to 0 on transmission and MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "LSP-UPDATE-CAPABILITY",
+          "bits": 1,
+          "explain": "When set by a PCC, this bit indicates that modification of LSP parameters is allowed.",
+          "cite": {
+            "section": "7.1.1",
+            "quote": "U (LSP-UPDATE-CAPABILITY - 1 bit): if set to 1 by a PCC, the U flag indicates that the PCC allows modification of LSP parameters"
+          }
+        }
+      ]
+    },
+    {
+      "id": "srp-object",
+      "title": "SRP Object",
+      "intro": {
+        "section": "7.2",
+        "quote": "The SRP object is used to correlate between update requests sent by the PCE and the error reports and state reports sent by the PCC."
+      },
+      "fields": [
+        {
+          "name": "Flags",
+          "bits": 32,
+          "explain": "No flag meanings are currently defined.",
+          "cite": {
+            "section": "7.2",
+            "quote": "Flags (32 bits): None defined yet."
+          }
+        },
+        {
+          "name": "SRP-ID-number",
+          "bits": 32,
+          "explain": "Uniquely identifies the operation that the PCE requested for an LSP in the current session.",
+          "cite": {
+            "section": "7.2",
+            "quote": "SRP-ID-number (32 bits): The SRP-ID-number value in the scope of the current PCEP session uniquely identifies the operation that the PCE has requested the PCC to perform on a given LSP."
+          }
+        },
+        {
+          "name": "Optional TLVs",
+          "bits": "var",
+          "explain": "Additional optional TLVs may extend the object.",
+          "cite": {
+            "section": "7.2",
+            "quote": "Optional TLVs MAY be included within the SRP object body."
+          }
+        }
+      ]
+    },
+    {
+      "id": "lsp-object",
+      "title": "LSP Object",
+      "intro": {
+        "section": "7.3",
+        "quote": "The LSP object contains a set of fields used to specify the target LSP, the operation to be performed on the LSP, and LSP delegation. It also contains a flag indicating to a PCE that the LSP State Synchronization is in progress."
+      },
+      "fields": [
+        {
+          "name": "Delegate",
+          "bits": 1,
+          "explain": "On a PCRpt it signals delegation, while on a PCUpd it confirms delegation.",
+          "cite": {
+            "section": "7.3",
+            "quote": "D (Delegate - 1 bit): On a PCRpt message, the D flag set to 1 indicates that the PCC is delegating the LSP to the PCE. On a PCUpd message, the D flag set to 1 indicates that the PCE is confirming the LSP delegation."
+          }
+        },
+        {
+          "name": "SYNC",
+          "bits": 1,
+          "explain": "Marks PCRpt messages sent during State Synchronization.",
+          "cite": {
+            "section": "7.3",
+            "quote": "S (SYNC - 1 bit): The S flag MUST be set to 1 on each PCRpt sent from a PCC during State Synchronization."
+          }
+        },
+        {
+          "name": "Remove",
+          "bits": 1,
+          "explain": "Signals that the LSP has been removed and tells the PCE it should remove its state.",
+          "cite": {
+            "section": "7.3",
+            "quote": "R (Remove - 1 bit): On PCRpt messages, the R flag indicates that the LSP has been removed from the PCC and the PCE SHOULD remove all state from its database."
+          }
+        },
+        {
+          "name": "Administrative",
+          "bits": 1,
+          "explain": "Carries the desired active or inactive administrative status of the LSP.",
+          "cite": {
+            "section": "7.3",
+            "quote": "A (Administrative - 1 bit): On PCRpt messages, the A flag indicates the PCC's target operational status for this LSP. On PCUpd messages, the A flag indicates the LSP status that the PCE desires for this LSP. In both cases, a value of '1' means that the desired operational state is active, and a value of '0' means that the desired operational state is inactive."
+          }
+        },
+        {
+          "name": "Operational",
+          "bits": 3,
+          "explain": "Carries the operational status of the LSP in a state report.",
+          "cite": {
+            "section": "7.3",
+            "quote": "O (Operational - 3 bits): On PCRpt messages, the O field represents the operational status of the LSP."
+          }
+        },
+        {
+          "name": "Unassigned bits",
+          "bits": 5,
+          "explain": "These flag bits are reserved and must be zero on transmission and ignored on receipt.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Unassigned bits are reserved for future uses. They MUST be set to 0 on transmission and MUST be ignored on receipt."
+          }
+        },
+        {
+          "name": "PLSP-ID",
+          "bits": 20,
+          "explain": "Identifies an LSP with an identifier that remains constant for the lifetime of the PCEP session.",
+          "cite": {
+            "section": "7.3",
+            "quote": "PLSP-ID (20 bits): A PCEP-specific identifier for the LSP. A PCC creates a unique PLSP-ID for each LSP that is constant for the lifetime of a PCEP session."
+          }
+        },
+        {
+          "name": "TLVs",
+          "bits": "var",
+          "explain": "Optional TLVs can extend the LSP object.",
+          "cite": {
+            "section": "7.3",
+            "quote": "Other optional TLVs, that are not defined in this document, MAY also be included within the LSP object body."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ipv4-lsp-identifiers-tlv",
+      "title": "IPV4-LSP-IDENTIFIERS TLV",
+      "intro": {
+        "section": "7.3.1",
+        "quote": "The LSP-IDENTIFIERS TLV MUST be included in the LSP object in PCRpt messages for RSVP-signaled LSPs."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "Identifies the TLV as the IPv4 LSP identifiers TLV.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "The type (16 bits) of the TLV is 18."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the TLV length, which has a fixed value.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "The length field is 16 bits long and has a fixed value of 16."
+          }
+        },
+        {
+          "name": "IPv4 Tunnel Sender Address",
+          "bits": 32,
+          "explain": "Identifies the sender node with its IPv4 address.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "IPv4 Tunnel Sender Address: contains the sender node's IPv4 address, as defined in [RFC3209], Section 4.6.2.1, for the LSP_TUNNEL_IPv4 Sender Template Object."
+          }
+        },
+        {
+          "name": "LSP ID",
+          "bits": 16,
+          "explain": "Carries the RSVP LSP identifier.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "LSP ID: contains the 16-bit 'LSP ID' identifier defined in [RFC3209], Section 4.6.2.1 for the LSP_TUNNEL_IPv4 Sender Template Object."
+          }
+        },
+        {
+          "name": "Tunnel ID",
+          "bits": 16,
+          "explain": "Carries the RSVP tunnel identifier.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "Tunnel ID: contains the 16-bit 'Tunnel ID' identifier defined in [RFC3209], Section 4.6.1.1 for the LSP_TUNNEL_IPv4 Session Object."
+          }
+        },
+        {
+          "name": "Extended Tunnel ID",
+          "bits": 32,
+          "explain": "Carries the extended RSVP tunnel identifier.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "Extended Tunnel ID: contains the 32-bit 'Extended Tunnel ID' identifier defined in [RFC3209], Section 4.6.1.1 for the LSP_TUNNEL_IPv4 Session Object."
+          }
+        },
+        {
+          "name": "IPv4 Tunnel Endpoint Address",
+          "bits": 32,
+          "explain": "Identifies the egress node with its IPv4 address.",
+          "cite": {
+            "section": "7.3.1",
+            "quote": "IPv4 Tunnel Endpoint Address"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The base PCEP common-header and inherited object formats from RFC 5440",
+    "Explicit delegation revocation, delegation return, and redundant-PCE failover procedures",
+    "Redelegation and state timeout policy details",
+    "PCErr and PCNtf error handling, malformed-message handling, and PCE resource limits",
+    "IGP advertisements of stateful PCE capabilities",
+    "Make-before-break signaling details",
+    "The IPv6 LSP-IDENTIFIERS, SYMBOLIC-PATH-NAME, LSP-ERROR-CODE, and RSVP-ERROR-SPEC TLVs",
+    "LSP protection, PCE-initiated LSP creation, and GMPLS extensions defined in other specifications"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:27:15.277Z",
+    "dropped": 0
+  }
+}

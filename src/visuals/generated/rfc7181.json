@@ -1,0 +1,247 @@
+{
+  "rfc": 7181,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "periodic-signaling",
+      "title": "Periodic HELLO and TC signaling",
+      "participants": {
+        "a": "Router A",
+        "b": "Router B"
+      },
+      "intro": {
+        "section": "13.1",
+        "quote": "Routers using this protocol exchange information through messages. The Message Types used by this protocol are the HELLO message and the TC message. The HELLO message is defined by [RFC6130] and extended by this specification (see Section 15). The TC message is defined by this specification (see Section 16)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "HELLO message",
+          "explain": "Router A sends a HELLO message using the OLSRv2 extension of the NHDP message.",
+          "cite": {
+            "section": "13.1",
+            "quote": "The Message Types used by this protocol are the HELLO message and the TC message. The HELLO message is defined by [RFC6130] and extended by this specification (see Section 15)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "HELLO message",
+          "explain": "Router B independently originates and transmits a HELLO message through NHDP. OLSRv2 does not forward HELLO messages.",
+          "cite": {
+            "section": "15",
+            "quote": "The HELLO Message Type is owned by NHDP [RFC6130], and HELLO messages are thus generated, transmitted, received, and processed by NHDP. This protocol, as permitted by [RFC6130], also uses HELLO messages, including adding to HELLO message generation and implementing additional processing based on received HELLO messages. HELLO messages are not forwarded by NHDP [RFC6130] or by OLSRv2."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "TC message",
+          "explain": "Router A proactively sends a TC message at a regular interval on all of its OLSRv2 interfaces.",
+          "cite": {
+            "section": "4.4",
+            "quote": "This specification defines a single Message Type, the TC message. TC messages are sent by their originating router proactively, at a regular interval, on all OLSRv2 interfaces."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "TC message",
+          "explain": "Router B independently sends its own TC message on all of its OLSRv2 interfaces.",
+          "cite": {
+            "section": "4.4",
+            "quote": "This specification defines a single Message Type, the TC message. TC messages are sent by their originating router proactively, at a regular interval, on all OLSRv2 interfaces."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mpr-flooded-tc-relay",
+      "title": "MPR-flooded TC relay",
+      "participants": {
+        "a": "Flooding MPR",
+        "b": "Downstream router"
+      },
+      "intro": {
+        "section": "14",
+        "quote": "This section describes the optimized flooding operation (MPR flooding) used when control messages, as instances of [RFC5444], are intended for MANET-wide distribution. This flooding mechanism defines when a received message is, or is not, processed and/or forwarded."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "TC message",
+          "explain": "Router A retransmits the TC message only if A did not originate it, the sending neighbor selected A as a flooding MPR, A had not forwarded it before, and this is its first receipt on that OLSRv2 interface.",
+          "cite": {
+            "section": "4.4",
+            "quote": "TC messages are MPR flooded throughout the MANET. A router retransmits a TC message received on an OLSRv2 interface if and only if the message did not originate at this router and has not been previously forwarded by this router, this is the first time the message has been received on this OLSRv2 interface, and the message is received from (i.e., originated from or was last relayed by) one of this router's flooding MPR selectors."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "mpr-willing-tlv",
+      "title": "MPR_WILLING Message TLV",
+      "intro": {
+        "section": "13.3.1",
+        "quote": "The MPR_WILLING TLV is used in HELLO messages. A message MUST NOT contain more than one MPR_WILLING TLV."
+      },
+      "fields": [
+        {
+          "name": "Value",
+          "bits": 8,
+          "explain": "The Value encodes WILL_FLOODING in bits 0-3 and WILL_ROUTING in bits 4-7.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| MPR_WILLING |   1 octet    | Bits 0-3 encode the parameter        |\n|             |              | WILL_FLOODING; bits 4-7 encode the   |\n|             |              | parameter WILL_ROUTING.              |\n+-------------+--------------+--------------------------------------+"
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The Type value is MPR_WILLING.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| MPR_WILLING |   1 octet    | Bits 0-3 encode the parameter        |\n|             |              | WILL_FLOODING; bits 4-7 encode the   |\n|             |              | parameter WILL_ROUTING.              |\n+-------------+--------------+--------------------------------------+"
+          }
+        },
+        {
+          "name": "Value Length",
+          "bits": 8,
+          "explain": "The TLV carries a one-octet Value.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| MPR_WILLING |   1 octet    | Bits 0-3 encode the parameter        |\n|             |              | WILL_FLOODING; bits 4-7 encode the   |\n|             |              | parameter WILL_ROUTING.              |\n+-------------+--------------+--------------------------------------+"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cont-seq-num-tlv",
+      "title": "CONT_SEQ_NUM Message TLV",
+      "intro": {
+        "section": "16.1",
+        "quote": "A single Message TLV with Type := CONT_SEQ_NUM and Value := ANSN from the Neighbor Information Base. If the TC message is complete, then this Message TLV MUST have Type Extension := COMPLETE; otherwise, it MUST have Type Extension := INCOMPLETE."
+      },
+      "fields": [
+        {
+          "name": "Value",
+          "bits": 16,
+          "explain": "The Value contains the ANSN from the Neighbor Information Base.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+--------------+--------------+-------------------------------------+\n|     Type     | Value Length | Value                               |\n+--------------+--------------+-------------------------------------+\n| CONT_SEQ_NUM |   2 octets   | The ANSN contained in the Neighbor  |\n|              |              | Information Base.                   |\n+--------------+--------------+-------------------------------------+"
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The Type value is CONT_SEQ_NUM.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+--------------+--------------+-------------------------------------+\n|     Type     | Value Length | Value                               |\n+--------------+--------------+-------------------------------------+\n| CONT_SEQ_NUM |   2 octets   | The ANSN contained in the Neighbor  |\n|              |              | Information Base.                   |\n+--------------+--------------+-------------------------------------+"
+          }
+        },
+        {
+          "name": "Value Length",
+          "bits": 8,
+          "explain": "The TLV carries a two-octet Value.",
+          "cite": {
+            "section": "13.3.1",
+            "quote": "+--------------+--------------+-------------------------------------+\n|     Type     | Value Length | Value                               |\n+--------------+--------------+-------------------------------------+\n| CONT_SEQ_NUM |   2 octets   | The ANSN contained in the Neighbor  |\n|              |              | Information Base.                   |\n+--------------+--------------+-------------------------------------+"
+          }
+        }
+      ]
+    },
+    {
+      "id": "link-metric-tlv",
+      "title": "LINK_METRIC Address Block TLV",
+      "intro": {
+        "section": "13.3.2",
+        "quote": "The LINK_METRIC TLV is used in HELLO messages and TC messages. It MAY use any type extension; only LINK_METRIC TLVs with type extension equal to LINK_METRIC_TYPE will be used by this specification."
+      },
+      "fields": [
+        {
+          "name": "Value",
+          "bits": 16,
+          "explain": "The Value uses bits 0-3 for metric kind and direction, bits 4-7 for the exponent, and bits 8-15 for the mantissa.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| LINK_METRIC |   2 octets   | Bits 0-3 indicate kind(s) and        |\n|             |              | direction(s); bits 4-7 indicate      |\n|             |              | exponent (b); and bits 8-15 indicate |\n|             |              | mantissa (a).                        |\n+-------------+--------------+--------------------------------------+"
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The Type value is LINK_METRIC.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| LINK_METRIC |   2 octets   | Bits 0-3 indicate kind(s) and        |\n|             |              | direction(s); bits 4-7 indicate      |\n|             |              | exponent (b); and bits 8-15 indicate |\n|             |              | mantissa (a).                        |\n+-------------+--------------+--------------------------------------+"
+          }
+        },
+        {
+          "name": "Value Length",
+          "bits": 8,
+          "explain": "The TLV carries a two-octet Value.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+-------------+--------------+--------------------------------------+\n|     Type    | Value Length | Value                                |\n+-------------+--------------+--------------------------------------+\n| LINK_METRIC |   2 octets   | Bits 0-3 indicate kind(s) and        |\n|             |              | direction(s); bits 4-7 indicate      |\n|             |              | exponent (b); and bits 8-15 indicate |\n|             |              | mantissa (a).                        |\n+-------------+--------------+--------------------------------------+"
+          }
+        }
+      ]
+    },
+    {
+      "id": "mpr-address-block-tlv",
+      "title": "MPR Address Block TLV",
+      "intro": {
+        "section": "13.3.2",
+        "quote": "The MPR TLV is used in HELLO messages and indicates that an address with which it is associated is of a symmetric 1-hop neighbor that has been selected as an MPR."
+      },
+      "fields": [
+        {
+          "name": "Value",
+          "bits": 8,
+          "explain": "The Value identifies FLOODING, ROUTING, or FLOOD_ROUTE MPR selection.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+------+--------------+---------------------------------------------+\n| Type | Value Length | Value                                       |\n+------+--------------+---------------------------------------------+\n| MPR  |   1 octet    | FLOODING indicates that the corresponding   |\n|      |              | address is of a neighbor selected as a      |\n|      |              | flooding MPR; ROUTING indicates that the    |\n|      |              | corresponding address is of a neighbor      |\n|      |              | selected as a routing MPR; and FLOOD_ROUTE  |\n|      |              | indicates both (see Section 24.6).          |\n+------+--------------+---------------------------------------------+"
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The Type value is MPR.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+------+--------------+---------------------------------------------+\n| Type | Value Length | Value                                       |\n+------+--------------+---------------------------------------------+\n| MPR  |   1 octet    | FLOODING indicates that the corresponding   |\n|      |              | address is of a neighbor selected as a      |\n|      |              | flooding MPR; ROUTING indicates that the    |\n|      |              | corresponding address is of a neighbor      |\n|      |              | selected as a routing MPR; and FLOOD_ROUTE  |\n|      |              | indicates both (see Section 24.6).          |\n+------+--------------+---------------------------------------------+"
+          }
+        },
+        {
+          "name": "Value Length",
+          "bits": 8,
+          "explain": "The TLV carries a one-octet Value.",
+          "cite": {
+            "section": "13.3.2",
+            "quote": "+------+--------------+---------------------------------------------+\n| Type | Value Length | Value                                       |\n+------+--------------+---------------------------------------------+\n| MPR  |   1 octet    | FLOODING indicates that the corresponding   |\n|      |              | address is of a neighbor selected as a      |\n|      |              | flooding MPR; ROUTING indicates that the    |\n|      |              | corresponding address is of a neighbor      |\n|      |              | selected as a routing MPR; and FLOOD_ROUTE  |\n|      |              | indicates both (see Section 24.6).          |\n+------+--------------+---------------------------------------------+"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The base RFC 5444 packet and message framing, including TLV flags and type-extension encoding",
+    "RFC 6130 NHDP link, neighbor, and two-hop discovery internals",
+    "MPR selection algorithms and the Section 19 Routing Set calculation",
+    "The complete Information Base tuple schemas, validity timers, expiration processing, and sequence-number ordering",
+    "The NBR_ADDR_TYPE, GATEWAY, VALIDITY_TIME, and INTERVAL_TIME TLV layouts",
+    "Security extensions, mandatory integrity protection, and key management",
+    "IP routing-table installation and external routing-domain integration"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:28:07.453Z",
+    "dropped": 0
+  }
+}

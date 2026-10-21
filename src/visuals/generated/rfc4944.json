@@ -1,0 +1,336 @@
+{
+  "rfc": 4944,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "link-fragmentation",
+      "title": "Fragmenting an IPv6 Datagram for IEEE 802.15.4",
+      "participants": {
+        "a": "IPv6 sender",
+        "b": "IEEE 802.15.4 receiver"
+      },
+      "intro": {
+        "section": "5.3",
+        "quote": "If the datagram does not fit within a single IEEE 802.15.4 frame, it SHALL be broken into link fragments."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "first link fragment",
+          "explain": "The sender puts the first fragment header in the first link fragment.",
+          "cite": {
+            "section": "5.3",
+            "quote": "The first link fragment SHALL contain the first fragment header as defined below."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "second and subsequent link fragments",
+          "explain": "Each remaining fragment carries the fragmentation header for subsequent fragments.",
+          "cite": {
+            "section": "5.3",
+            "quote": "The second and subsequent link fragments (up to and including the last) SHALL contain a fragmentation header that conforms to the format shown below."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "dispatch",
+      "title": "LoWPAN Dispatch Header",
+      "intro": {
+        "section": "5.1",
+        "quote": "The dispatch type is defined by a zero bit as the first bit and a one bit as the second bit. The dispatch type and header are shown here:"
+      },
+      "fields": [
+        {
+          "name": "Dispatch type",
+          "bits": 2,
+          "explain": "The opening two bits use the zero-then-one pattern for this dispatch form.",
+          "cite": {
+            "section": "5.1",
+            "quote": "The dispatch type is defined by a zero bit as the first bit and a one bit as the second bit."
+          }
+        },
+        {
+          "name": "Dispatch",
+          "bits": 6,
+          "explain": "This six-bit value identifies which header follows the dispatch header.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Dispatch 6-bit selector. Identifies the type of header immediately following the Dispatch Header."
+          }
+        },
+        {
+          "name": "type-specific header",
+          "bits": "var",
+          "explain": "The selected header format follows the dispatch byte.",
+          "cite": {
+            "section": "5.1",
+            "quote": "type-specific header A header determined by the Dispatch Header."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mesh-addressing-eui64",
+      "title": "Mesh Addressing Header, EUI-64 Form",
+      "intro": {
+        "section": "5.2",
+        "quote": "The mesh type is defined by a one bit and zero bit as the first two bits. The mesh type and header are shown here:"
+      },
+      "fields": [
+        {
+          "name": "Mesh Type",
+          "bits": 2,
+          "explain": "The opening one-then-zero bits identify a mesh addressing header.",
+          "cite": {
+            "section": "5.2",
+            "quote": "The mesh type is defined by a one bit and zero bit as the first two bits."
+          }
+        },
+        {
+          "name": "V",
+          "bits": 1,
+          "explain": "V is zero for an EUI-64 originator address and one for a short address.",
+          "cite": {
+            "section": "5.2",
+            "quote": "V: This 1-bit field SHALL be zero if the Originator (or \"Very first\") Address is an IEEE extended 64-bit address (EUI-64), or 1 if it is a short 16-bit addresses."
+          }
+        },
+        {
+          "name": "F",
+          "bits": 1,
+          "explain": "F is zero for an EUI-64 final-destination address and one for a short address.",
+          "cite": {
+            "section": "5.2",
+            "quote": "F: This 1-bit field SHALL be zero if the Final Destination Address is an IEEE extended 64-bit address (EUI-64), or 1 if it is a short 16-bit addresses."
+          }
+        },
+        {
+          "name": "Hops Left",
+          "bits": 4,
+          "explain": "Each forwarding node decrements this value before forwarding the packet, and a value of zero stops further forwarding.",
+          "cite": {
+            "section": "5.2",
+            "quote": "Hops Left: This 4-bit field SHALL be decremented by each forwarding node before sending this packet towards its next hop. The packet is not forwarded any further if Hops Left is decremented to zero."
+          }
+        },
+        {
+          "name": "Originator Address",
+          "bits": 64,
+          "explain": "The originator's link-layer address is carried in the EUI-64 form of this header.",
+          "cite": {
+            "section": "5.2",
+            "quote": "Originator Address: This is the link-layer address of the Originator."
+          }
+        },
+        {
+          "name": "Final Destination Address",
+          "bits": 64,
+          "explain": "The final destination's link-layer address is carried in the EUI-64 form of this header.",
+          "cite": {
+            "section": "5.2",
+            "quote": "Final Destination Address: This is the link-layer address of the Final Destination."
+          }
+        }
+      ]
+    },
+    {
+      "id": "first-fragment",
+      "title": "First Link Fragment Header",
+      "intro": {
+        "section": "5.3",
+        "quote": "The first link fragment SHALL contain the first fragment header as defined below."
+      },
+      "fields": [
+        {
+          "name": "FRAG1",
+          "bits": 5,
+          "explain": "The dispatch prefix identifies the fragmentation header used by the first fragment.",
+          "cite": {
+            "section": "5.1",
+            "quote": "11 000xxx | FRAG1 - Fragmentation Header (first)"
+          }
+        },
+        {
+          "name": "datagram_size",
+          "bits": 11,
+          "explain": "This gives the size of the whole IP packet after IP-layer fragmentation but before link-layer fragmentation.",
+          "cite": {
+            "section": "5.3",
+            "quote": "datagram_size: This 11-bit field encodes the size of the entire IP packet before link-layer fragmentation (but after IP layer fragmentation). The value of datagram_size SHALL be the same for all link-layer fragments of an IP packet."
+          }
+        },
+        {
+          "name": "datagram_tag",
+          "bits": 16,
+          "explain": "All fragments of one payload datagram share this tag, and the sender increments it for each successive fragmented datagram.",
+          "cite": {
+            "section": "5.3",
+            "quote": "datagram_tag: The value of datagram_tag (datagram tag) SHALL be the same for all link fragments of a payload (e.g., IPv6) datagram. The sender SHALL increment datagram_tag for successive, fragmented datagrams. The incremented value of datagram_tag SHALL wrap from 65535 back to zero. This field is 16 bits long, and its initial value is not defined."
+          }
+        }
+      ]
+    },
+    {
+      "id": "subsequent-fragment",
+      "title": "Subsequent Link Fragment Header",
+      "intro": {
+        "section": "5.3",
+        "quote": "The second and subsequent link fragments (up to and including the last) SHALL contain a fragmentation header that conforms to the format shown below."
+      },
+      "fields": [
+        {
+          "name": "FRAGN",
+          "bits": 5,
+          "explain": "The dispatch prefix identifies the fragmentation header used by subsequent fragments.",
+          "cite": {
+            "section": "5.1",
+            "quote": "11 100xxx | FRAGN - Fragmentation Header (subsequent)"
+          }
+        },
+        {
+          "name": "datagram_size",
+          "bits": 11,
+          "explain": "This gives the size of the whole IP packet after IP-layer fragmentation but before link-layer fragmentation.",
+          "cite": {
+            "section": "5.3",
+            "quote": "datagram_size: This 11-bit field encodes the size of the entire IP packet before link-layer fragmentation (but after IP layer fragmentation). The value of datagram_size SHALL be the same for all link-layer fragments of an IP packet."
+          }
+        },
+        {
+          "name": "datagram_tag",
+          "bits": 16,
+          "explain": "All fragments of one payload datagram share this tag, and the sender increments it for each successive fragmented datagram.",
+          "cite": {
+            "section": "5.3",
+            "quote": "datagram_tag: The value of datagram_tag (datagram tag) SHALL be the same for all link fragments of a payload (e.g., IPv6) datagram. The sender SHALL increment datagram_tag for successive, fragmented datagrams. The incremented value of datagram_tag SHALL wrap from 65535 back to zero. This field is 16 bits long, and its initial value is not defined."
+          }
+        },
+        {
+          "name": "datagram_offset",
+          "bits": 8,
+          "explain": "This gives the fragment's position in the payload in eight-octet increments.",
+          "cite": {
+            "section": "5.3",
+            "quote": "datagram_offset: This field is present only in the second and subsequent link fragments and SHALL specify the offset, in increments of 8 octets, of the fragment from the beginning of the payload datagram. The first octet of the datagram (e.g., the start of the IPv6 header) has an offset of zero; the implicit value of datagram_offset in the first link fragment is zero. This field is 8 bits long."
+          }
+        }
+      ]
+    },
+    {
+      "id": "lowpan-hc1",
+      "title": "LOWPAN_HC1 Compressed Header Encoding",
+      "intro": {
+        "section": "10.1",
+        "quote": "The following IPv6 header values are expected to be common on 6LoWPAN networks, so the HC1 header has been constructed to efficiently compress them from the onset:"
+      },
+      "fields": [
+        {
+          "name": "HC1 encoding",
+          "bits": 8,
+          "explain": "The encoding selects how the common IPv6 header values are represented.",
+          "cite": {
+            "section": "10.1",
+            "quote": "Such a packet is compressible via the LOWPAN_HC1 format by using a Dispatch value of LOWPAN_HC1 followed by a LOWPAN_HC1 header \"HC1 encoding\" field (8 bits) to encode the different combinations as shown below."
+          }
+        },
+        {
+          "name": "Non-Compressed fields",
+          "bits": "var",
+          "explain": "IPv6 fields that are not compressed are sent after the encoding byte.",
+          "cite": {
+            "section": "10.1",
+            "quote": "| HC1 encoding | Non-Compressed fields follow..."
+          }
+        }
+      ]
+    },
+    {
+      "id": "broadcast",
+      "title": "LOWPAN_BC0 Mesh Broadcast Header",
+      "intro": {
+        "section": "11.1",
+        "quote": "In particular, a broadcast header consists of a LOWPAN_BC0 dispatch followed by a sequence number field. The sequence number is used to detect duplicate packets (and hopefully suppress them)."
+      },
+      "fields": [
+        {
+          "name": "LOWPAN_BC0 dispatch",
+          "bits": 8,
+          "explain": "The dispatch byte identifies a LOWPAN_BC0 mesh broadcast header.",
+          "cite": {
+            "section": "11.1",
+            "quote": "a broadcast header consists of a LOWPAN_BC0 dispatch followed by a sequence number field."
+          }
+        },
+        {
+          "name": "Sequence Number",
+          "bits": 8,
+          "explain": "The originator increments this value for each new mesh broadcast or multicast packet.",
+          "cite": {
+            "section": "11.1",
+            "quote": "Sequence Number: This 8-bit field SHALL be incremented by the originator whenever it sends a new mesh broadcast or multicast packet."
+          }
+        }
+      ]
+    },
+    {
+      "id": "link-local-address",
+      "title": "IPv6 Link-Local Address Layout",
+      "intro": {
+        "section": "7",
+        "quote": "The IPv6 link-local address [RFC4291] for an IEEE 802.15.4 interface is formed by appending the Interface Identifier, as defined above, to the prefix FE80::/64."
+      },
+      "fields": [
+        {
+          "name": "Prefix",
+          "bits": 10,
+          "explain": "The significant part of the FE80::/64 prefix is carried in the first ten bits.",
+          "cite": {
+            "section": "7",
+            "quote": "The IPv6 link-local address [RFC4291] for an IEEE 802.15.4 interface is formed by appending the Interface Identifier, as defined above, to the prefix FE80::/64."
+          }
+        },
+        {
+          "name": "Zeros",
+          "bits": 54,
+          "explain": "The middle fifty-four bits are fixed to zero.",
+          "cite": {
+            "section": "7",
+            "quote": "10 bits 54 bits 64 bits +----------+-----------------------+----------------------------+ |1111111010| (zeros) | Interface Identifier | +----------+-----------------------+----------------------------+"
+          }
+        },
+        {
+          "name": "Interface Identifier",
+          "bits": 64,
+          "explain": "The interface identifier fills the final sixty-four bits.",
+          "cite": {
+            "section": "7",
+            "quote": "10 bits 54 bits 64 bits +----------+-----------------------+----------------------------+ |1111111010| (zeros) | Interface Identifier | +----------+-----------------------+----------------------------+"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The 16-bit short-address forms of the mesh header and its optional 8-bit Deep Hops Left field",
+    "Detailed LOWPAN_HC1 and HC_UDP bit assignments, inline field ordering, and compression padding rules",
+    "IPv6 multicast-to-IEEE 802.15.4 multicast address mapping",
+    "Neighbor Discovery Source/Target Link-Layer Address option formats",
+    "IEEE 802.15.4 interface identifier derivation and stateless address autoconfiguration procedures",
+    "Mesh routing protocols, source routing, and the mesh-forwarding procedure",
+    "Fragment reassembly overlap handling, timeout behavior, and disassociation cleanup",
+    "Alternative mechanisms for delivering frames in a mesh"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:54:57.438Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "rfc": 7177,
+  "reviewed": false,
+  "initial": "Down",
+  "terminal": [],
+  "stateMachineTitle": "TRILL adjacency FSM",
+  "states": [
+    {
+      "id": "Down",
+      "cite": {
+        "section": "3.2",
+        "quote": "Down: This is a virtual state for convenience in creating state diagrams and tables. It indicates that the adjacency is nonexistent, and there is no entry in the adjacency table for it."
+      }
+    },
+    {
+      "id": "Detect",
+      "cite": {
+        "section": "3.2",
+        "quote": "Detect: A neighbor RBridge has been detected through receipt of a TRILL Hello, but either 2-way connectivity has not been confirmed or the detection was on an Ethernet link in a VLAN other than the Designated VLAN."
+      }
+    },
+    {
+      "id": "2-Way",
+      "cite": {
+        "section": "3.2",
+        "quote": "2-Way: 2-way connectivity to the neighbor has been found and, if the link is Ethernet, it was found on the Designated VLAN, but some enabled test, such as the link MTU meeting the minimum campus requirement or BFD confirming link connectivity, has not yet succeeded."
+      }
+    },
+    {
+      "id": "Report",
+      "cite": {
+        "section": "3.2",
+        "quote": "Report: There is 2-way connectivity to the neighbor (on the Designated VLAN if an Ethernet link); all enabled tests have succeeded, including, if enabled, MTU and/or BFD testing. This state will cause adjacency to be reported in an LSP (with appropriate provision for a pseudonode, if any, as described in Section 7)."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Down",
+      "to": "Detect",
+      "event": "A3 Hello",
+      "action": "record detected neighbor",
+      "layer": "happy",
+      "cite": {
+        "section": "3.2",
+        "quote": "Down: This is a virtual state for convenience in creating state diagrams and tables. It indicates that the adjacency is nonexistent, and there is no entry in the adjacency table for it. Detect: A neighbor RBridge has been detected through receipt of a TRILL Hello, but either 2-way connectivity has not been confirmed or the detection was on an Ethernet link in a VLAN other than the Designated VLAN."
+      }
+    },
+    {
+      "from": "Detect",
+      "to": "2-Way",
+      "event": "A1 Hello",
+      "action": "confirm two-way connectivity",
+      "layer": "happy",
+      "cite": {
+        "section": "3.2",
+        "quote": "Detect: A neighbor RBridge has been detected through receipt of a TRILL Hello, but either 2-way connectivity has not been confirmed or the detection was on an Ethernet link in a VLAN other than the Designated VLAN. 2-Way: 2-way connectivity to the neighbor has been found and, if the link is Ethernet, it was found on the Designated VLAN, but some enabled test, such as the link MTU meeting the minimum campus requirement or BFD confirming link connectivity, has not yet succeeded."
+      }
+    },
+    {
+      "from": "2-Way",
+      "to": "Report",
+      "event": "A6 tests succeed",
+      "action": "report adjacency in LSP",
+      "layer": "happy",
+      "cite": {
+        "section": "3.2",
+        "quote": "Report: There is 2-way connectivity to the neighbor (on the Designated VLAN if an Ethernet link); all enabled tests have succeeded, including, if enabled, MTU and/or BFD testing. This state will cause adjacency to be reported in an LSP (with appropriate provision for a pseudonode, if any, as described in Section 7)."
+      }
+    },
+    {
+      "from": "Report",
+      "to": "2-Way",
+      "event": "A7 test fails",
+      "action": "leave Report state",
+      "layer": "error",
+      "cite": {
+        "section": "3.2",
+        "quote": "Report: There is 2-way connectivity to the neighbor (on the Designated VLAN if an Ethernet link); all enabled tests have succeeded, including, if enabled, MTU and/or BFD testing. This state will cause adjacency to be reported in an LSP (with appropriate provision for a pseudonode, if any, as described in Section 7)."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "hello-adjacency",
+      "title": "Confirming an RBridge Neighbor with TRILL Hellos",
+      "participants": {
+        "a": "RBridge A",
+        "b": "RBridge B"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "The determination of adjacencies on links is made using TRILL Hellos (see Section 8), an optional MTU test (see Section 5), and, optionally, BFD (see Section 6) and/or other connectivity tests."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "TRILL Hello",
+          "explain": "RBridge A sends a TRILL Hello. On a LAN, the Hello lists RBridge B in a TRILL Neighbor TLV; on a point-to-point link, it carries a Three-Way Handshake TLV with B's System ID and Extended Circuit ID.",
+          "cite": {
+            "section": "3.3",
+            "quote": "A1. Receive a TRILL Hello (other than an A0 event) such that: - If received on an Ethernet port, it was received in the Designated VLAN. - If received for a broadcast LAN adjacency, it contains a TRILL Neighbor TLV that explicitly lists the receiving port's (SNPA) address. - If received for a point-to-point adjacency, it contains a Three-Way Handshake TLV with the receiver's System ID and Extended Circuit ID."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "TRILL Hello",
+          "explain": "RBridge B returns a TRILL Hello. Its TRILL Neighbor TLV lists RBridge A on a LAN, or its Three-Way Handshake TLV carries A's System ID and Extended Circuit ID on a point-to-point link.",
+          "cite": {
+            "section": "3.3",
+            "quote": "A1. Receive a TRILL Hello (other than an A0 event) such that: - If received on an Ethernet port, it was received in the Designated VLAN. - If received for a broadcast LAN adjacency, it contains a TRILL Neighbor TLV that explicitly lists the receiving port's (SNPA) address. - If received for a point-to-point adjacency, it contains a Three-Way Handshake TLV with the receiver's System ID and Extended Circuit ID."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "bfd-enabled-tlv",
+      "title": "BFD-Enabled TLV",
+      "intro": {
+        "section": "6",
+        "quote": "The BFD-Enabled TLVs in TRILL Hellos will look like the following:"
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "Identifies the TLV as BFD Enabled.",
+          "cite": {
+            "section": "6",
+            "quote": "Type = 148 for BFD Enabled [RFC6213]."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Specifies the TLV length as three times the number of topology and protocol pairs.",
+          "cite": {
+            "section": "6",
+            "quote": "Length will be 3 times the number of topology and protocol pairs in the TLV."
+          }
+        },
+        {
+          "name": "RESV",
+          "bits": 8,
+          "explain": "Holds reserved space in the TLV.",
+          "cite": {
+            "section": "6",
+            "quote": "RESV  |        MT ID=0        |   (2 bytes)"
+          }
+        },
+        {
+          "name": "MT ID",
+          "bits": 8,
+          "explain": "Identifies the topology and is zero unless multi-topology support is being used.",
+          "cite": {
+            "section": "6",
+            "quote": "MT ID is a topology ID [RFC5120] that will be zero unless multi-topology is being supported [MT]."
+          }
+        },
+        {
+          "name": "NLPID",
+          "bits": 8,
+          "explain": "Identifies the network-layer protocol and uses 0xC0 for TRILL.",
+          "cite": {
+            "section": "6",
+            "quote": "NLPID is a Network Layer Protocol ID [RFC6328] and will be 0xC0 for TRILL, but additional topology and protocol pairs could conceivably be listed."
+          }
+        },
+        {
+          "name": "topology/NLPID pairs",
+          "bits": "var",
+          "explain": "Carries optional additional topology and protocol pairs.",
+          "cite": {
+            "section": "6",
+            "quote": "possible additional               (3*(n-1) bytes) | topology/NLPID pairs"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The DRB election and port-state machine, including suspension and Designated VLAN changes in Section 4",
+    "Pseudonode creation, bypass behavior, and topology reporting in Section 7",
+    "Detailed MTU probe and acknowledgement behavior in Section 5",
+    "BFD session establishment and nickname conflict handling beyond the BFD-Enabled TLV and adjacency-state use in Section 6",
+    "The complete TRILL Hello PDU and TLV encodings specified in RFC 7176 and RFC 6325",
+    "Hello transmission timing, VLAN spraying, and detailed receive-side validation in Sections 8.2 and 8.3",
+    "Adjacency table entry contents, parallel-link handling, and table-space exhaustion in Sections 3.2, 3.5, and 3.6",
+    "Additional adjacency event paths, including the direct Down-to-2-Way A1 path and the A2, A4, A5, and A8 transitions"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:43:40.913Z",
+    "dropped": 0
+  }
+}

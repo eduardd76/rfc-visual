@@ -1,0 +1,303 @@
+{
+  "rfc": 3461,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "dsn-request",
+      "title": "Negotiate DSN support and request reports",
+      "participants": {
+        "a": "Alice's user agent",
+        "b": "DSN-aware SMTP server"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "An SMTP client wishing to request a DSN for a message may issue the EHLO command to start an SMTP session, to determine if the server supports any of several service extensions."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "EHLO Example.ORG",
+          "explain": "The client starts an SMTP session and checks for supported service extensions.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> EHLO Example.ORG"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "250-DSN",
+          "explain": "The positive EHLO response advertises the DSN extension.",
+          "cite": {
+            "section": "10.1",
+            "quote": "<<< 250-DSN"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "MAIL FROM:<Alice@Example.ORG> RET=HDRS ENVID=QQ314159",
+          "explain": "The MAIL command requests header-only failed DSNs with RET=HDRS and identifies the transaction with ENVID=QQ314159.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> MAIL FROM:<Alice@Example.ORG> RET=HDRS ENVID=QQ314159"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "RCPT TO:<Bob@Example.COM> NOTIFY=SUCCESS",
+          "explain": "For Bob, NOTIFY=SUCCESS asks for a notification after successful delivery.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> RCPT TO:<Bob@Example.COM> NOTIFY=SUCCESS"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "RCPT TO:<Carol@Ivory.EDU> NOTIFY=FAILURE",
+          "explain": "For Carol, NOTIFY=FAILURE asks for a notification if delivery fails.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> RCPT TO:<Carol@Ivory.EDU> NOTIFY=FAILURE"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "RCPT TO:<Fred@Bombs.AF.MIL> NOTIFY=NEVER",
+          "explain": "For Fred, NOTIFY=NEVER suppresses DSNs under any condition.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> RCPT TO:<Fred@Bombs.AF.MIL> NOTIFY=NEVER"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "DATA",
+          "explain": "The client begins transferring the message body after the recipient requests.",
+          "cite": {
+            "section": "10.1",
+            "quote": ">>> DATA"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "250 message accepted",
+          "explain": "The server confirms that it accepted the message.",
+          "cite": {
+            "section": "10.1",
+            "quote": "<<< 250 message accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "successful-dsn",
+      "title": "Return a delivered DSN",
+      "participants": {
+        "a": "Original sender Alice",
+        "b": "Reporting MTA"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "Delivery Status Notifications are to be returned to the sender of the original message as outlined below."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "DSN",
+          "explain": "When SUCCESS was requested for the recipient, the MTA issues a delivered DSN.",
+          "cite": {
+            "section": "5.2.3",
+            "quote": "If the NOTIFY parameter was supplied for that recipient, with an esmtp-value containing the SUCCESS keyword, the MTA MUST issue a \"delivered\" DSN for that recipient."
+          }
+        }
+      ]
+    },
+    {
+      "id": "failed-dsn",
+      "title": "Return a failed DSN",
+      "participants": {
+        "a": "Original sender Alice",
+        "b": "Relaying MTA Example.ORG"
+      },
+      "intro": {
+        "section": "10.7",
+        "quote": "Because delivery to Carol failed and the sender specified NOTIFY=FAILURE for Carol@Ivory.EDU, MTA Example.ORG (the SMTP client to which the failure was reported via SMTP) issues the following DSN."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "Subject: Delivery Notification (failure) for Carol@Ivory.EDU",
+          "explain": "After Carol's recipient is refused, the relaying MTA sends Alice a DSN reporting failure.",
+          "cite": {
+            "section": "10.7",
+            "quote": "To: Alice@Example.ORG From: postmaster@Example.ORG Subject: Delivery Notification (failure) for Carol@Ivory.EDU"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "rcpt-dsn-options",
+      "title": "DSN options on the RCPT command",
+      "intro": {
+        "section": "4",
+        "quote": "The extended RCPT and MAIL commands are issued by a client when it wishes to request a DSN from the server, under certain conditions, for a particular recipient."
+      },
+      "fields": [
+        {
+          "name": "NOTIFY",
+          "bits": "var",
+          "explain": "On RCPT, this selects the outcomes for which the sender wants a DSN. NEVER suppresses notifications, while SUCCESS, FAILURE, and DELAY request the corresponding result notifications.",
+          "cite": {
+            "section": "4.1",
+            "quote": "The meaning of the NOTIFY parameter values is generally as follows: +  A NOTIFY parameter value of \"NEVER\" requests that a DSN not be returned to the sender under any conditions. +  A NOTIFY parameter value containing the \"SUCCESS\" or \"FAILURE\" keywords requests that a DSN be issued on successful delivery or delivery failure, respectively. +  A NOTIFY parameter value containing the keyword \"DELAY\" indicates the sender's willingness to receive \"delayed\" DSNs."
+          }
+        },
+        {
+          "name": "ORCPT",
+          "bits": "var",
+          "explain": "On RCPT, this carries the original recipient identity that corresponds to the actual recipient of the message.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The ORCPT esmtp-keyword of the RCPT command is used to specify an \"original\" recipient address that corresponds to the actual recipient to which the message is to be delivered."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mail-dsn-options",
+      "title": "DSN options on the MAIL command",
+      "intro": {
+        "section": "4",
+        "quote": "The extended RCPT and MAIL commands are identical to the RCPT and MAIL commands defined in [1], except that one or more of the following parameters appear after the sender or recipient address, respectively."
+      },
+      "fields": [
+        {
+          "name": "RET",
+          "bits": "var",
+          "explain": "On MAIL, this chooses what a failed DSN returns. FULL returns the entire message, while HDRS returns only the message headers.",
+          "cite": {
+            "section": "4.3",
+            "quote": "The RET esmtp-keyword on the extended MAIL command specifies whether or not the message should be included in any failed DSN issued for this message transmission. If the RET esmtp-keyword is used, it MUST have an associated esmtp-value, which is one of the following keywords: FULL requests that the entire message be returned in any \"failed\" Delivery Status Notification issued for this recipient. HDRS requests that only the headers of the message be returned."
+          }
+        },
+        {
+          "name": "ENVID",
+          "bits": "var",
+          "explain": "On MAIL, this assigns an envelope identifier that travels with the message and appears in DSNs. It lets the sender identify the transaction for which a notification was issued.",
+          "cite": {
+            "section": "4.4",
+            "quote": "The ENVID esmtp-keyword of the SMTP MAIL command is used to specify an \"envelope identifier\" to be transmitted along with the message and included in any DSNs issued for any of the recipients named in this SMTP transaction. The purpose of the envelope identifier is to allow the sender of a message to identify the transaction for which the DSN was issued."
+          }
+        }
+      ]
+    },
+    {
+      "id": "delivery-status-fields",
+      "title": "DSN delivery-status fields",
+      "intro": {
+        "section": "6.3",
+        "quote": "The message/delivery-status content-type defines a number of fields, with general specifications for their contents."
+      },
+      "fields": [
+        {
+          "name": "Original-Envelope-ID",
+          "bits": "var",
+          "explain": "This copies the ENVID value into the report so the sender can correlate the notification with the original transaction. It is omitted when the original MAIL command had no ENVID.",
+          "cite": {
+            "section": "6.3",
+            "quote": "if an ENVID parameter was present on the MAIL command, an Original-Envelope-ID field MUST be supplied, and the value associated with the ENVID parameter must appear in that field. If the message was received via SMTP with no ENVID parameter, the Original-Envelope-ID field MUST NOT be supplied."
+          }
+        },
+        {
+          "name": "Reporting-MTA",
+          "bits": "var",
+          "explain": "This identifies the MTA that generated the delivery report.",
+          "cite": {
+            "section": "6.3",
+            "quote": "The Reporting-MTA field MUST be supplied."
+          }
+        },
+        {
+          "name": "Original-Recipient",
+          "bits": "var",
+          "explain": "This carries the recipient identity supplied by ORCPT. It is omitted when the recipient had no ORCPT parameter.",
+          "cite": {
+            "section": "6.3",
+            "quote": "If the ORCPT parameter was provided for this recipient, the Original-Recipient field MUST be supplied, with its value taken from the ORCPT parameter. If no ORCPT parameter was provided for this recipient, the Original-Recipient field MUST NOT appear."
+          }
+        },
+        {
+          "name": "Final-Recipient",
+          "bits": "var",
+          "explain": "This carries the recipient address from the SMTP message envelope. For messages received over SMTP, the address type is rfc822.",
+          "cite": {
+            "section": "6.3",
+            "quote": "The Final-Recipient field MUST be supplied. It MUST contain the recipient address from the message envelope. If the message was received via SMTP, the address-type will be \"rfc822\"."
+          }
+        },
+        {
+          "name": "Action",
+          "bits": "var",
+          "explain": "This states the delivery action recorded for the recipient.",
+          "cite": {
+            "section": "6.3",
+            "quote": "The Action field MUST be supplied."
+          }
+        },
+        {
+          "name": "Status",
+          "bits": "var",
+          "explain": "This gives the delivery status code. If no specific failure code applies, the report uses a generic temporary or permanent failure code.",
+          "cite": {
+            "section": "6.3",
+            "quote": "The Status field MUST be supplied, using a status-code from [6]. If there is no specific code which suitably describes a delivery failure, either 4.0.0 (temporary failure), or 5.0.0 (permanent failure) MUST be used."
+          }
+        },
+        {
+          "name": "Remote-MTA",
+          "bits": "var",
+          "explain": "For relayed messages, this identifies the remote MTA for each recipient. Its name type is dns.",
+          "cite": {
+            "section": "6.3",
+            "quote": "For DSNs resulting from attempts to relay a message to one or more recipients via SMTP, the Remote-MTA field MUST be supplied for each of those recipients. The mta-name-type subfields of those Remote-MTA fields will be \"dns\"."
+          }
+        },
+        {
+          "name": "Diagnostic-Code",
+          "bits": "var",
+          "explain": "For relayed messages, this carries the SMTP diagnostic reported for each recipient. Its diagnostic type is smtp.",
+          "cite": {
+            "section": "6.3",
+            "quote": "For DSNs resulting from attempts to relay a message to one or more recipients via SMTP, the Diagnostic-Code MUST be supplied for each of those recipients. The diagnostic-type subfield will be \"smtp\"."
+          }
+        },
+        {
+          "name": "SMTP-Remote-Recipient",
+          "bits": "var",
+          "explain": "This optionally records the recipient address that was presented to the remote SMTP server.",
+          "cite": {
+            "section": "6.3",
+            "quote": "For DSNs resulting from attempts to relay a message to one or more recipients via SMTP, an SMTP-Remote-Recipient extension field MAY be supplied for each recipient, which contains the address of that recipient which was presented to the remote SMTP server."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Relay and gatewaying behavior for conforming and non-conforming SMTP servers",
+    "Local delivery, delay handling, aliases, mailing lists, and confidential forwarding",
+    "The complete MIME multipart/report layout and the SMTP envelope used to return a DSN",
+    "xtext encoding rules and implementation limits for ENVID, NOTIFY, ORCPT, and RET",
+    "The rfc822, smtp, and dns type-name definitions and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:02:29.301Z",
+    "dropped": 0
+  }
+}

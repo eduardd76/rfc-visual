@@ -1,0 +1,206 @@
+{
+  "rfc": 2132,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "lease-time-exchange",
+      "title": "Lease time across a DHCP exchange",
+      "participants": {
+        "a": "DHCP client",
+        "b": "DHCP server"
+      },
+      "intro": {
+        "section": "9.2",
+        "quote": "This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address. In a server reply (DHCPOFFER), a DHCP server uses this option to specify the lease time it is willing to offer."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "DHCPDISCOVER",
+          "explain": "The client asks for a lease duration in its discovery request.",
+          "cite": {
+            "section": "9.2",
+            "quote": "This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "DHCPOFFER",
+          "explain": "The server states the lease duration it is willing to offer in its reply.",
+          "cite": {
+            "section": "9.2",
+            "quote": "In a server reply (DHCPOFFER), a DHCP server uses this option to specify the lease time it is willing to offer."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "DHCPREQUEST",
+          "explain": "The client can request the lease duration again in its request message.",
+          "cite": {
+            "section": "9.2",
+            "quote": "This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "bootp-vendor-information",
+      "title": "BOOTP Vendor Information Framing",
+      "intro": {
+        "section": "2",
+        "quote": "DHCP options have the same format as the BOOTP 'vendor extensions' defined in RFC 1497 [2]."
+      },
+      "fields": [
+        {
+          "name": "Magic cookie",
+          "bits": 32,
+          "explain": "The cookie identifies how the succeeding vendor information should be interpreted.",
+          "cite": {
+            "section": "2",
+            "quote": "When used with BOOTP, the first four octets of the vendor information field have been assigned to the \"magic cookie\" (as suggested in RFC 951). This field identifies the mode in which the succeeding data is to be interpreted."
+          }
+        },
+        {
+          "name": "Vendor extensions",
+          "bits": "var",
+          "explain": "This variable area carries the BOOTP vendor extensions, whose format is the same as DHCP options.",
+          "cite": {
+            "section": "2",
+            "quote": "DHCP options have the same format as the BOOTP 'vendor extensions' defined in RFC 1497 [2]."
+          }
+        }
+      ]
+    },
+    {
+      "id": "variable-length-option",
+      "title": "Variable-Length DHCP Option Encoding",
+      "intro": {
+        "section": "2",
+        "quote": "Options may be fixed length or variable length. All options begin with a tag octet, which uniquely identifies the option. Fixed-length options without data consist of only a tag octet. Only options 0 and 255 are fixed length. All other options are variable-length with a length octet following the tag octet."
+      },
+      "fields": [
+        {
+          "name": "Code",
+          "bits": 8,
+          "explain": "The code identifies the option. A range of codes is reserved for site-specific options.",
+          "cite": {
+            "section": "2",
+            "quote": "Option codes 128 to 254 (decimal) are reserved for site-specific options."
+          }
+        },
+        {
+          "name": "Len",
+          "bits": 8,
+          "explain": "The length gives the size of the data without counting the tag and length octets.",
+          "cite": {
+            "section": "2",
+            "quote": "The value of the length octet does not include the two octets specifying the tag and length."
+          }
+        },
+        {
+          "name": "Data",
+          "bits": "var",
+          "explain": "The data follows the length octet, whose value gives the number of data octets.",
+          "cite": {
+            "section": "2",
+            "quote": "The length octet is followed by \"length\" octets of data."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dhcp-message-type",
+      "title": "DHCP Message Type Option",
+      "intro": {
+        "section": "9.6",
+        "quote": "This option is used to convey the type of the DHCP message. The code for this option is 53, and its length is 1. Legal values for this option are:"
+      },
+      "fields": [
+        {
+          "name": "Code",
+          "bits": 8,
+          "explain": "The code identifies the DHCP Message Type option.",
+          "cite": {
+            "section": "9.6",
+            "quote": "The code for this option is 53, and its length is 1."
+          }
+        },
+        {
+          "name": "Len",
+          "bits": 8,
+          "explain": "The length is one octet.",
+          "cite": {
+            "section": "9.6",
+            "quote": "The code for this option is 53, and its length is 1."
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The value identifies the DHCP message type.",
+          "cite": {
+            "section": "9.6",
+            "quote": "This option is used to convey the type of the DHCP message."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ip-address-lease-time",
+      "title": "IP Address Lease Time Option",
+      "intro": {
+        "section": "9.2",
+        "quote": "This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address. In a server reply (DHCPOFFER), a DHCP server uses this option to specify the lease time it is willing to offer."
+      },
+      "fields": [
+        {
+          "name": "Code",
+          "bits": 8,
+          "explain": "The code identifies the IP Address Lease Time option.",
+          "cite": {
+            "section": "9.2",
+            "quote": "The code for this option is 51, and its length is 4."
+          }
+        },
+        {
+          "name": "Len",
+          "bits": 8,
+          "explain": "The length is four octets.",
+          "cite": {
+            "section": "9.2",
+            "quote": "The code for this option is 51, and its length is 4."
+          }
+        },
+        {
+          "name": "Lease Time",
+          "bits": 32,
+          "explain": "The value carries the lease duration requested by a client or offered by a server.",
+          "cite": {
+            "section": "9.2",
+            "quote": "This option is used in a client request (DHCPDISCOVER or DHCPREQUEST) to allow the client to request a lease time for the IP address. In a server reply (DHCPOFFER), a DHCP server uses this option to specify the lease time it is willing to offer."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The DHCP and BOOTP packet headers, which are defined in RFC 2131 and RFC 951 rather than in this RFC",
+    "The full DHCP exchange and lease state machine, including acknowledgement, decline, release, inform, and error handling",
+    "The complete legal-value mapping for the DHCP Message Type option",
+    "The option-by-option catalog in sections 3 through 8 for host, interface, link-layer, TCP, application, and service parameters",
+    "The one-octet Pad and End option encodings, including the rule that octets after End are filled with Pad options",
+    "Other DHCP-specific options, including Requested IP Address, Option Overload, Server Identifier, Parameter Request List, Message, Maximum DHCP Message Size, T1, T2, Vendor Class Identifier, and Client Identifier",
+    "The procedure for defining and registering new options"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:09:10.361Z",
+    "dropped": 0
+  }
+}

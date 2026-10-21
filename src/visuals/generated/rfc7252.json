@@ -1,0 +1,254 @@
+{
+  "rfc": 7252,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "piggybacked-exchange",
+      "title": "Piggybacked Request and Response",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "A CoAP request is equivalent to that of HTTP and is sent by a client to request an action (using a Method Code) on a resource (identified by a URI) on a server. The server then sends a response with a Response Code; this response may include a resource representation."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Confirmable (CON)",
+          "explain": "The client sends the request in a Confirmable message.",
+          "cite": {
+            "section": "2.2",
+            "quote": "A request is carried in a Confirmable (CON) or Non-confirmable (NON) message, and, if immediately available, the response to a request carried in a Confirmable message is carried in the resulting Acknowledgement (ACK) message."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Acknowledgement (ACK)",
+          "explain": "When the response is immediately available, the server carries it in the resulting Acknowledgement, making this a piggybacked response.",
+          "cite": {
+            "section": "2.2",
+            "quote": "A request is carried in a Confirmable (CON) or Non-confirmable (NON) message, and, if immediately available, the response to a request carried in a Confirmable message is carried in the resulting Acknowledgement (ACK) message. This is called a piggybacked response, detailed in Section 5.2.1."
+          }
+        }
+      ]
+    },
+    {
+      "id": "separate-exchange",
+      "title": "Confirmable Request with Separate Response",
+      "participants": {
+        "a": "Client",
+        "b": "Server"
+      },
+      "intro": {
+        "section": "2.2",
+        "quote": "If the server is not able to respond immediately to a request carried in a Confirmable message, it simply responds with an Empty Acknowledgement message so that the client can stop retransmitting the request. When the response is ready, the server sends it in a new Confirmable message (which then in turn needs to be acknowledged by the client)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Confirmable (CON)",
+          "explain": "The client sends a Confirmable request that the server cannot answer immediately.",
+          "cite": {
+            "section": "2.2",
+            "quote": "A request is carried in a Confirmable (CON) or Non-confirmable (NON) message, and, if immediately available, the response to a request carried in a Confirmable message is carried in the resulting Acknowledgement (ACK) message."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Empty Acknowledgement message",
+          "explain": "The server sends an Empty Acknowledgement so the client stops retransmitting the request.",
+          "cite": {
+            "section": "2.2",
+            "quote": "If the server is not able to respond immediately to a request carried in a Confirmable message, it simply responds with an Empty Acknowledgement message so that the client can stop retransmitting the request."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Confirmable message",
+          "explain": "Once the response is ready, the server sends it in a new Confirmable message.",
+          "cite": {
+            "section": "5.2.2",
+            "quote": "When the server finally has obtained the resource representation, it sends the response. When it is desired that this message is not lost, it is sent as a Confirmable message from the server to the client and answered by the client with an Acknowledgement, echoing the new Message ID chosen by the server."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Acknowledgement",
+          "explain": "The client acknowledges the separate Confirmable response.",
+          "cite": {
+            "section": "5.2.2",
+            "quote": "When it is desired that this message is not lost, it is sent as a Confirmable message from the server to the client and answered by the client with an Acknowledgement, echoing the new Message ID chosen by the server."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "coap-message",
+      "title": "CoAP Message Format",
+      "intro": {
+        "section": "3",
+        "quote": "The message format starts with a fixed-size 4-byte header."
+      },
+      "fields": [
+        {
+          "name": "Version (Ver)",
+          "bits": 2,
+          "explain": "Identifies the CoAP version carried by the message.",
+          "cite": {
+            "section": "3",
+            "quote": "Version (Ver): 2-bit unsigned integer. Indicates the CoAP version number. Implementations of this specification MUST set this field to 1 (01 binary)."
+          }
+        },
+        {
+          "name": "Type (T)",
+          "bits": 2,
+          "explain": "Identifies whether the message is Confirmable, Non-confirmable, Acknowledgement, or Reset.",
+          "cite": {
+            "section": "3",
+            "quote": "Type (T): 2-bit unsigned integer. Indicates if this message is of type Confirmable (0), Non-confirmable (1), Acknowledgement (2), or Reset (3)."
+          }
+        },
+        {
+          "name": "Token Length (TKL)",
+          "bits": 4,
+          "explain": "Gives the length of the variable-length Token field.",
+          "cite": {
+            "section": "3",
+            "quote": "Token Length (TKL): 4-bit unsigned integer. Indicates the length of the variable-length Token field (0-8 bytes)."
+          }
+        },
+        {
+          "name": "Code",
+          "bits": 8,
+          "explain": "Carries a request method or response code with separate class and detail parts.",
+          "cite": {
+            "section": "3",
+            "quote": "Code: 8-bit unsigned integer, split into a 3-bit class (most significant bits) and a 5-bit detail (least significant bits)"
+          }
+        },
+        {
+          "name": "Message ID",
+          "bits": 16,
+          "explain": "Detects duplicates and matches Acknowledgement or Reset messages to the matching Confirmable or Non-confirmable message.",
+          "cite": {
+            "section": "3",
+            "quote": "Message ID: 16-bit unsigned integer in network byte order. Used to detect message duplication and to match messages of type Acknowledgement/Reset to messages of type Confirmable/Non-confirmable."
+          }
+        },
+        {
+          "name": "Token",
+          "bits": "var",
+          "explain": "Correlates the response with the request that produced it.",
+          "cite": {
+            "section": "3",
+            "quote": "The header is followed by the Token value, which may be 0 to 8 bytes, as given by the Token Length field. The Token value is used to correlate requests and responses."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": "var",
+          "explain": "Carries zero or more CoAP options between the Token and any payload.",
+          "cite": {
+            "section": "3",
+            "quote": "Header and Token are followed by zero or more Options (Section 3.1). An Option can be followed by the end of the message, by another Option, or by the Payload Marker and the payload."
+          }
+        },
+        {
+          "name": "Payload Marker",
+          "bits": 8,
+          "explain": "Separates the options from the payload and marks where the payload begins.",
+          "cite": {
+            "section": "3",
+            "quote": "Following the header, token, and options, if any, comes the optional payload. If present and of non-zero length, it is prefixed by a fixed, one-byte Payload Marker (0xFF), which indicates the end of options and the start of the payload."
+          }
+        },
+        {
+          "name": "Payload",
+          "bits": "var",
+          "explain": "Carries the remaining message data after the marker; without a marker, the payload is empty.",
+          "cite": {
+            "section": "3",
+            "quote": "The payload data extends from after the marker to the end of the UDP datagram, i.e., the Payload Length is calculated from the datagram size. The absence of the Payload Marker denotes a zero-length payload."
+          }
+        }
+      ]
+    },
+    {
+      "id": "coap-option",
+      "title": "CoAP Option Format",
+      "intro": {
+        "section": "3.1",
+        "quote": "CoAP defines a number of options that can be included in a message. Each option instance in a message specifies the Option Number of the defined CoAP option, the length of the Option Value, and the Option Value itself. Instead of specifying the Option Number directly, the instances MUST appear in order of their Option Numbers and a delta encoding is used between them: the Option Number for each instance is calculated as the sum of its delta and the Option Number of the preceding instance in the message."
+      },
+      "fields": [
+        {
+          "name": "Option Delta",
+          "bits": 4,
+          "explain": "The base field holds the difference between this option number and the preceding option number when that difference fits in four bits.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Option Delta: 4-bit unsigned integer. A value between 0 and 12 indicates the Option Delta."
+          }
+        },
+        {
+          "name": "Option Length",
+          "bits": 4,
+          "explain": "The base field holds the option value length in bytes when that length fits in four bits.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Option Length: 4-bit unsigned integer. A value between 0 and 12 indicates the length of the Option Value, in bytes."
+          }
+        },
+        {
+          "name": "Option Delta",
+          "bits": "var",
+          "explain": "When the base field selects an extended delta, one or two following bytes carry the larger option-number difference.",
+          "cite": {
+            "section": "3.1",
+            "quote": "13: An 8-bit unsigned integer follows the initial byte and indicates the Option Delta minus 13. 14: A 16-bit unsigned integer in network byte order follows the initial byte and indicates the Option Delta minus 269."
+          }
+        },
+        {
+          "name": "Option Length",
+          "bits": "var",
+          "explain": "When the base field selects an extended length, one or two following bytes carry the larger option-value length.",
+          "cite": {
+            "section": "3.1",
+            "quote": "13: An 8-bit unsigned integer precedes the Option Value and indicates the Option Length minus 13. 14: A 16-bit unsigned integer in network byte order precedes the Option Value and indicates the Option Length minus 269."
+          }
+        },
+        {
+          "name": "Option Value",
+          "bits": "var",
+          "explain": "Carries exactly the decoded option length in option-specific data.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Value: A sequence of exactly Option Length bytes. The length and format of the Option Value depend on the respective option, which MAY define variable-length values."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Reset exchanges used when a recipient lacks message context",
+    "Retransmission, duplicate-detection, timeout, and congestion-control details",
+    "DTLS security modes, handshake, and endpoint identity rules",
+    "Multicast request handling and response spreading",
+    "Caching, proxying, and CoAP-HTTP cross-protocol mapping",
+    "Resource discovery and the complete URI, option, method, and response-code catalogs",
+    "A connection-oriented session state machine, which the CoAP request/response model does not define"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:38:36.799Z",
+    "dropped": 0
+  }
+}

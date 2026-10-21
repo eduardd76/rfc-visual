@@ -1,0 +1,439 @@
+{
+  "rfc": 2205,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "reservation-setup",
+      "title": "Receiver-Initiated Setup and Soft-State Refresh",
+      "participants": {
+        "a": "Sender",
+        "b": "Receiver"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "RSVP soft state is created and periodically refreshed by Path and Resv messages. The state is deleted if no matching refresh messages arrive before the expiration of a \"cleanup timeout\" interval."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Path message",
+          "explain": "The sender periodically sends a Path message for the data flow it originates.",
+          "cite": {
+            "section": "3",
+            "quote": "Each sender host periodically sends a Path message for each data flow it originates."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Resv message",
+          "explain": "The receiver sends a reservation request upstream, hop by hop, toward the sender along the reverse data path.",
+          "cite": {
+            "section": "3",
+            "quote": "Resv messages carry reservation requests hop-by-hop from receivers to senders, along the reverse paths of data flows for the session."
+          }
+        }
+      ]
+    },
+    {
+      "id": "reservation-confirmation",
+      "title": "Reservation Confirmation",
+      "participants": {
+        "a": "Upstream RSVP node",
+        "b": "Receiver"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "To request a confirmation for its reservation request, a receiver Rj includes in the Resv message a confirmation-request object containing Rj's IP address."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ResvConf message",
+          "explain": "The upstream node sends a ResvConf to the receiver as a probabilistic acknowledgement of the reservation request.",
+          "cite": {
+            "section": "3",
+            "quote": "ResvConf messages are sent to (probabilistically) acknowledge reservation requests."
+          }
+        }
+      ]
+    },
+    {
+      "id": "reservation-error",
+      "title": "Reservation Error Response",
+      "participants": {
+        "a": "Error-detecting node",
+        "b": "Receiver"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "ResvErr (reservation error) messages report errors in processing Resv messages, or they may report the spontaneous disruption of a reservation, e.g., by administrative preemption."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ResvErr message",
+          "explain": "The node that detected the error reports it downstream to the appropriate receiver using reservation state.",
+          "cite": {
+            "section": "3",
+            "quote": "ResvErr messages travel downstream towards the appropriate receivers, routed hop-by-hop using the reservation state."
+          }
+        }
+      ]
+    },
+    {
+      "id": "teardown",
+      "title": "Path and Reservation Teardown",
+      "participants": {
+        "a": "Sender",
+        "b": "Receiver"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "RSVP \"teardown\" messages remove path or reservation state immediately."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "PathTear message",
+          "explain": "A sender can initiate a PathTear that travels downstream and removes matching path state.",
+          "cite": {
+            "section": "3",
+            "quote": "PathTear messages are initiated explicitly by senders or by path state timeout in any node, and they travel downstream towards all receivers."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ResvTear message",
+          "explain": "The receiver initiates a ResvTear that travels upstream and removes matching reservation state.",
+          "cite": {
+            "section": "3",
+            "quote": "ResvTear messages are initiated explicitly by receivers or by any node in which reservation state has timed out, and they travel upstream towards all matching senders."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "common-header",
+      "title": "RSVP Common Header",
+      "intro": {
+        "section": "3",
+        "quote": "An RSVP message consists of a common header, followed by a body consisting of a variable number of variable-length, typed \"objects\"."
+      },
+      "fields": [
+        {
+          "name": "Vers",
+          "bits": 4,
+          "explain": "Specifies the RSVP protocol version; this specification defines version 1.",
+          "cite": {
+            "section": "3",
+            "quote": "Vers: 4 bits Protocol version number. This is version 1."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 4,
+          "explain": "Carries flag bits, none of which are defined in this version.",
+          "cite": {
+            "section": "3",
+            "quote": "Flags: 4 bits 0x01-0x08: Reserved No flag bits are defined yet."
+          }
+        },
+        {
+          "name": "Msg Type",
+          "bits": 8,
+          "explain": "Identifies the RSVP message type, such as Path or Resv.",
+          "cite": {
+            "section": "3",
+            "quote": "Msg Type: 8 bits 1 = Path 2 = Resv"
+          }
+        },
+        {
+          "name": "RSVP Checksum",
+          "bits": 16,
+          "explain": "Protects the message with a one's-complement checksum; an all-zero value means that no checksum was transmitted.",
+          "cite": {
+            "section": "3",
+            "quote": "RSVP Checksum: 16 bits The one's complement of the one's complement sum of the message, with the checksum field replaced by zero for the purpose of computing the checksum. An all-zero value means that no checksum was transmitted."
+          }
+        },
+        {
+          "name": "Send_TTL",
+          "bits": 8,
+          "explain": "Records the IP TTL value used when the message was sent.",
+          "cite": {
+            "section": "3",
+            "quote": "Send_TTL: 8 bits The IP TTL value with which the message was sent. See Section 3.8."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "An eight-bit area is reserved in the common header.",
+          "cite": {
+            "section": "3",
+            "quote": "|  Send_TTL   | (Reserved)  |        RSVP Length        |"
+          }
+        },
+        {
+          "name": "RSVP Length",
+          "bits": 16,
+          "explain": "Gives the total message length in bytes, including the common header and the variable-length objects that follow.",
+          "cite": {
+            "section": "3",
+            "quote": "RSVP Length: 16 bits The total length of this RSVP message in bytes, including the common header and the variable-length objects that follow."
+          }
+        }
+      ]
+    },
+    {
+      "id": "object-header",
+      "title": "Standard RSVP Object Header",
+      "intro": {
+        "section": "3",
+        "quote": "Every object consists of one or more 32-bit words with a one-word header, with the following format:"
+      },
+      "fields": [
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the total object length in bytes; the length must be a multiple of four and at least four.",
+          "cite": {
+            "section": "3",
+            "quote": "Length A 16-bit field containing the total object length in bytes. Must always be a multiple of 4, and at least 4."
+          }
+        },
+        {
+          "name": "Class-Num",
+          "bits": 8,
+          "explain": "Identifies the object's class.",
+          "cite": {
+            "section": "3",
+            "quote": "Class-Num Identifies the object class; values of this field are defined in Appendix A."
+          }
+        },
+        {
+          "name": "C-Type",
+          "bits": 8,
+          "explain": "Identifies the object type within its class.",
+          "cite": {
+            "section": "3",
+            "quote": "C-Type Object type, unique within Class-Num. Values are defined in Appendix A."
+          }
+        },
+        {
+          "name": "Object contents",
+          "bits": "var",
+          "explain": "Carries the type-specific contents of the object.",
+          "cite": {
+            "section": "3",
+            "quote": "(Object contents)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "path-message",
+      "title": "Path Message Layout",
+      "intro": {
+        "section": "3",
+        "quote": "The format of a Path message is as follows:"
+      },
+      "fields": [
+        {
+          "name": "Common Header",
+          "bits": 64,
+          "explain": "The common header at the start of the Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "<Path Message> ::= <Common Header> [ <INTEGRITY> ]"
+          }
+        },
+        {
+          "name": "INTEGRITY",
+          "bits": "var",
+          "explain": "Provides optional integrity data placed immediately after the common header.",
+          "cite": {
+            "section": "3",
+            "quote": "If the INTEGRITY object is present, it must immediately follow the common header."
+          }
+        },
+        {
+          "name": "SESSION",
+          "bits": "var",
+          "explain": "Identifies the session by destination address, protocol identifier, and generalized destination port.",
+          "cite": {
+            "section": "3",
+            "quote": "SESSION Contains the IP destination address (DestAddress), the IP protocol id, and some form of generalized destination port, to define a specific session for the other objects that follow. Required in every RSVP message."
+          }
+        },
+        {
+          "name": "RSVP_HOP",
+          "bits": "var",
+          "explain": "Carries the sending node's address and a logical outgoing interface handle.",
+          "cite": {
+            "section": "3",
+            "quote": "RSVP_HOP Carries the IP address of the RSVP-capable node that sent this message and a logical outgoing interface handle (LIH; see Section 3.3)."
+          }
+        },
+        {
+          "name": "TIME_VALUES",
+          "bits": 32,
+          "explain": "Carries the refresh period used to generate the message and is required in every Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "TIME_VALUES Contains the value for the refresh period R used by the creator of the message; see Section 3.7. Required in every Path and Resv message."
+          }
+        },
+        {
+          "name": "POLICY_DATA",
+          "bits": "var",
+          "explain": "Carries policy information for a local policy module and may appear in a Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "POLICY_DATA Carries information that will allow a local policy module to decide whether an associated reservation is administratively permitted. May appear in Path, Resv, PathErr, or ResvErr message."
+          }
+        },
+        {
+          "name": "SENDER_TEMPLATE",
+          "bits": "var",
+          "explain": "Identifies the sender and is required in a Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "SENDER_TEMPLATE Contains a sender IP address and perhaps some additional demultiplexing information to identify a sender. Required in a Path message."
+          }
+        },
+        {
+          "name": "SENDER_TSPEC",
+          "bits": "var",
+          "explain": "Describes the sender's traffic characteristics and is required in a Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "SENDER_TSPEC Defines the traffic characteristics of a sender's data flow. Required in a Path message."
+          }
+        },
+        {
+          "name": "ADSPEC",
+          "bits": "var",
+          "explain": "Carries OPWA advertising data in a Path message.",
+          "cite": {
+            "section": "3",
+            "quote": "ADSPEC Carries OPWA data, in a Path message."
+          }
+        }
+      ]
+    },
+    {
+      "id": "resv-message",
+      "title": "Reservation Message Layout",
+      "intro": {
+        "section": "3",
+        "quote": "The Resv message format is as follows:"
+      },
+      "fields": [
+        {
+          "name": "Common Header",
+          "bits": 64,
+          "explain": "The common header at the start of the Resv message.",
+          "cite": {
+            "section": "3",
+            "quote": "<Resv Message> ::= <Common Header> [ <INTEGRITY> ]"
+          }
+        },
+        {
+          "name": "INTEGRITY",
+          "bits": "var",
+          "explain": "Provides optional integrity data placed immediately after the common header.",
+          "cite": {
+            "section": "3",
+            "quote": "If the INTEGRITY object is present, it must immediately follow the common header."
+          }
+        },
+        {
+          "name": "SESSION",
+          "bits": "var",
+          "explain": "Identifies the session by destination address, protocol identifier, and generalized destination port.",
+          "cite": {
+            "section": "3",
+            "quote": "SESSION Contains the IP destination address (DestAddress), the IP protocol id, and some form of generalized destination port, to define a specific session for the other objects that follow. Required in every RSVP message."
+          }
+        },
+        {
+          "name": "TIME_VALUES",
+          "bits": 32,
+          "explain": "Carries the refresh period used to generate the message and is required in every Resv message.",
+          "cite": {
+            "section": "3",
+            "quote": "TIME_VALUES Contains the value for the refresh period R used by the creator of the message; see Section 3.7. Required in every Path and Resv message."
+          }
+        },
+        {
+          "name": "RESV_CONFIRM",
+          "bits": "var",
+          "explain": "Requests a reservation confirmation and carries the receiver address to which the ResvConf should be sent.",
+          "cite": {
+            "section": "3",
+            "quote": "The appearance of a RESV_CONFIRM object signals a request for a reservation confirmation and carries the IP address of the receiver to which the ResvConf should be sent."
+          }
+        },
+        {
+          "name": "SCOPE",
+          "bits": "var",
+          "explain": "Carries an explicit list of sender hosts toward which the message is forwarded.",
+          "cite": {
+            "section": "3",
+            "quote": "SCOPE Carries an explicit list of sender hosts towards which the information in the message is to be forwarded. May appear in a Resv, ResvErr, or ResvTear message. See Section 3.4."
+          }
+        },
+        {
+          "name": "POLICY_DATA",
+          "bits": "var",
+          "explain": "Carries policy information for a local policy module and may appear in a Resv message.",
+          "cite": {
+            "section": "3",
+            "quote": "POLICY_DATA Carries information that will allow a local policy module to decide whether an associated reservation is administratively permitted. May appear in Path, Resv, PathErr, or ResvErr message."
+          }
+        },
+        {
+          "name": "STYLE",
+          "bits": 32,
+          "explain": "Defines the reservation style and its style-specific options; it is required in every Resv message.",
+          "cite": {
+            "section": "3",
+            "quote": "STYLE Defines the reservation style plus style-specific information that is not in FLOWSPEC or FILTER_SPEC objects. Required in every Resv message."
+          }
+        },
+        {
+          "name": "flow descriptor list",
+          "bits": "var",
+          "explain": "Carries a style-dependent list of flow descriptors.",
+          "cite": {
+            "section": "3",
+            "quote": "The BNF above defines a flow descriptor list as simply a list of flow descriptors."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Reservation styles WF, SE, and FF and their style-specific flow descriptor lists",
+    "Flowspec merging and the least-upper-bound and greatest-lower-bound rules",
+    "Blockade state and killer-reservation recovery",
+    "Admission control, policy control, and traffic-control interfaces",
+    "OPWA advertisements and the external encodings of FLOWSPEC, SENDER_TSPEC, and ADSPEC objects",
+    "Detailed refresh and cleanup timeout calculations, local repair, and SCOPE loop-prevention rules",
+    "Multihomed-host rules and the application, routing, and packet-I/O interfaces",
+    "UDP encapsulation for hosts without raw network I/O",
+    "PathErr handling and detailed error codes"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:02:23.871Z",
+    "dropped": 1
+  }
+}

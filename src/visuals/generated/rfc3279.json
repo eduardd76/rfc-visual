@@ -1,0 +1,137 @@
+{
+  "rfc": 3279,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "signature-algorithm-identifier",
+      "title": "Signature Algorithm Identifier",
+      "intro": {
+        "section": "2.2",
+        "quote": "Certificates and CRLs conforming to [RFC 3280] may be signed with any public key signature algorithm. The certificate or CRL indicates the algorithm through an algorithm identifier which appears in the signatureAlgorithm field within the Certificate or CertificateList. This algorithm identifier is an OID and has optionally associated parameters."
+      },
+      "fields": [
+        {
+          "name": "algorithm",
+          "bits": "var",
+          "explain": "The algorithm field identifies the signature algorithm with an ASN.1 object identifier.",
+          "cite": {
+            "section": "2.2",
+            "quote": "The certificate or CRL indicates the algorithm through an algorithm identifier which appears in the signatureAlgorithm field within the Certificate or CertificateList."
+          }
+        },
+        {
+          "name": "parameters",
+          "bits": "var",
+          "explain": "The parameters field is optional and carries values associated with the selected algorithm.",
+          "cite": {
+            "section": "2.2",
+            "quote": "This algorithm identifier is an OID and has optionally associated parameters."
+          }
+        }
+      ]
+    },
+    {
+      "id": "rsa-public-key",
+      "title": "RSA Public Key Encoding",
+      "intro": {
+        "section": "2.3.1",
+        "quote": "The RSA public key MUST be encoded using the ASN.1 type RSAPublicKey:"
+      },
+      "fields": [
+        {
+          "name": "modulus",
+          "bits": "var",
+          "explain": "The modulus component stores the RSA modulus as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.3.1",
+            "quote": "where modulus is the modulus n, and publicExponent is the public exponent e."
+          }
+        },
+        {
+          "name": "publicExponent",
+          "bits": "var",
+          "explain": "The publicExponent component stores the RSA public exponent as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.3.1",
+            "quote": "where modulus is the modulus n, and publicExponent is the public exponent e."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dsa-signature-value",
+      "title": "DSA Signature Value Encoding",
+      "intro": {
+        "section": "2.2.2",
+        "quote": "When signing, the DSA algorithm generates two values. These values are commonly referred to as r and s. To easily transfer these two values as one signature, they SHALL be ASN.1 encoded using the following ASN.1 structure:\n\n      Dss-Sig-Value  ::=  SEQUENCE  {\n              r       INTEGER,\n              s       INTEGER  }"
+      },
+      "fields": [
+        {
+          "name": "r",
+          "bits": "var",
+          "explain": "The first DSA signature value is encoded as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.2.2",
+            "quote": "Dss-Sig-Value  ::=  SEQUENCE  {\n              r       INTEGER,\n              s       INTEGER  }"
+          }
+        },
+        {
+          "name": "s",
+          "bits": "var",
+          "explain": "The second DSA signature value is encoded as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.2.2",
+            "quote": "Dss-Sig-Value  ::=  SEQUENCE  {\n              r       INTEGER,\n              s       INTEGER  }"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ecdsa-signature-value",
+      "title": "ECDSA Signature Value Encoding",
+      "intro": {
+        "section": "2.2.3",
+        "quote": "When signing, the ECDSA algorithm generates two values. These values are commonly referred to as r and s. To easily transfer these two values as one signature, they MUST be ASN.1 encoded using the following ASN.1 structure:\n\n      Ecdsa-Sig-Value  ::=  SEQUENCE  {\n           r     INTEGER,\n           s     INTEGER  }"
+      },
+      "fields": [
+        {
+          "name": "r",
+          "bits": "var",
+          "explain": "The first ECDSA signature value is encoded as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.2.3",
+            "quote": "Ecdsa-Sig-Value  ::=  SEQUENCE  {\n           r     INTEGER,\n           s     INTEGER  }"
+          }
+        },
+        {
+          "name": "s",
+          "bits": "var",
+          "explain": "The second ECDSA signature value is encoded as an ASN.1 INTEGER.",
+          "cite": {
+            "section": "2.2.3",
+            "quote": "Ecdsa-Sig-Value  ::=  SEQUENCE  {\n           r     INTEGER,\n           s     INTEGER  }"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The certificate and CRL field layouts inherited from RFC 3280",
+    "The exact OID arcs and parameter rules for each signature algorithm",
+    "The one-way hash function OIDs and algorithm support rules",
+    "The DSA domain parameters and DSA public-key encoding",
+    "The Diffie-Hellman, KEA, ECDH, and elliptic-curve public-key encodings",
+    "The keyUsage extension recommendations for each public-key algorithm",
+    "Security considerations concerning key sizes and elliptic-curve choices"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:04:27.161Z",
+    "dropped": 0
+  }
+}

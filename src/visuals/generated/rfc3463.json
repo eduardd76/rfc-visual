@@ -1,0 +1,60 @@
+{
+  "rfc": 3463,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "enhanced-status-code",
+      "title": "Enhanced Status Code Structure",
+      "intro": {
+        "section": "2",
+        "quote": "Status codes consist of three numerical fields separated by \".\".  The first sub-code indicates whether the delivery attempt was successful.  The second sub-code indicates the probable source of any delivery anomalies, and the third sub-code indicates a precise error condition."
+      },
+      "fields": [
+        {
+          "name": "class",
+          "bits": 8,
+          "explain": "The class is 2 for success, 4 for a persistent transient failure, or 5 for a permanent failure.",
+          "cite": {
+            "section": "2",
+            "quote": "The class sub-code provides a broad classification of the status.  The enumerated values for each class are defined as:\n\n      2.XXX.XXX   Success\n\n         Success specifies that the DSN is reporting a positive delivery\n         action.  Detail sub-codes may provide notification of\n         transformations required for delivery.\n\n      4.XXX.XXX   Persistent Transient Failure\n\n         A persistent transient failure is one in which the message as\n         sent is valid, but persistence of some temporary condition has\n         caused abandonment or delay of attempts to send the message.\n         If this code accompanies a delivery failure report, sending in\n         the future may be successful.\n\n      5.XXX.XXX   Permanent Failure\n\n         A permanent failure is one which is not likely to be resolved\n         by resending the message in the current form.  Some change to\n         the message or the destination must be made for successful\n         delivery."
+          }
+        },
+        {
+          "name": "subject",
+          "bits": "var",
+          "explain": "The subject classifies the status and applies to all three delivery-result classes.",
+          "cite": {
+            "section": "2",
+            "quote": "The subject sub-code classifies the status.  This value applies to each of the three classifications."
+          }
+        },
+        {
+          "name": "detail",
+          "bits": "var",
+          "explain": "The detail gives a more specific status condition relative to the subject.",
+          "cite": {
+            "section": "3",
+            "quote": "The following section defines and describes the detail sub-code.  The detail value provides more information about the status and is defined relative to the subject of the status."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The enumerated detail codes for undefined, address, mailbox, mail system, network and routing, delivery protocol, message media, and security or policy conditions",
+    "Rules for client and server handling of unrecognized subject and detail codes",
+    "The DSN message format and report exchange defined in RFC 3464",
+    "Security considerations about disclosing internal mail-system details",
+    "Changes from RFC 1893"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T02:58:27.158Z",
+    "dropped": 0
+  }
+}

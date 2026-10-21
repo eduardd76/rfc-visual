@@ -1,0 +1,381 @@
+{
+  "rfc": 7854,
+  "reviewed": false,
+  "initial": "BMP session",
+  "terminal": [
+    "closed"
+  ],
+  "stateMachineTitle": "BMP session lifecycle",
+  "states": [
+    {
+      "id": "BMP session",
+      "cite": {
+        "section": "3.3",
+        "quote": "A BMP session begins when the active party (either router or management station, as determined by configuration) successfully opens a TCP session (the \"BMP session\")."
+      }
+    },
+    {
+      "id": "initial table dump",
+      "cite": {
+        "section": "3.3",
+        "quote": "Once it has sent all the routes for a given peer, it MUST send an End-of-RIB message for that peer; when End-of-RIB has been sent for each monitored peer, the initial table dump has completed."
+      }
+    },
+    {
+      "id": "incremental updates",
+      "cite": {
+        "section": "3.3",
+        "quote": "Following the initial table dump, the router sends incremental updates encapsulated in Route Monitoring messages."
+      }
+    },
+    {
+      "id": "closed",
+      "cite": {
+        "section": "3.3",
+        "quote": "A BMP session ends when the TCP session that carries it is closed for any reason."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "BMP session",
+      "to": "initial table dump",
+      "event": "peer reports and route dump",
+      "action": "send Peer Up, Route Monitoring and End-of-RIB",
+      "layer": "happy",
+      "cite": {
+        "section": "3.3",
+        "quote": "It subsequently sends a Peer Up message over the BMP session for each of its monitored BGP peers that is in the Established state. It follows by sending the contents of its Adj-RIBs-In (pre-policy, post-policy, or both, see Section 5) encapsulated in Route Monitoring messages. Once it has sent all the routes for a given peer, it MUST send an End-of-RIB message for that peer; when End-of-RIB has been sent for each monitored peer, the initial table dump has completed."
+      }
+    },
+    {
+      "from": "initial table dump",
+      "to": "incremental updates",
+      "event": "initial dump complete",
+      "action": "send incremental Route Monitoring updates",
+      "layer": "happy",
+      "cite": {
+        "section": "3.3",
+        "quote": "Following the initial table dump, the router sends incremental updates encapsulated in Route Monitoring messages."
+      }
+    },
+    {
+      "from": "BMP session",
+      "to": "closed",
+      "event": "TCP session closed",
+      "layer": "happy",
+      "cite": {
+        "section": "3.3",
+        "quote": "A BMP session ends when the TCP session that carries it is closed for any reason. The router MAY send a Termination message prior to closing the session."
+      }
+    },
+    {
+      "from": "incremental updates",
+      "to": "closed",
+      "event": "TCP session closed",
+      "layer": "happy",
+      "cite": {
+        "section": "3.3",
+        "quote": "A BMP session ends when the TCP session that carries it is closed for any reason. The router MAY send a Termination message prior to closing the session."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "bmp-session-messages",
+      "title": "BMP session startup and monitoring",
+      "participants": {
+        "a": "Monitored router",
+        "b": "Monitoring station"
+      },
+      "intro": {
+        "section": "3.2",
+        "quote": "Once a connection is established, the router sends messages over it. There is no initialization or handshaking phase, messages are simply sent as soon as the connection is established."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Initiation message",
+          "explain": "The router sends an Initiation message first after the BMP session comes up.",
+          "cite": {
+            "section": "3.3",
+            "quote": "It MUST begin by sending an Initiation message."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Peer Up message",
+          "explain": "For each monitored BGP peer already in the Established state, the router reports that the peer is up.",
+          "cite": {
+            "section": "3.3",
+            "quote": "It subsequently sends a Peer Up message over the BMP session for each of its monitored BGP peers that is in the Established state."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Route Monitoring messages",
+          "explain": "The monitored peers' Adj-RIB-In routes are carried in standard BGP Update messages inside Route Monitoring messages.",
+          "cite": {
+            "section": "5",
+            "quote": "This is done by sending all routes stored in the Adj-RIB-In of those peers using standard BGP Update messages, encapsulated in Route Monitoring messages."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "End-of-RIB message",
+          "explain": "The router marks the end of the initial route dump for that peer.",
+          "cite": {
+            "section": "3.3",
+            "quote": "Once it has sent all the routes for a given peer, it MUST send an End-of-RIB message for that peer; when End-of-RIB has been sent for each monitored peer, the initial table dump has completed."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Route Monitoring messages",
+          "explain": "After the initial table dump, the router sends incremental updates in Route Monitoring messages.",
+          "cite": {
+            "section": "3.3",
+            "quote": "Following the initial table dump, the router sends incremental updates encapsulated in Route Monitoring messages."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Peer Down messages",
+          "explain": "When a reported BGP peer leaves the Established state, the router sends the corresponding Peer Down messages.",
+          "cite": {
+            "section": "3.3",
+            "quote": "corresponding Peer Down messages are sent."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Termination message",
+          "explain": "Before closing the session, the router may send a Termination message.",
+          "cite": {
+            "section": "3.3",
+            "quote": "The router MAY send a Termination message prior to closing the session."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "bmp-common-header",
+      "title": "BMP Common Header",
+      "intro": {
+        "section": "4.1",
+        "quote": "The following common header appears in all BMP messages. The rest of the data in a BMP message is dependent on the Message Type field in the common header."
+      },
+      "fields": [
+        {
+          "name": "Version",
+          "bits": 8,
+          "explain": "Identifies the BMP version. Messages defined by this specification use version 3, while version 0 is reserved.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Version (1 byte): Indicates the BMP version. This is set to '3' for all messages defined in this specification. ('1' and '2' were used by draft versions of this document.) Version 0 is reserved and MUST NOT be sent."
+          }
+        },
+        {
+          "name": "Message Length",
+          "bits": 32,
+          "explain": "Gives the length of the complete message in bytes, including headers, data, and any encapsulated messages.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Message Length (4 bytes): Length of the message in bytes (including headers, data, and encapsulated messages, if any)."
+          }
+        },
+        {
+          "name": "Message Type",
+          "bits": 8,
+          "explain": "Identifies the kind of BMP message. Implementations ignore message types they do not recognize.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Message Type (1 byte): This identifies the type of the BMP message. A BMP implementation MUST ignore unrecognized message types upon receipt."
+          }
+        }
+      ]
+    },
+    {
+      "id": "bmp-per-peer-header",
+      "title": "BMP Per-Peer Header",
+      "intro": {
+        "section": "4.2",
+        "quote": "The per-peer header follows the common header for most BMP messages. The rest of the data in a BMP message is dependent on the Message Type field in the common header."
+      },
+      "fields": [
+        {
+          "name": "Peer Type",
+          "bits": 8,
+          "explain": "Identifies the type of peer.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer Type (1 byte): Identifies the type of peer."
+          }
+        },
+        {
+          "name": "Peer Flags",
+          "bits": 8,
+          "explain": "Provides more information about the peer.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer Flags (1 byte): These flags provide more information about the peer."
+          }
+        },
+        {
+          "name": "Peer Distinguisher",
+          "bits": 64,
+          "explain": "Distinguishes peers that belong to different address domains on routers that support multiple instances.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer Distinguisher (8 bytes): Routers today can have multiple instances (example: Layer 3 Virtual Private Networks (L3VPNs) [RFC4364]). This field is present to distinguish peers that belong to one address domain from the other."
+          }
+        },
+        {
+          "name": "Peer Address",
+          "bits": 128,
+          "explain": "Holds the remote IP address associated with the TCP session, with the most significant bytes zero-filled for an IPv4 address.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer Address: The remote IP address associated with the TCP session over which the encapsulated PDU was received. It is 4 bytes long if an IPv4 address is carried in this field (with the 12 most significant bytes zero-filled) and 16 bytes long if an IPv6 address is carried in this field."
+          }
+        },
+        {
+          "name": "Peer AS",
+          "bits": 32,
+          "explain": "Holds the peer's Autonomous System number, with a 16-bit AS number padded in the most significant bits.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer AS: The Autonomous System number of the peer from which the encapsulated PDU was received. If a 16-bit AS number is stored in this field [RFC6793], it should be padded with zeroes in the 16 most significant bits."
+          }
+        },
+        {
+          "name": "Peer BGP ID",
+          "bits": 32,
+          "explain": "Holds the BGP Identifier of the peer from which the encapsulated PDU was received.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Peer BGP ID: The BGP Identifier of the peer from which the encapsulated PDU was received."
+          }
+        },
+        {
+          "name": "Timestamp (seconds)",
+          "bits": 32,
+          "explain": "Records the seconds part of the time when the encapsulated routes were received or installed in the Adj-RIB-In.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Timestamp (seconds)"
+          }
+        },
+        {
+          "name": "Timestamp (microseconds)",
+          "bits": 32,
+          "explain": "Records the microseconds part of the time when the encapsulated routes were received or installed in the Adj-RIB-In.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Timestamp (microseconds)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bmp-peer-flags",
+      "title": "BMP Peer Flags",
+      "intro": {
+        "section": "4.2",
+        "quote": "Peer Flags (1 byte): These flags provide more information about the peer."
+      },
+      "fields": [
+        {
+          "name": "V flag",
+          "bits": 1,
+          "explain": "Indicates that the Peer address is an IPv6 address and is zero for an IPv4 peer.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The V flag indicates that the Peer address is an IPv6 address. For IPv4 peers, this is set to 0."
+          }
+        },
+        {
+          "name": "L flag",
+          "bits": 1,
+          "explain": "Set to 1 for the post-policy Adj-RIB-In and 0 for the pre-policy Adj-RIB-In; locally sourced routes also set it to 1.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The L flag, if set to 1, indicates that the message reflects the post-policy Adj-RIB-In (i.e., its path attributes reflect the application of inbound policy). It is set to 0 if the message reflects the pre-policy Adj-RIB-In. Locally sourced routes also carry an L flag of 1."
+          }
+        },
+        {
+          "name": "A flag",
+          "bits": 1,
+          "explain": "Set to 1 when the legacy 2-byte AS_PATH format is used and 0 when the 4-byte AS_PATH format is used.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The A flag, if set to 1, indicates that the message is formatted using the legacy 2-byte AS_PATH format. If set to 0, the message is formatted using the 4-byte AS_PATH format [RFC6793]."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 5,
+          "explain": "Reserved for future use, transmitted as 0, and ignored on receipt.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The remaining bits are reserved for future use. They MUST be transmitted as 0 and their values MUST be ignored on receipt."
+          }
+        }
+      ]
+    },
+    {
+      "id": "bmp-information-tlv",
+      "title": "BMP Information TLV",
+      "intro": {
+        "section": "4.4",
+        "quote": "The Information TLV is used by the Initiation (Section 4.3) and Peer Up (Section 4.10) messages."
+      },
+      "fields": [
+        {
+          "name": "Information Type",
+          "bits": 16,
+          "explain": "Identifies the type of information carried in the TLV.",
+          "cite": {
+            "section": "4.4",
+            "quote": "Information Type (2 bytes): Type of information provided. Defined types are:"
+          }
+        },
+        {
+          "name": "Information",
+          "bits": "var",
+          "explain": "Carries information about the monitored router according to the Information Type.",
+          "cite": {
+            "section": "4.4",
+            "quote": "Information (variable): Information about the monitored router, according to the type."
+          }
+        },
+        {
+          "name": "Information Length",
+          "bits": 16,
+          "explain": "Gives the length of the following Information field in bytes.",
+          "cite": {
+            "section": "4.4",
+            "quote": "Information Length (2 bytes): The length of the following Information field, in bytes."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "TCP connection setup details, including active and passive roles, retry backoff, connection limits, and redundant-connection handling",
+    "The full Route Monitoring rules for pre-policy and post-policy streams, concurrent dumps and updates, and state compression",
+    "Route Mirroring TLVs and lost-message signaling",
+    "The Stats Report counter encoding and individual statistic definitions",
+    "Peer Down reason codes and their reason-specific data",
+    "The Peer Up body fields for local and remote addresses, ports, and OPEN messages",
+    "Operational guidance for security, multiple BMP instances, and locally originated routes"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-21T03:22:01.999Z",
+    "dropped": 0
+  }
+}

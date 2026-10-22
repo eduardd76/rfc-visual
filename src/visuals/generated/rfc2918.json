@@ -1,0 +1,92 @@
+{
+  "rfc": 2918,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "route-refresh",
+      "title": "Route Refresh Request",
+      "participants": {
+        "a": "Requesting BGP speaker",
+        "b": "Peer BGP speaker"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "If a BGP speaker receives from its peer a ROUTE-REFRESH message with the <AFI, SAFI> that the speaker didn't advertise to the peer at the session establishment time via capability advertisement, the speaker shall ignore such a message. Otherwise, the BGP speaker shall re-advertise to that peer the Adj-RIB-Out of the <AFI, SAFI> carried in the message, based on its outbound route filtering policy."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "BGP Capabilities Advertisement",
+          "explain": "The peer advertises the Route Refresh Capability, telling the requester that it can receive and properly handle ROUTE-REFRESH messages.",
+          "cite": {
+            "section": "2",
+            "quote": "To advertise the Route Refresh Capability to a peer, a BGP speaker uses BGP Capabilities Advertisement [BGP-CAP]. This capability is advertised using the Capability code 2 and Capability length 0. By advertising the Route Refresh Capability to a peer, a BGP speaker conveys to the peer that the speaker is capable of receiving and properly handling the ROUTE-REFRESH message (as defined in Section 3) from the peer."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "ROUTE-REFRESH",
+          "explain": "After receiving the peer's capability, the requester sends ROUTE-REFRESH for an address family that the peer advertised.",
+          "cite": {
+            "section": "4",
+            "quote": "A BGP speaker may send a ROUTE-REFRESH message to its peer only if it has received the Route Refresh Capability from its peer. The <AFI, SAFI> carried in such a message should be one of the <AFI, SAFI> that the peer has advertised to the speaker at the session establishment time via capability advertisement."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "route-refresh-afi-safi",
+      "title": "ROUTE-REFRESH AFI, SAFI Encoding",
+      "intro": {
+        "section": "3",
+        "quote": "Message Format: One <AFI, SAFI> encoded as"
+      },
+      "fields": [
+        {
+          "name": "AFI",
+          "bits": 16,
+          "explain": "Identifies the address family of the requested refresh.",
+          "cite": {
+            "section": "3",
+            "quote": "AFI  - Address Family Identifier (16 bit)."
+          }
+        },
+        {
+          "name": "Res.",
+          "bits": 8,
+          "explain": "Reserved space that the sender sets to zero and the receiver ignores.",
+          "cite": {
+            "section": "3",
+            "quote": "Res. - Reserved (8 bit) field. Should be set to 0 by the sender and ignored by the receiver."
+          }
+        },
+        {
+          "name": "SAFI",
+          "bits": 8,
+          "explain": "Identifies the subsequent address family of the requested refresh.",
+          "cite": {
+            "section": "3",
+            "quote": "SAFI - Subsequent Address Family Identifier (8 bit)."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The common BGP header, including the Type 5 message indication, and the complete OPEN capability advertisement encoding",
+    "The BGP finite-state machine and Adj-RIB-In processing",
+    "The wire encoding of the route advertisements used for the resulting Adj-RIB-Out re-advertisement",
+    "Address-family-specific details delegated to [BGP-MP, sect. 7]"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:49:00.781Z",
+    "dropped": 0
+  }
+}

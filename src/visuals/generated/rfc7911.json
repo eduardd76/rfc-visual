@@ -1,0 +1,139 @@
+{
+  "rfc": 7911,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "add-path-negotiation",
+      "title": "ADD-PATH Negotiation and Route Update",
+      "participants": {
+        "a": "Advertising BGP speaker",
+        "b": "Peer BGP speaker"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "The only explicit indication that the encoding described in Section 3\n   is in use in a particular BGP session is the exchange of Capabilities\n   described in Section 4."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ADD-PATH Capability",
+          "explain": "A advertises the ADD-PATH Capability to B, declaring that A is able to send multiple paths for the corresponding address family.",
+          "cite": {
+            "section": "5",
+            "quote": "For a BGP speaker to be able to send multiple paths to its peer, that\n   BGP speaker MUST advertise the ADD-PATH Capability with the Send/\n   Receive field set to either 2 or 3, and MUST receive from its peer\n   the ADD-PATH Capability with the Send/Receive field set to either 1\n   or 3, for the corresponding <AFI, SAFI>."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ADD-PATH Capability",
+          "explain": "B advertises the ADD-PATH Capability to A, declaring that B is able to receive multiple paths for the corresponding address family.",
+          "cite": {
+            "section": "5",
+            "quote": "For a BGP speaker to be able to send multiple paths to its peer, that\n   BGP speaker MUST advertise the ADD-PATH Capability with the Send/\n   Receive field set to either 2 or 3, and MUST receive from its peer\n   the ADD-PATH Capability with the Send/Receive field set to either 1\n   or 3, for the corresponding <AFI, SAFI>."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "After the exchange, A generates a route update using both the address prefix and Path Identifier and encodes it with extended NLRI. B processes the UPDATE accordingly.",
+          "cite": {
+            "section": "5",
+            "quote": "A BGP speaker MUST follow the procedures defined in [RFC4271] when\n   generating an UPDATE message for a particular <AFI, SAFI> to a peer\n   unless the BGP speaker advertises the ADD-PATH Capability to the peer\n   indicating its ability to send multiple paths for the <AFI, SAFI>,\n   and also receives the ADD-PATH Capability from the peer indicating\n   its ability to receive multiple paths for the <AFI, SAFI>, in which\n   case the speaker MUST generate a route update for the <AFI, SAFI>\n   based on the combination of the address prefix and the Path\n   Identifier, and use the extended NLRI encodings specified in this\n   document.  The peer SHALL act accordingly in processing an UPDATE\n   message related to a particular <AFI, SAFI>."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "extended-nlri",
+      "title": "Extended NLRI Encoding",
+      "intro": {
+        "section": "3",
+        "quote": "In order to carry the Path Identifier in an UPDATE message, the NLRI\n   encoding MUST be extended by prepending the Path Identifier field,\n   which is of four octets."
+      },
+      "fields": [
+        {
+          "name": "Path Identifier",
+          "bits": 32,
+          "explain": "Prepended to the NLRI so that the Path Identifier can be carried in an UPDATE message.",
+          "cite": {
+            "section": "3",
+            "quote": "Path Identifier (4 octets)"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Provides the length of the Prefix field in the extended NLRI.",
+          "cite": {
+            "section": "3",
+            "quote": "Length (1 octet)"
+          }
+        },
+        {
+          "name": "Prefix",
+          "bits": "var",
+          "explain": "Carries the address prefix in a variable-length field.",
+          "cite": {
+            "section": "3",
+            "quote": "Prefix (variable)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "add-path-capability-value",
+      "title": "ADD-PATH Capability Value Tuple",
+      "intro": {
+        "section": "4",
+        "quote": "The ADD-PATH Capability is a BGP capability [RFC5492], with\n   Capability Code 69.  The Capability Length field of this capability\n   is variable.  The Capability Value field consists of one or more of\n   the following tuples:"
+      },
+      "fields": [
+        {
+          "name": "Address Family Identifier",
+          "bits": 16,
+          "explain": "Uses the same Address Family Identifier as [RFC4760].",
+          "cite": {
+            "section": "4",
+            "quote": "Address Family Identifier (AFI):\n\n         This field is the same as the one used in [RFC4760]."
+          }
+        },
+        {
+          "name": "Subsequent Address Family Identifier",
+          "bits": 8,
+          "explain": "Uses the same Subsequent Address Family Identifier as [RFC4760].",
+          "cite": {
+            "section": "4",
+            "quote": "Subsequent Address Family Identifier (SAFI):\n\n         This field is the same as the one used in [RFC4760]."
+          }
+        },
+        {
+          "name": "Send/Receive",
+          "bits": 8,
+          "explain": "Indicates whether the sender can receive multiple paths, send multiple paths, or do both for the address family.",
+          "cite": {
+            "section": "4",
+            "quote": "Send/Receive:\n\n         This field indicates whether the sender is (a) able to receive\n         multiple paths from its peer (value 1), (b) able to send\n         multiple paths to its peer (value 2), or (c) both (value 3) for\n         the <AFI, SAFI>."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The base BGP UPDATE format, route-selection process, and session behavior defined by RFC 4271",
+    "The complete enclosing BGP capability format and the detailed capability-negotiation rules from RFC 5492",
+    "Withdrawal handling, including silent ignore of a withdrawal for an unknown Path Identifier",
+    "Best-path advertisement guidance and graceful-restart implications",
+    "Deployment, application, and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:13:41.796Z",
+    "dropped": 0
+  }
+}

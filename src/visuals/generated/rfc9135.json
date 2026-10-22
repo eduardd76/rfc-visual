@@ -1,0 +1,149 @@
+{
+  "rfc": 9135,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "symmetric-irb-forwarding",
+      "title": "Symmetric IRB Inter-Subnet Forwarding",
+      "participants": {
+        "a": "Ingress NVE",
+        "b": "Egress NVE"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "In symmetric IRB, as its name implies, the lookup operation is symmetric at both the ingress and egress PEs -- i.e., both ingress and egress PEs perform lookups on both MAC and IP addresses."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "IP packet",
+          "explain": "The ingress NVE sends the tenant IP packet over the selected tunnel. It adds an Ethernet header when the selected tunnel is an Ethernet NVO tunnel.",
+          "cite": {
+            "section": "5.4",
+            "quote": "If the tunnel type is that of an MPLS or IP-only NVO tunnel, then the TS's IP packet is sent over the tunnel without any Ethernet header.  However, if the tunnel type is that of an Ethernet NVO tunnel, then an Ethernet header needs to be added to the TS's IP packet."
+          }
+        }
+      ]
+    },
+    {
+      "id": "asymmetric-irb-forwarding",
+      "title": "Asymmetric IRB Inter-Subnet Forwarding",
+      "participants": {
+        "a": "Ingress NVE",
+        "b": "Egress NVE"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "In asymmetric IRB, the lookup operation is asymmetric and the ingress PE performs three lookups, whereas the egress PE performs a single lookup -- i.e., the ingress PE performs a MAC lookup, followed by an IP lookup, followed by a MAC lookup again."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "packet",
+          "explain": "A destination MAC lookup yields the egress NVE next hop and label. The ingress NVE then encapsulates the packet and sends it to the egress NVE through an Ethernet NVO tunnel.",
+          "cite": {
+            "section": "6.3",
+            "quote": "The destination MAC address lookup in the MAC-VRF/BT results in a BGP next-hop address of the egress PE along with label1 (L2 VPN MPLS label or VNI).  The ingress PE encapsulates the packet using the Ethernet NVO tunnel of the choice (e.g., VXLAN or NVGRE) and sends the packet to the egress PE."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mobility-without-arp",
+      "title": "Host Move Without an ARP Request",
+      "participants": {
+        "a": "Source NVE",
+        "b": "Target NVE"
+      },
+      "intro": {
+        "section": "7.2",
+        "quote": "In this scenario, when a TS moves from a source NVE to a target NVE, the TS starts sending data traffic without first initiating an ARP request."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "EVPN MAC/IP Advertisement route",
+          "explain": "The target NVE recognizes the move and advertises a MAC-only MAC/IP Advertisement route with the MAC Mobility extended community and an incremented sequence number.",
+          "cite": {
+            "section": "7.2",
+            "quote": "It also recognizes that this MAC has moved and initiates MAC Mobility procedures per [RFC7432] by advertising an EVPN MAC/IP Advertisement route with only the MAC address filled in along with the MAC Mobility extended community, with the sequence number incremented by one."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "ARP request",
+          "explain": "The ARP probe for the moved MAC and IP pair becomes an ARP request. It is sent locally and to participating NVEs, including the target NVE.",
+          "cite": {
+            "section": "7.2",
+            "quote": "Furthermore, it searches for the corresponding MAC-IP entry and sends an ARP probe for this (IP, MAC) pair.  The ARP request message is sent both locally to all attached TSs in that subnet as well as to other NVEs participating in that subnet, including the target NVE."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "EVPN MAC/IP Advertisement route",
+          "explain": "The target NVE sends a second route carrying both the MAC and IP addresses and the MAC Mobility extended community. It uses the same sequence number as its earlier MAC-only route.",
+          "cite": {
+            "section": "7.2",
+            "quote": "It also sends an EVPN MAC/IP Advertisement route with both the MAC and IP addresses filled in along with the MAC Mobility extended community, with the sequence number set to the same value as the one for the MAC-only Advertisement route it sent previously."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "evpn-router-mac-extended-community",
+      "title": "EVPN Router's MAC Extended Community",
+      "intro": {
+        "section": "8.1",
+        "quote": "A new EVPN BGP Extended Community called \"EVPN Router's MAC\" is introduced here."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 8,
+          "explain": "The Type value 0x06 identifies the EVPN extended-community type.",
+          "cite": {
+            "section": "8.1",
+            "quote": "This new extended community is a transitive extended community with a Type field of 0x06 (EVPN) and a Sub-Type field of 0x03."
+          }
+        },
+        {
+          "name": "Sub-Type",
+          "bits": 8,
+          "explain": "The Sub-Type field carries value 0x03.",
+          "cite": {
+            "section": "8.1",
+            "quote": "This new extended community is a transitive extended community with a Type field of 0x06 (EVPN) and a Sub-Type field of 0x03."
+          }
+        },
+        {
+          "name": "EVPN Router's MAC",
+          "bits": 48,
+          "explain": "Carries the advertising PE's MAC address for use as the inner destination MAC address in an Ethernet frame.",
+          "cite": {
+            "section": "5.1",
+            "quote": "If one or more encapsulation types require an Ethernet frame, a single EVPN Router's MAC Extended Community (Section 8.1) is also advertised.  This extended community specifies the MAC address to be used as the inner destination MAC address in an Ethernet frame sent to the advertising PE."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "PE model relationships among MAC-VRF, bridge table, IRB interface, and IP-VRF",
+    "Anycast default-gateway address and MAC options and mixed symmetric/asymmetric interoperability details",
+    "EVPN RT-5 subnet-route advertisement, gleaning, and recursive resolution for subnets behind tenant systems",
+    "Gratuitous-ARP and silent-host mobility procedures",
+    "Full MPLS, VXLAN, and NVGRE packet encapsulation formats",
+    "Security considerations and IANA registry details"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:02:18.269Z",
+    "dropped": 0
+  }
+}

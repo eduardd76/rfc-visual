@@ -1,0 +1,508 @@
+{
+  "rfc": 1195,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "point-to-point-adjacency",
+      "title": "Point-to-Point Adjacency Initialization",
+      "participants": {
+        "a": "Router A",
+        "b": "Router B"
+      },
+      "intro": {
+        "section": "5.1",
+        "quote": "On point-to-point links, the exchange of ISO 9542 ISHs (intermediate system Hellos) is used to initialize the link, and to allow each router to know if there is a router on the other end of the link, before IS-IS Hellos are exchanged."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ISO 9542 ISH",
+          "explain": "Router A sends an ISO 9542 intermediate-system Hello used to initialize the point-to-point link between routers.",
+          "cite": {
+            "section": "4.4",
+            "quote": "For point-to-point links, IS-IS requires exchange of ISO 9542 ISHs, as the first step in establishing the link between routers. All IS-IS routers are therefore required to transmit and receive ISO 9542 ISH packets on point-to-point links."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ISO 9542 ISH",
+          "explain": "Router B sends the corresponding ISO 9542 intermediate-system Hello. Every IS-IS router must transmit and receive these packets on point-to-point links.",
+          "cite": {
+            "section": "4.4",
+            "quote": "For point-to-point links, IS-IS requires exchange of ISO 9542 ISHs, as the first step in establishing the link between routers. All IS-IS routers are therefore required to transmit and receive ISO 9542 ISH packets on point-to-point links."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "IS-IS Hello",
+          "explain": "Router A sends an IS-IS Hello with the protocols-supported information used to identify the network-layer protocols that routers support.",
+          "cite": {
+            "section": "3.1",
+            "quote": "This information is made available by inclusion of a \"protocols supported\" field in all IS-IS Hello and Link State Packets. This field makes use of the NLPID (Network Layer Protocol Identifier), which is a one-octet value assigned by ISO to identify network level protocols."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "IS-IS Hello",
+          "explain": "Router B sends an IS-IS Hello containing the IP address of the interface on which the packet is transmitted.",
+          "cite": {
+            "section": "5.2",
+            "quote": "The \"IP Interface Address\" is included in all IS-IS Hello packets and LSPs transmitted by IP-only and dual routers. In the Hello packets, this field occurs once only, and contains the IP address(es) of the interface on which the Hello packet is transmitted (up to a maximum of 63 IP addresses on each interface)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "level1-ip-reachability-exchange",
+      "title": "Level 1 IP Reachability Exchange",
+      "participants": {
+        "a": "Router A",
+        "b": "Router B"
+      },
+      "intro": {
+        "section": "1.3",
+        "quote": "Within an area, level 1 routers exchange link state packets which identify the IP addresses reachable by each router. Specifically, zero or more [IP address, subnet mask, metric] combinations may be included in each Link State Packet."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Link State Packet",
+          "explain": "Router A sends a link state packet containing the IP address, subnet mask, and metric combinations that describe reachable addresses in the area.",
+          "cite": {
+            "section": "1.3",
+            "quote": "Within an area, level 1 routers exchange link state packets which identify the IP addresses reachable by each router. Specifically, zero or more [IP address, subnet mask, metric] combinations may be included in each Link State Packet."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Link State Packet",
+          "explain": "Router B sends a link state packet with the same kind of reachability information. Level 1 routers exchange these packets within the area.",
+          "cite": {
+            "section": "1.3",
+            "quote": "Within an area, level 1 routers exchange link state packets which identify the IP addresses reachable by each router. Specifically, zero or more [IP address, subnet mask, metric] combinations may be included in each Link State Packet."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "variable-length-field",
+      "title": "IS-IS Variable-Length Field Encoding",
+      "intro": {
+        "section": "5.2",
+        "quote": "All IP-specific information is encoded in IS-IS packets as variable length fields. All variable length fields in IS-IS are encoded as follows:"
+      },
+      "fields": [
+        {
+          "name": "CODE",
+          "bits": 8,
+          "explain": "The code identifies the variable-length field.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IS-IS protocol provides for the inclusion of variable length fields in all IS-IS packets. These fields are encoded using a \"Code, Length, Value\" triplet, where the code and length are encoded in one octet each, and the value has the length specified (from 0 to 254 octets)."
+          }
+        },
+        {
+          "name": "LENGTH",
+          "bits": 8,
+          "explain": "The length gives the size of the value.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IS-IS protocol provides for the inclusion of variable length fields in all IS-IS packets. These fields are encoded using a \"Code, Length, Value\" triplet, where the code and length are encoded in one octet each, and the value has the length specified (from 0 to 254 octets)."
+          }
+        },
+        {
+          "name": "VALUE",
+          "bits": "var",
+          "explain": "The value contains the data carried by the variable-length field.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IS-IS protocol provides for the inclusion of variable length fields in all IS-IS packets. These fields are encoded using a \"Code, Length, Value\" triplet, where the code and length are encoded in one octet each, and the value has the length specified (from 0 to 254 octets)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ip-internal-reachability-entry",
+      "title": "IP Internal Reachability Information Entry",
+      "intro": {
+        "section": "5.2",
+        "quote": "The \"IP Internal Reachability Information\" field may be present in all LSPs transmitted by IP-capable routers. If present, it identifies a list of zero or more [IP address, subnet mask, metrics] reachable by the router which originates the LSP. Each entry must contain a default metric, and may contain delay, expense, and error metrics."
+      },
+      "fields": [
+        {
+          "name": "Reserved",
+          "bits": 1,
+          "explain": "The reserved bit in the default metric byte is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "DEFAULT METRIC is the value of the default metric for the link to the listed neighbor. Bit 8 of this field is reserved, and must be set to zero on tranmission and ignored on reception."
+          }
+        },
+        {
+          "name": "I/E",
+          "bits": 1,
+          "explain": "The I/E bit indicates the metric type.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "Bit 7 of this field (marked I/E) indicates the metric type"
+          }
+        },
+        {
+          "name": "DEFAULT METRIC",
+          "bits": 6,
+          "explain": "The default metric for the link to the listed neighbor.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "DEFAULT METRIC is the value of the default metric for the link to the listed neighbor. Bit 8 of this field is reserved, and must be set to zero on tranmission and ignored on reception."
+          }
+        },
+        {
+          "name": "S",
+          "bits": 1,
+          "explain": "The S bit marks an unsupported delay metric.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "DELAY METRIC is the value of the delay metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 1,
+          "explain": "The reserved bit in the delay metric byte is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "DELAY METRIC is the value of the delay metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "DELAY METRIC",
+          "bits": 6,
+          "explain": "The delay metric for the link to the listed neighbor.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "DELAY METRIC is the value of the delay metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "S",
+          "bits": 1,
+          "explain": "The S bit marks an unsupported expense metric.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "EXPENSE METRIC is the value of the expense metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 1,
+          "explain": "The reserved bit in the expense metric byte is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "EXPENSE METRIC is the value of the expense metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "EXPENSE METRIC",
+          "bits": 6,
+          "explain": "The expense metric for the link to the listed neighbor.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "EXPENSE METRIC is the value of the expense metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "S",
+          "bits": 1,
+          "explain": "The S bit marks an unsupported error metric.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "ERROR METRIC is the value of the error metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 1,
+          "explain": "The reserved bit in the error metric byte is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "ERROR METRIC is the value of the error metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "ERROR METRIC",
+          "bits": 6,
+          "explain": "The error metric for the link to the listed neighbor.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "ERROR METRIC is the value of the error metric for the link to the listed neighbor. If this IS does not support this metric it shall set the bit \"S\" to 1 to indicate that the metric is unsupported. Bit 7 of this field is reserved, and must be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "IP ADDRESS",
+          "bits": 32,
+          "explain": "The Internet address associated with the reachability entry.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "IP ADDRESS is a 4-octet Internet address"
+          }
+        },
+        {
+          "name": "SUBNET MASK",
+          "bits": 32,
+          "explain": "The subnet mask associated with the reachability entry.",
+          "cite": {
+            "section": "5.3.4",
+            "quote": "SUBNET MASK is a 4 octet IP subnet mask."
+          }
+        }
+      ]
+    },
+    {
+      "id": "level1-complete-sequence-numbers",
+      "title": "Level 1 Complete Sequence Numbers PDU",
+      "intro": {
+        "section": "5.1",
+        "quote": "Sequence number PDUs are used to ensure that neighboring routers have the same notion of what is the most recent LSP from each other router. The sequence number PDUs therefore serve a similar function to acknowledgement packets, but allow more efficient operation."
+      },
+      "fields": [
+        {
+          "name": "INTRADOMAIN ROUTEING PROTOCOL DISCRIMINATOR",
+          "bits": 8,
+          "explain": "The architectural constant for the intra-domain routing protocol.",
+          "cite": {
+            "section": "B.1",
+            "quote": "INTRADOMAIN ROUTEING PROTOCOL DISCRIMINATOR - architectural constant"
+          }
+        },
+        {
+          "name": "LENGTH INDICATOR",
+          "bits": 8,
+          "explain": "The length of the PDU header.",
+          "cite": {
+            "section": "B.1",
+            "quote": "LENGTH INDICATOR - Header Length in octets (33.)"
+          }
+        },
+        {
+          "name": "VERSION/PROTOCOL ID EXTENSION",
+          "bits": 8,
+          "explain": "The version and protocol identifier extension.",
+          "cite": {
+            "section": "B.1",
+            "quote": "VERSION/PROTOCOL ID EXTENSION - 1"
+          }
+        },
+        {
+          "name": "RESERVED",
+          "bits": 8,
+          "explain": "Reserved space that is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "B.1",
+            "quote": "RESERVED - transmitted as 0, ignored on receipt"
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 3,
+          "explain": "The unused bits in the type octet are sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "B.1",
+            "quote": "TYPE (bits 1 through 5) - 24. Note bits 6, 7 and 8 are Reserved, which means they are transmitted as 0 and ignored on receipt."
+          }
+        },
+        {
+          "name": "TYPE",
+          "bits": 5,
+          "explain": "The packet type.",
+          "cite": {
+            "section": "B.1",
+            "quote": "TYPE (bits 1 through 5) - 24. Note bits 6, 7 and 8 are Reserved, which means they are transmitted as 0 and ignored on receipt."
+          }
+        },
+        {
+          "name": "VERSION",
+          "bits": 8,
+          "explain": "The protocol version.",
+          "cite": {
+            "section": "B.1",
+            "quote": "VERSION - 1"
+          }
+        },
+        {
+          "name": "ECO",
+          "bits": 8,
+          "explain": "An ECO value that is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "B.1",
+            "quote": "ECO - transmitted as zero, ignored on receipt"
+          }
+        },
+        {
+          "name": "USER ECO",
+          "bits": 8,
+          "explain": "A user ECO value that is sent as zero and ignored on receipt.",
+          "cite": {
+            "section": "B.1",
+            "quote": "USER ECO - transmitted as zero, ignored on receipt"
+          }
+        },
+        {
+          "name": "PDU LENGTH",
+          "bits": 16,
+          "explain": "The length of the complete PDU, including its header.",
+          "cite": {
+            "section": "B.1",
+            "quote": "PDU LENGTH - Entire Length of this PDU, in octets, including header"
+          }
+        },
+        {
+          "name": "SOURCE ID",
+          "bits": 56,
+          "explain": "The identifier of the intermediate system that generated the packet.",
+          "cite": {
+            "section": "B.1",
+            "quote": "SOURCE ID - 7 octet ID of Intermediate System (with zero Circuit ID) generating this Sequence Numbers PDU."
+          }
+        },
+        {
+          "name": "START LSP ID",
+          "bits": 64,
+          "explain": "The first LSP identifier in the range covered by the packet.",
+          "cite": {
+            "section": "B.1",
+            "quote": "START LSP ID - 8 octet ID of first LSP in the range covered by this Complete Sequence Numbers PDU."
+          }
+        },
+        {
+          "name": "END LSP ID",
+          "bits": 64,
+          "explain": "The last LSP identifier in the range covered by the packet.",
+          "cite": {
+            "section": "B.1",
+            "quote": "END LSP ID - 8 octet ID of last LSP in the range covered by this Complete Sequence Numbers PDU."
+          }
+        },
+        {
+          "name": "VARIABLE LENGTH FIELDS",
+          "bits": "var",
+          "explain": "Variable-length fields carried in the packet.",
+          "cite": {
+            "section": "B.1",
+            "quote": "VARIABLE LENGTH FIELDS - fields of the form:"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ip-only-nsap-address",
+      "title": "IP-Only IS-IS NSAP Address",
+      "intro": {
+        "section": "3.3",
+        "quote": "Where desired, for IP-only routers, for use in IS-IS packet formats only, OSI-style addresses (compatible with the USA GOSIP version 2.0 NSAP address format [9]) may be derived as follows:"
+      },
+      "fields": [
+        {
+          "name": "AFI",
+          "bits": 8,
+          "explain": "Specifies the ICD format used by the NSAP address.",
+          "cite": {
+            "section": "3.3",
+            "quote": "AFI 1 octet value \"47\" (specifies ICD format)"
+          }
+        },
+        {
+          "name": "ICD",
+          "bits": 16,
+          "explain": "Selects the Internet/Gosip address format.",
+          "cite": {
+            "section": "3.3",
+            "quote": "ICD 2 octet value \"00 05\" (specifies Internet/Gosip)"
+          }
+        },
+        {
+          "name": "DFI",
+          "bits": 8,
+          "explain": "Carries the DFI value for the address format.",
+          "cite": {
+            "section": "3.3",
+            "quote": "DFI 1 octet value \"xx\""
+          }
+        },
+        {
+          "name": "AA",
+          "bits": 24,
+          "explain": "Identifies the special IP-only use of the NSAP.",
+          "cite": {
+            "section": "3.3",
+            "quote": "AA 3 octets value \"xx xx xx\" (specifies special IP-only use of NSAPs)"
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 16,
+          "explain": "Must contain the all-zero reserved value.",
+          "cite": {
+            "section": "3.3",
+            "quote": "Reserved 2 octets must be \"00 00\""
+          }
+        },
+        {
+          "name": "RD",
+          "bits": 16,
+          "explain": "Carries the autonomous system number.",
+          "cite": {
+            "section": "3.3",
+            "quote": "RD 2 octets contains autonomous system number"
+          }
+        },
+        {
+          "name": "Area",
+          "bits": 16,
+          "explain": "Carries the area assignment for the router.",
+          "cite": {
+            "section": "3.3",
+            "quote": "Area 2 octets must be assigned as described below"
+          }
+        },
+        {
+          "name": "ID",
+          "bits": 48,
+          "explain": "Carries the router's system identifier.",
+          "cite": {
+            "section": "3.3",
+            "quote": "ID 6 octets must be assigned as described below"
+          }
+        },
+        {
+          "name": "SEL",
+          "bits": 8,
+          "explain": "Carries the NSAP selector.",
+          "cite": {
+            "section": "3.3",
+            "quote": "SEL 1 octet used as described below"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Other complete ISO IS-IS base PDU headers and the ISO DP 10589 adjacency state machine",
+    "Detailed TLV layouts for Protocols Supported, IP Interface Address, and Authentication Information",
+    "IP External Reachability Information and Inter-Domain Routing Protocol Information encodings",
+    "Type-of-Service mapping, route preference, and the detailed Dijkstra and forwarding algorithms",
+    "LAN designated-router and pseudonode election procedures",
+    "Authentication password configuration, rollover, and security analysis",
+    "Brouter interoperability and the proposed encapsulation mechanisms"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:43:47.947Z",
+    "dropped": 0
+  }
+}

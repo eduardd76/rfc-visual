@@ -1,0 +1,286 @@
+{
+  "rfc": 3623,
+  "reviewed": false,
+  "initial": "graceful restart",
+  "terminal": [
+    "normal OSPF operation"
+  ],
+  "stateMachineTitle": "OSPF graceful restart FSM",
+  "states": [
+    {
+      "id": "graceful restart",
+      "cite": {
+        "section": "2",
+        "quote": "After the router restarts/reloads, it must change its OSPF processing somewhat until it re-establishes full adjacencies with all its former fully-adjacent neighbors. This time period, between the restart/reload and the reestablishment of adjacencies, is called \"graceful restart\"."
+      }
+    },
+    {
+      "id": "normal OSPF operation",
+      "cite": {
+        "section": "2.3",
+        "quote": "Upon exiting \"graceful restart\", the restarting router reverts back to completely normal OSPF operation, reoriginating LSAs based on the router's current state and updating its forwarding table(s) based on the current contents of the link-state database."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "graceful restart",
+      "to": "normal OSPF operation",
+      "event": "graceful restart ends",
+      "action": "reoriginate LSAs and update forwarding tables",
+      "layer": "happy",
+      "cite": {
+        "section": "2.3",
+        "quote": "Upon exiting \"graceful restart\", the restarting router reverts back to completely normal OSPF operation, reoriginating LSAs based on the router's current state and updating its forwarding table(s) based on the current contents of the link-state database."
+      }
+    },
+    {
+      "from": "graceful restart",
+      "to": "normal OSPF operation",
+      "event": "unsupported neighbor or topology change",
+      "action": "revert to normal OSPF",
+      "layer": "error",
+      "cite": {
+        "section": "4",
+        "quote": "The unmodified routers will start routing around the restarted router X as it performs initial database synchronization by reissuing their LSAs with links to X omitted. These LSAs will be interpreted by helper neighbors as a topology change, and by X as an LSA inconsistency, in either case, reverting to normal OSPF operation."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "planned-restart",
+      "title": "Planned restart and helper mode",
+      "participants": {
+        "a": "Restarting Router X",
+        "b": "Helper Neighbor Y"
+      },
+      "intro": {
+        "section": "2.1",
+        "quote": "Router X then originates the grace-LSAs. These are link-local Opaque-LSAs (see Appendix A)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "grace-LSAs",
+          "explain": "Router X originates link-local grace-LSAs, sets their age to zero, and inserts the requested grace period into the body.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Router X then originates the grace-LSAs. These are link-local Opaque-LSAs (see Appendix A). Their LS Age field is set to 0, and the requested grace period (in seconds) is inserted into the body of the grace-LSA. The precise contents of the grace-LSA are described in Appendix A."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "grace-LSAs",
+          "explain": "Router X retransmits the grace-LSAs until they are acknowledged so that its neighbors receive them.",
+          "cite": {
+            "section": "2.1",
+            "quote": "If Router X wants to ensure that its neighbors receive the grace-LSAs, it should retransmit the grace-LSAs until they are acknowledged (i.e., perform standard OSPF reliable flooding of the grace-LSAs)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "grace-LSA",
+          "explain": "Router Y enters helper mode for X on the associated segment when it receives a grace-LSA and all listed checks pass.",
+          "cite": {
+            "section": "3.1",
+            "quote": "When a router Y receives a grace-LSA from router X, it enters helper mode for X on the associated network segment, as long as all the following checks pass:"
+          }
+        },
+        {
+          "from": "A",
+          "segment": "grace-LSAs",
+          "explain": "Router X flushes any grace-LSAs that it originated.",
+          "cite": {
+            "section": "2.3",
+            "quote": "Any grace-LSAs that the router originated should be flushed."
+          }
+        }
+      ]
+    },
+    {
+      "id": "unplanned-restart",
+      "title": "Unplanned restart message order",
+      "participants": {
+        "a": "Restarted Router X",
+        "b": "OSPF Neighbors"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "In contrast to the procedure for planned restart/reloads that was described in Section 2.1, a router attempting graceful restart after an unplanned outage must originate grace-LSAs *after* its control software resumes operation."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Link State Update Packets",
+          "explain": "The restarted router encapsulates the grace-LSAs in Link State Update Packets and sends them on all interfaces.",
+          "cite": {
+            "section": "5",
+            "quote": "The grace-LSAs are encapsulated in Link State Update Packets and sent out to all interfaces, even though the restarted router has no adjacencies and no knowledge of previous adjacencies."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "OSPF Hello Packets",
+          "explain": "The restarted router sends OSPF Hello Packets only after it has originated and sent the grace-LSAs.",
+          "cite": {
+            "section": "5",
+            "quote": "The grace-LSAs must be originated and be sent *before* the restarted router sends any OSPF Hello Packets."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "grace-lsa",
+      "title": "Grace-LSA format",
+      "intro": {
+        "section": "A",
+        "quote": "The grace-LSA is a link-local scoped Opaque-LSA [2], having an Opaque Type of 3 and an Opaque ID equal to 0."
+      },
+      "fields": [
+        {
+          "name": "LS age",
+          "bits": 16,
+          "explain": "Starts at zero when the LSA is first originated and then shows how long ago the restart request was made.",
+          "cite": {
+            "section": "A",
+            "quote": "Each grace-LSA has an LS age field set to 0 when the LSA is first originated; the current value of the LS age then indicates how long ago the restarting router made its request."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": 8,
+          "explain": "The diagram shows an encoded value of 9 in this field.",
+          "cite": {
+            "section": "A",
+            "quote": "|            LS age             |     Options   |       9       |"
+          }
+        },
+        {
+          "name": "Opaque Type",
+          "bits": 8,
+          "explain": "The opaque type is 3 for a grace-LSA.",
+          "cite": {
+            "section": "A",
+            "quote": "The grace-LSA is a link-local scoped Opaque-LSA [2], having an Opaque Type of 3 and an Opaque ID equal to 0."
+          }
+        },
+        {
+          "name": "Opaque ID",
+          "bits": 32,
+          "explain": "The opaque identifier is zero for a grace-LSA.",
+          "cite": {
+            "section": "A",
+            "quote": "The grace-LSA is a link-local scoped Opaque-LSA [2], having an Opaque Type of 3 and an Opaque ID equal to 0."
+          }
+        },
+        {
+          "name": "Advertising Router",
+          "bits": 32,
+          "explain": "Identifies the restarting router on segment types that do not use the IP interface address in the grace-LSA.",
+          "cite": {
+            "section": "3.1",
+            "quote": "On all other segment types, X is identified by the grace-LSA's Advertising Router field."
+          }
+        },
+        {
+          "name": "LS sequence number",
+          "bits": 32,
+          "explain": "Carries the grace-LSA's sequence number.",
+          "cite": {
+            "section": "A",
+            "quote": "|                     LS sequence number                        |"
+          }
+        },
+        {
+          "name": "LS checksum",
+          "bits": 16,
+          "explain": "Carries the grace-LSA's checksum.",
+          "cite": {
+            "section": "A",
+            "quote": "|         LS checksum           |             length            |"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Carries the length of the grace-LSA.",
+          "cite": {
+            "section": "A",
+            "quote": "|         LS checksum           |             length            |"
+          }
+        },
+        {
+          "name": "TLVs",
+          "bits": "var",
+          "explain": "The variable body carries one or more nested TLV triplets with the graceful-restart information.",
+          "cite": {
+            "section": "A",
+            "quote": "The format of the TLVs within the body of a grace-LSA is the same as the format used by the Traffic Engineering Extensions to OSPF [4]. The LSA payload consists of one or more nested Type/Length/Value (TLV) triplets."
+          }
+        }
+      ]
+    },
+    {
+      "id": "grace-lsa-tlv",
+      "title": "Grace-LSA TLV format",
+      "intro": {
+        "section": "A",
+        "quote": "The following is the list of TLVs that can appear in the body of a grace-LSA:"
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "Identifies what information the TLV carries.",
+          "cite": {
+            "section": "A",
+            "quote": "|              Type             |             Length            |"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Gives the length of the value in octets and excludes alignment padding.",
+          "cite": {
+            "section": "A",
+            "quote": "The Length field defines the length of the value portion in octets (thus a TLV with no value portion would have a length of zero)."
+          }
+        },
+        {
+          "name": "Value",
+          "bits": "var",
+          "explain": "Holds the TLV's value portion.",
+          "cite": {
+            "section": "A",
+            "quote": "|                            Value...                           |"
+          }
+        },
+        {
+          "name": "Padding",
+          "bits": "var",
+          "explain": "Adds bytes to align the TLV to a four-octet boundary without changing the Length value.",
+          "cite": {
+            "section": "A",
+            "quote": "The TLV is padded to four-octet alignment; padding is not included in the length field (so a three octet value would have a length of three, but the total size of the TLV would be eight octets)."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The helper-neighbor eligibility checks and the complete helper-mode exit procedure",
+    "Per-segment behavior for broadcast, NBMA, Point-to-MultiPoint, and virtual links",
+    "The base OSPF Hello, database exchange, and link-state flooding procedures",
+    "The individual Grace Period, Graceful restart reason, and IP interface address TLV formats",
+    "Restart and helper configuration parameters",
+    "Traffic Engineering interactions, security risks, and operational cautions for unplanned restarts"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:32:27.944Z",
+    "dropped": 0
+  }
+}

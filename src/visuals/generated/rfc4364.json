@@ -1,0 +1,137 @@
+{
+  "rfc": 4364,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "route-target-distribution",
+      "title": "Route-Target-Controlled VPN Route Distribution",
+      "participants": {
+        "a": "Exporting PE Router",
+        "b": "Importing PE Router"
+      },
+      "intro": {
+        "section": "4.3.2",
+        "quote": "When a PE router distributes a VPN-IPv4 route via BGP, it uses its own address as the \"BGP next hop\". This address is encoded as a VPN-IPv4 address with an RD of 0. ([BGP-MP] requires that the next hop address be in the same address family as the Network Layer Reachability Information (NLRI).) It also assigns and distributes an MPLS label."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "route",
+          "explain": "The exporting PE sends the route to PE routers that have a VRF associated with its Route Target. At the receiving PE, the route is eligible for installation in the VRFs associated with that target.",
+          "cite": {
+            "section": "4.3.1",
+            "quote": "Any route associated with Route Target T must be distributed to every PE router that has a VRF associated with Route Target T. When such a route is received by a PE router, it is eligible to be installed in those of the PE's VRFs that are associated with Route Target T."
+          }
+        }
+      ]
+    },
+    {
+      "id": "customer-packet-forwarding",
+      "title": "Customer Packet Handling at the PE",
+      "participants": {
+        "a": "CE Router",
+        "b": "PE Router"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "When a PE receives an IP packet from a CE device, it chooses a particular VRF in which to look up the packet's destination address. This choice is based on the packet's ingress attachment circuit."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "IP packet",
+          "explain": "The PE selects a VRF from the packet's ingress attachment circuit and uses that VRF to look up the destination address.",
+          "cite": {
+            "section": "5",
+            "quote": "When a PE receives an IP packet from a CE device, it chooses a particular VRF in which to look up the packet's destination address. This choice is based on the packet's ingress attachment circuit."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "packet",
+          "explain": "At the BGP next hop, the PE can use the VPN route label to select the CE-facing attachment circuit and the data-link header for transmission.",
+          "cite": {
+            "section": "5",
+            "quote": "At the BGP Next Hop, the treatment of the packet depends on the VPN route label (see Section 4.3.2). In many cases, the PE will be able to determine, from this label, the attachment circuit over which the packet should be transmitted (to a CE device), as well as the proper data link layer header for that interface."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "vpn-ipv4-address",
+      "title": "VPN-IPv4 Address",
+      "intro": {
+        "section": "4.1",
+        "quote": "A VPN-IPv4 address is a 12-byte quantity, beginning with an 8-byte Route Distinguisher (RD) and ending with a 4-byte IPv4 address."
+      },
+      "fields": [
+        {
+          "name": "Route Distinguisher (RD)",
+          "bits": 64,
+          "explain": "The eight-byte prefix makes otherwise identical customer prefixes distinct, allowing BGP to carry separate routes for different VPNs.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A VPN-IPv4 address is a 12-byte quantity, beginning with an 8-byte Route Distinguisher (RD) and ending with a 4-byte IPv4 address. If several VPNs use the same IPv4 address prefix, the PEs translate these into unique VPN-IPv4 address prefixes. This ensures that if the same address is used in several different VPNs, it is possible for BGP to carry several completely different routes to that address, one for each VPN."
+          }
+        },
+        {
+          "name": "IPv4 address",
+          "bits": 32,
+          "explain": "The final four-byte field carries the customer-side IPv4 address.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A VPN-IPv4 address is a 12-byte quantity, beginning with an 8-byte Route Distinguisher (RD) and ending with a 4-byte IPv4 address."
+          }
+        }
+      ]
+    },
+    {
+      "id": "route-distinguisher",
+      "title": "Route Distinguisher Common Encoding",
+      "intro": {
+        "section": "4.1",
+        "quote": "An RD consists of three fields: a 2-byte type field, an administrator field, and an assigned number field. The value of the type field determines the lengths of the other two fields, as well as the semantics of the administrator field."
+      },
+      "fields": [
+        {
+          "name": "Type Field",
+          "bits": 16,
+          "explain": "The type value selects how the Value field is interpreted; the RFC defines type values 0, 1, and 2.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The RDs are encoded as follows: - Type Field: 2 bytes - Value Field: 6 bytes The interpretation of the Value field depends on the value of the type field. At the present time, three values of the type field are defined: 0, 1, and 2."
+          }
+        },
+        {
+          "name": "Value Field",
+          "bits": 48,
+          "explain": "The six-byte value contains the type-dependent administrator and assigned-number fields.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The RDs are encoded as follows: - Type Field: 2 bytes - Value Field: 6 bytes The interpretation of the Value field depends on the value of the type field. At the present time, three values of the type field are defined: 0, 1, and 2."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The detailed Route Distinguisher Type 0, Type 1, and Type 2 Value-field layouts",
+    "The PE-to-CE route-learning choices for static routing, RIP, OSPF, and BGP",
+    "Route Reflector partition variants and the BGP refresh and ORF procedures used for VPN Join and Prune",
+    "Carrier's carrier and multi-AS inter-provider VPN variants",
+    "Route summarization, label allocation variants, aggregate-route forwarding, penultimate-hop popping, and the full MPLS tunnel-label stack",
+    "Internet access, management VPN, QoS, security, and scalability discussions",
+    "A formal session state machine, which RFC 4364 does not define"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:42:52.622Z",
+    "dropped": 0
+  }
+}

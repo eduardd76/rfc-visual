@@ -1,0 +1,379 @@
+{
+  "rfc": 7684,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [],
+  "headers": [
+    {
+      "id": "extended-prefix-opaque-lsa",
+      "title": "OSPFv2 Extended Prefix Opaque LSA",
+      "intro": {
+        "section": "2",
+        "quote": "The format of the OSPFv2 Extended Prefix Opaque LSA is as follows:"
+      },
+      "fields": [
+        {
+          "name": "LS age",
+          "bits": 16,
+          "explain": "The LS age records the age of the link state advertisement.",
+          "cite": {
+            "section": "2",
+            "quote": "|            LS age             |     Options   |   LS Type     |"
+          }
+        },
+        {
+          "name": "Options",
+          "bits": 8,
+          "explain": "The Options field carries OSPF options for the link state advertisement.",
+          "cite": {
+            "section": "2",
+            "quote": "|            LS age             |     Options   |   LS Type     |"
+          }
+        },
+        {
+          "name": "LS Type",
+          "bits": 8,
+          "explain": "The LS Type selects either area-local or AS-wide flooding for the opaque LSA.",
+          "cite": {
+            "section": "2",
+            "quote": "The LS Type may be 10 or 11, indicating that the Opaque LSA flooding scope is area-local (10) or AS-wide (11) [OPAQUE]."
+          }
+        },
+        {
+          "name": "Opaque Type",
+          "bits": 8,
+          "explain": "The Opaque Type identifies the advertisement as an OSPFv2 Extended Prefix Opaque LSA.",
+          "cite": {
+            "section": "2",
+            "quote": "The Opaque Type used by the OSPFv2 Extended Prefix Opaque LSA is 7."
+          }
+        },
+        {
+          "name": "Opaque ID",
+          "bits": 32,
+          "explain": "The Opaque ID is an arbitrary value used to distinguish multiple Extended Prefix Opaque LSAs originated by the same router.",
+          "cite": {
+            "section": "2",
+            "quote": "The Opaque ID field is an arbitrary value used to maintain multiple OSPFv2 Extended Prefix Opaque LSAs. For OSPFv2 Extended Prefix Opaque LSAs, the Opaque ID has no semantic significance other than to differentiate OSPFv2 Extended Prefix Opaque LSAs originated by the same OSPFv2 router."
+          }
+        },
+        {
+          "name": "Advertising Router",
+          "bits": 32,
+          "explain": "The Advertising Router identifies the OSPFv2 router that advertises the LSA.",
+          "cite": {
+            "section": "2",
+            "quote": "|                     Advertising Router                        |"
+          }
+        },
+        {
+          "name": "LS sequence number",
+          "bits": 32,
+          "explain": "The LS sequence number records the sequence of the link state advertisement.",
+          "cite": {
+            "section": "2",
+            "quote": "|                     LS sequence number                        |"
+          }
+        },
+        {
+          "name": "LS checksum",
+          "bits": 16,
+          "explain": "The LS checksum provides the checksum for the link state advertisement.",
+          "cite": {
+            "section": "2",
+            "quote": "|         LS checksum           |             Length            |"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "The Length gives the total size of the opaque LSA, including its header, TLVs, and padding.",
+          "cite": {
+            "section": "2",
+            "quote": "The LSA Length field [OSPFV2] represents the total length (in octets) of the Opaque LSA, including the LSA header and all TLVs (including padding)."
+          }
+        },
+        {
+          "name": "TLVs",
+          "bits": "var",
+          "explain": "The variable body contains one or more nested TLV tuples, also called sub-TLVs.",
+          "cite": {
+            "section": "2",
+            "quote": "The variable TLV section consists of one or more nested TLV tuples. Nested TLVs are also referred to as sub-TLVs."
+          }
+        }
+      ]
+    },
+    {
+      "id": "extended-prefix-tlv",
+      "title": "OSPFv2 Extended Prefix TLV",
+      "intro": {
+        "section": "2.1",
+        "quote": "The OSPFv2 Extended Prefix TLV is used to advertise additional attributes associated with the prefix."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "The Type identifies an OSPFv2 Extended Prefix TLV, whose assigned value is 1.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Type The TLV type. The value is 1 for this TLV type."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "The Length is variable because it depends on the included sub-TLVs.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Length Variable, dependent on sub-TLVs."
+          }
+        },
+        {
+          "name": "Route Type",
+          "bits": 8,
+          "explain": "The Route Type identifies the OSPFv2 route category to which the prefix attributes apply.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Route Type The type of the OSPFv2 route."
+          }
+        },
+        {
+          "name": "Prefix Length",
+          "bits": 8,
+          "explain": "The Prefix Length gives the prefix length in bits.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Prefix Length Length of prefix in bits."
+          }
+        },
+        {
+          "name": "AF",
+          "bits": 8,
+          "explain": "The AF identifies the prefix address family; this version supports IPv4 unicast.",
+          "cite": {
+            "section": "2.1",
+            "quote": "AF Address family for the prefix. Currently, the only supported value is 0 for IPv4 unicast."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 8,
+          "explain": "The Flags field contains flags applicable to the prefix.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Flags This one-octet field contains flags applicable to the prefix. Supported Flags include:"
+          }
+        },
+        {
+          "name": "Address Prefix",
+          "bits": "var",
+          "explain": "The Address Prefix carries the IPv4 unicast prefix, while the default route is represented by a prefix length of zero.",
+          "cite": {
+            "section": "2.1",
+            "quote": "Address Prefix For the address family IPv4 unicast, the prefix itself is encoded as a 32-bit value. The default route is represented by a prefix of length 0."
+          }
+        },
+        {
+          "name": "Sub-TLVs",
+          "bits": "var",
+          "explain": "The Sub-TLVs hold nested attributes associated with the prefix.",
+          "cite": {
+            "section": "2.1",
+            "quote": "|                      Sub-TLVs (variable)                      |"
+          }
+        }
+      ]
+    },
+    {
+      "id": "extended-link-opaque-lsa",
+      "title": "OSPFv2 Extended Link Opaque LSA",
+      "intro": {
+        "section": "3",
+        "quote": "The format of the OSPFv2 Extended Link Opaque LSA is as follows:"
+      },
+      "fields": [
+        {
+          "name": "LS age",
+          "bits": 16,
+          "explain": "The LS age records the age of the link state advertisement.",
+          "cite": {
+            "section": "3",
+            "quote": "|            LS age             |     Options   |   LS Type     |"
+          }
+        },
+        {
+          "name": "Options",
+          "bits": 8,
+          "explain": "The Options field carries OSPF options for the link state advertisement.",
+          "cite": {
+            "section": "3",
+            "quote": "|            LS age             |     Options   |   LS Type     |"
+          }
+        },
+        {
+          "name": "LS Type",
+          "bits": 8,
+          "explain": "The LS Type selects area-local flooding for the opaque LSA.",
+          "cite": {
+            "section": "3",
+            "quote": "The LS Type is 10, indicating that the Opaque LSA flooding scope is area-local [OPAQUE]."
+          }
+        },
+        {
+          "name": "Opaque Type",
+          "bits": 8,
+          "explain": "The Opaque Type identifies the advertisement as an OSPFv2 Extended Link Opaque LSA.",
+          "cite": {
+            "section": "3",
+            "quote": "The Opaque Type used by the OSPFv2 Extended Link Opaque LSA is 8."
+          }
+        },
+        {
+          "name": "Opaque ID",
+          "bits": 32,
+          "explain": "The Opaque ID distinguishes multiple Extended Link Opaque LSAs originated by the same router.",
+          "cite": {
+            "section": "3",
+            "quote": "For OSPFv2 Extended Link Opaque LSAs, the Opaque ID has no semantic significance other than to differentiate OSPFv2 Extended Link Opaque LSAs originated by the same OSPFv2 router."
+          }
+        },
+        {
+          "name": "Advertising Router",
+          "bits": 32,
+          "explain": "The Advertising Router identifies the OSPFv2 router that advertises the LSA.",
+          "cite": {
+            "section": "3",
+            "quote": "|                     Advertising Router                        |"
+          }
+        },
+        {
+          "name": "LS sequence number",
+          "bits": 32,
+          "explain": "The LS sequence number records the sequence of the link state advertisement.",
+          "cite": {
+            "section": "3",
+            "quote": "|                     LS sequence number                        |"
+          }
+        },
+        {
+          "name": "LS checksum",
+          "bits": 16,
+          "explain": "The LS checksum provides the checksum for the link state advertisement.",
+          "cite": {
+            "section": "3",
+            "quote": "|         LS checksum           |             Length            |"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "The Length gives the total size of the opaque LSA, including its header, TLVs, and padding.",
+          "cite": {
+            "section": "3",
+            "quote": "The LSA Length field [OSPFV2] represents the total length (in octets) of the Opaque LSA, including the LSA header and all TLVs (including padding)."
+          }
+        },
+        {
+          "name": "TLVs",
+          "bits": "var",
+          "explain": "The variable body uses the TLV format described in Section 2.",
+          "cite": {
+            "section": "3",
+            "quote": "The format of the TLVs within the body of the OSPFv2 Extended Link Opaque LSA is the same as described in Section 2."
+          }
+        }
+      ]
+    },
+    {
+      "id": "extended-link-tlv",
+      "title": "OSPFv2 Extended Link TLV",
+      "intro": {
+        "section": "3.1",
+        "quote": "The OSPFv2 Extended Link TLV is used to advertise various attributes of the link. It describes a single link and is constructed of a set of sub-TLVs. There are no ordering requirements for the sub-TLVs."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "The Type identifies an OSPFv2 Extended Link TLV, whose assigned value is 1.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Type The TLV type. The value is 1 for this TLV type."
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "The Length is variable because it depends on the included sub-TLVs.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Length Variable, dependent on sub-TLVs."
+          }
+        },
+        {
+          "name": "Link Type",
+          "bits": 8,
+          "explain": "The Link Type uses the OSPFv2 Router-LSA link type definitions.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Link Type Link Type is defined in Section A.4.2 of [OSPFV2]"
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 24,
+          "explain": "The Reserved bits occupy the remainder of the fixed Link TLV header.",
+          "cite": {
+            "section": "3.1",
+            "quote": "|     Link Type |                  Reserved                     |"
+          }
+        },
+        {
+          "name": "Link ID",
+          "bits": 32,
+          "explain": "The Link ID carries the link identifier defined for OSPFv2 Router-LSA links.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Link ID Link ID is defined in Section A.4.2 of [OSPFV2]."
+          }
+        },
+        {
+          "name": "Link Data",
+          "bits": 32,
+          "explain": "The Link Data carries the link data defined for OSPFv2 Router-LSA links.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Link Data Link Data is defined in Section A.4.2 of [OSPFV2]."
+          }
+        },
+        {
+          "name": "Sub-TLVs",
+          "bits": "var",
+          "explain": "The Sub-TLVs hold nested attributes associated with the link.",
+          "cite": {
+            "section": "3.1",
+            "quote": "|                      Sub-TLVs (variable)                      |"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Application-specific prefix and link sub-TLV formats",
+    "Duplicate prefix and link advertisement conflict-resolution rules",
+    "LSA flooding, acknowledgment, and LSDB installation mechanics from RFC 5250 and RFC 2328",
+    "Malformed-TLV detection, logging, and LSDB rejection rules",
+    "Backward-compatibility requirements for future OSPFv2 applications",
+    "Source routing, route tagging, and segment routing application semantics"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:27:36.357Z",
+    "dropped": 0
+  }
+}

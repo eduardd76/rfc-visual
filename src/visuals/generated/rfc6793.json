@@ -1,0 +1,180 @@
+{
+  "rfc": 6793,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "four-octet-capability-exchange",
+      "title": "Four-Octet AS Capability Exchange",
+      "participants": {
+        "a": "NEW BGP speaker",
+        "b": "NEW BGP speaker"
+      },
+      "intro": {
+        "section": "1",
+        "quote": "More specifically, this document defines a BGP capability code, \"support for four-octet AS number capability\", to be used by a BGP speaker to indicate its support for four-octet AS numbers."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "BGP Capabilities Advertisements",
+          "explain": "The new speaker tells its peer that it supports four-octet AS numbers and carries its AS number in the capability value.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A BGP speaker that supports four-octet AS numbers SHALL advertise this to its peers using BGP Capabilities Advertisements. The AS number of the BGP speaker MUST be carried in the Capability Value field of the \"support for four-octet AS number capability\"."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "BGP Capabilities Advertisements",
+          "explain": "The peer advertises the same capability in the reverse direction.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A BGP speaker that supports four-octet AS numbers SHALL advertise this to its peers using BGP Capabilities Advertisements. The AS number of the BGP speaker MUST be carried in the Capability Value field of the \"support for four-octet AS number capability\"."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "OPEN message",
+          "explain": "When the new speaker receives the peer's OPEN, it uses the AS number from the capability value instead of the My Autonomous System field.",
+          "cite": {
+            "section": "4.1",
+            "quote": "When a NEW BGP speaker processes an OPEN message from another NEW BGP speaker, it MUST use the AS number encoded in the Capability Value field of the \"support for four-octet AS number capability\" in lieu of the \"My Autonomous System\" field of the OPEN message."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "updates",
+          "explain": "After both peers advertise the capability, each sends AS_PATH and AGGREGATOR with four-octet AS numbers and assumes received attributes use that encoding.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A BGP speaker that advertises such a capability to a particular peer, and receives from that peer the advertisement of such a capability, MUST encode AS numbers as four-octet entities in both the AS_PATH attribute and the AGGREGATOR attribute in the updates it sends to the peer and MUST assume that these attributes in the updates received from the peer encode AS numbers as four-octet entities."
+          }
+        }
+      ]
+    },
+    {
+      "id": "preserving-path-through-old-speakers",
+      "title": "Preserving AS Path Information Through OLD Speakers",
+      "participants": {
+        "a": "NEW BGP speaker",
+        "b": "OLD BGP speaker"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "To preserve the AS path information with four-octet AS numbers across OLD BGP speakers, this document defines a new BGP path attribute called AS4_PATH. This is an optional transitive attribute that contains the AS path encoded with four-octet AS numbers."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "AS4_PATH attribute",
+          "explain": "The new speaker sends AS_PATH with two-octet AS numbers and also sends AS4_PATH with four-octet AS numbers, except when the whole path contains only mappable AS numbers.",
+          "cite": {
+            "section": "4.2.2",
+            "quote": "When communicating with an OLD BGP speaker, a NEW BGP speaker MUST send the AS path information in the AS_PATH attribute encoded with two-octet AS numbers. The NEW BGP speaker MUST also send the AS path information in the AS4_PATH attribute (encoded with four-octet AS numbers), except for the case where all of the AS path information is composed of mappable four-octet AS numbers only."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "update",
+          "explain": "The update from the old peer can contain AS4_PATH beside AS_PATH. The new speaker combines both to reconstruct the exact path and uses both for AS path loop detection.",
+          "cite": {
+            "section": "4.2.3",
+            "quote": "When a NEW BGP speaker receives an update from an OLD BGP speaker, it MUST be prepared to receive the AS4_PATH attribute along with the existing AS_PATH attribute. If the AS4_PATH attribute is also received, both of the attributes will be used to construct the exact AS path information, and therefore the information carried by both of the attributes will be considered for AS path loop detection."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "AS4_AGGREGATOR attribute",
+          "explain": "For a non-mappable aggregating AS number, the new speaker uses AS4_AGGREGATOR and sets the AS number in AGGREGATOR to AS_TRANS. It omits AS4_AGGREGATOR when the aggregating AS number is mappable.",
+          "cite": {
+            "section": "4.2.2",
+            "quote": "Similarly, if the NEW BGP speaker has to send the AGGREGATOR attribute, and if the aggregating Autonomous System's AS number is a non-mappable four-octet AS number, then the speaker MUST use the AS4_AGGREGATOR attribute and set the AS number field in the existing AGGREGATOR attribute to the reserved AS number, AS_TRANS. Note that if the AS number is mappable, then the AS4_AGGREGATOR attribute MUST NOT be sent."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "AS4_AGGREGATOR attribute",
+          "explain": "When both attributes arrive and AGGREGATOR does not contain AS_TRANS, the new speaker ignores AS4_AGGREGATOR and AS4_PATH, uses AGGREGATOR as the aggregating-node information, and uses AS_PATH as the path information.",
+          "cite": {
+            "section": "4.2.3",
+            "quote": "A NEW BGP speaker MUST also be prepared to receive the AS4_AGGREGATOR attribute along with the AGGREGATOR attribute from an OLD BGP speaker. When both of the attributes are received, if the AS number in the AGGREGATOR attribute is not AS_TRANS, then: -  the AS4_AGGREGATOR attribute and the AS4_PATH attribute SHALL be ignored, -  the AGGREGATOR attribute SHALL be taken as the information about the aggregating node, and -  the AS_PATH attribute SHALL be taken as the AS path information."
+          }
+        }
+      ]
+    },
+    {
+      "id": "malformed-attribute-handling",
+      "title": "Discarding Malformed Four-Octet Attributes",
+      "participants": {
+        "a": "NEW BGP speaker",
+        "b": "OLD BGP speaker"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "Given that the two-octet AS numbers dominate during the transition and are carried in the AS_PATH attribute by an OLD BGP speaker, in this document the \"attribute discard\" approach is chosen to handle a malformed AS4_PATH attribute."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "malformed AS4_PATH attribute",
+          "explain": "The new speaker discards the malformed AS4_PATH attribute but continues processing the UPDATE. It should log the error locally.",
+          "cite": {
+            "section": "6",
+            "quote": "A NEW BGP speaker that receives a malformed AS4_PATH attribute in an UPDATE message from an OLD BGP speaker MUST discard the attribute and continue processing the UPDATE message. The error SHOULD be logged locally for analysis."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "malformed AS4_AGGREGATOR attribute",
+          "explain": "The new speaker discards the malformed AS4_AGGREGATOR attribute but continues processing the UPDATE. It should log the error locally.",
+          "cite": {
+            "section": "6",
+            "quote": "A NEW BGP speaker that receives a malformed AS4_AGGREGATOR attribute in an UPDATE message from an OLD BGP speaker MUST discard the attribute and continue processing the UPDATE message. The error SHOULD be logged locally for analysis."
+          }
+        }
+      ]
+    },
+    {
+      "id": "attributes-between-new-speakers",
+      "title": "Unexpected Attributes Between NEW Speakers",
+      "participants": {
+        "a": "NEW BGP speaker",
+        "b": "NEW BGP speaker"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "The new attributes, AS4_PATH and AS4_AGGREGATOR, MUST NOT be carried in an UPDATE message between NEW BGP speakers."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "If a new speaker sends AS4_PATH or AS4_AGGREGATOR to another new speaker, the receiver discards that path attribute and continues processing the UPDATE.",
+          "cite": {
+            "section": "4.1",
+            "quote": "A NEW BGP speaker that receives the AS4_PATH attribute or the AS4_AGGREGATOR attribute in an UPDATE message from another NEW BGP speaker MUST discard the path attribute and continue processing the UPDATE message."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [],
+  "notShown": [
+    "Detailed AS path reconstruction when AS_PATH and AS4_PATH have different lengths",
+    "The AS_CONFED_SEQUENCE and AS_CONFED_SET filtering rules for AS4_PATH",
+    "The AS4_AGGREGATOR selection rules when AGGREGATOR contains AS_TRANS",
+    "Route-aggregation cases where AS path information can be lost and may create a routing-loop risk",
+    "BGP Community and four-octet AS-specific extended community handling",
+    "Deployment transition constraints and security or manageability considerations",
+    "IANA code assignments for the capability and the two new path attributes"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:11:20.917Z",
+    "dropped": 0
+  }
+}

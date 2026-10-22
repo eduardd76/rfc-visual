@@ -1,0 +1,199 @@
+{
+  "rfc": 4577,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "ce-route-to-pe",
+      "title": "CE OSPF route enters the provider VRF",
+      "participants": {
+        "a": "CE router",
+        "b": "PE router"
+      },
+      "intro": {
+        "section": "4.1.2",
+        "quote": "OSPF is used to distribute routes from a CE to a PE.  The standard OSPF decision process is used to install the best OSPF-distributed routes in the VRF."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "LSA",
+          "explain": "The PE receives OSPF LSAs from the CE. Unless the DN bit or VPN Route Tag rules suppress the LSA, the PE creates a VPN-IPv4 route in BGP for each address prefix installed in the VRF by an associated OSPF instance.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "This section specifies the way in which a PE router handles the OSPF LSAs it receives from a CE router.\n\n   When a PE router receives, from a CE router, any LSA with the DN bit [OSPF-DN] set, the information from that LSA MUST NOT be used by the route calculation.  If a Type 5 LSA is received from the CE, and if it has an OSPF route tag value equal to the VPN Route Tag (see Section 4.2.5.2), then the information from that LSA MUST NOT be used by the route calculation.\n\n   Otherwise, the PE must examine the corresponding VRF.  For every address prefix that was installed in the VRF by one of its associated OSPF instances, the PE must create a VPN-IPv4 route in BGP."
+          }
+        }
+      ]
+    },
+    {
+      "id": "vpn-route-between-pes",
+      "title": "An OSPF route is carried across the VPN",
+      "participants": {
+        "a": "Originating PE router",
+        "b": "Receiving PE router"
+      },
+      "intro": {
+        "section": "4.1.2",
+        "quote": "An OSPF route installed in a VRF may be \"exported\" by being redistributed into BGP as a VPN-IPv4 route.  It may then be distributed by BGP to other PEs.  At the other PEs, a VPN-IPv4 route may be \"imported\" by a VRF and may then be redistributed into one or more of the OSPF instances associated with that VRF."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "VPN-IPv4 route",
+          "explain": "The originating PE exports the OSPF route into BGP as a VPN-IPv4 route, and BGP distributes that route to other PEs.",
+          "cite": {
+            "section": "4.1.2",
+            "quote": "An OSPF route installed in a VRF may be \"exported\" by being redistributed into BGP as a VPN-IPv4 route.  It may then be distributed by BGP to other PEs."
+          }
+        }
+      ]
+    },
+    {
+      "id": "same-domain-route-to-ce",
+      "title": "A same-domain VPN route is advertised to the CE",
+      "participants": {
+        "a": "PE router",
+        "b": "CE router"
+      },
+      "intro": {
+        "section": "4.2.8",
+        "quote": "If a BGP route installed in the VRF is used for forwarding, then the BGP route is redistributed into OSPF and possibly reported to the CEs in an OSPF LSA.  The sort of LSA, if any, to be generated depends on various characteristics of the BGP route, as detailed in subsequent sections of this document."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "type 3 LSA",
+          "explain": "When the imported route and the receiving VRF are in the same domain, the PE reports the route to the CE in a type 3 LSA.",
+          "cite": {
+            "section": "4.2.8.2",
+            "quote": "If a route and the VRF into which it is imported belong to the same domain, then the route should be treated as if it had been received in an OSPF type 3 LSA.  This means that the PE will report the route in a type 3 LSA to the CE."
+          }
+        }
+      ]
+    },
+    {
+      "id": "external-route-and-loop-prevention",
+      "title": "External route advertisement and loop prevention",
+      "participants": {
+        "a": "PE router",
+        "b": "CE router"
+      },
+      "intro": {
+        "section": "4.2.5.1",
+        "quote": "When a PE router needs to distribute to a CE router a route that comes from a site outside the latter's OSPF domain, the PE router presents itself as an ASBR (Autonomous System Border Router), and distributes the route in a type 5 LSA.  The DN bit [OSPF-DN] MUST be set in these LSAs to ensure that they will be ignored by any other PE routers that receive them."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "type 5 LSA",
+          "explain": "If the PE advertises an external route to the CE, it uses a type 7 LSA on a NSSA PE/CE link and otherwise originates a type 5 LSA.",
+          "cite": {
+            "section": "4.2.8.1",
+            "quote": "If an external route is redistributed into an OSPF instance, the route may or may not be advertised to a particular CE, depending on the configuration and on the type of area to which the PE/CE link belongs.  If the route is advertised, and the PE/CE link belongs to a NSSA area, it is advertised in a type 7 LSA.  Otherwise, if the route is advertised, it is advertised in a type 5 LSA.  The LSA will be originated by the PE."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Type 5 LSA",
+          "explain": "A PE does not use a type 5 LSA received from a CE for route calculation when its route tag equals the VPN Route Tag.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "If a Type 5 LSA is received from the CE, and if it has an OSPF route tag value equal to the VPN Route Tag (see Section 4.2.5.2), then the information from that LSA MUST NOT be used by the route calculation."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "ospf-domain-identifier",
+      "title": "OSPF Domain Identifier Extended Communities Attribute",
+      "intro": {
+        "section": "4.2.6",
+        "quote": "The OSPF Domain Identifier Extended Communities attribute.  If the OSPF instance that installed the route has a non-NULL primary Domain Identifier, this MUST be present; if that OSPF instance has only a NULL Domain Identifier, it MAY be omitted.  This attribute is encoded with a two-byte type field, and its type is 0005, 0105, or 0205.  For backward compatibility, the type 8005 MAY be used as well and is treated as if it were 0005.  If the OSPF instance has a NULL Domain Identifier, and the OSPF Domain Identifier Extended Communities attribute is present, then the attribute's value field must be all zeroes, and its type field may be any of 0005, 0105, 0205, or 8005."
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "The two-byte type identifies the domain-identifier attribute. Types 0005, 0105, and 0205 are used, with 8005 accepted for backward compatibility.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "This attribute is encoded with a two-byte type field, and its type is 0005, 0105, or 0205.  For backward compatibility, the type 8005 MAY be used as well and is treated as if it were 0005."
+          }
+        },
+        {
+          "name": "Value",
+          "bits": 48,
+          "explain": "The six-byte value carries the domain identifier, with an all-zero value representing the NULL Domain Identifier.",
+          "cite": {
+            "section": "4.2.8.1",
+            "quote": "The lower-order six bytes (value field) of both attributes consist entirely of zeroes.  In this case, the two attributes are considered identical irrespective of their type fields, and they are regarded as representing the NULL Domain Identifier."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ospf-route-type",
+      "title": "OSPF Route Type Extended Communities Attribute",
+      "intro": {
+        "section": "4.2.6",
+        "quote": "OSPF Route Type Extended Communities Attribute.  This attribute MUST be present.  It is encoded with a two-byte type field, and its type is 0306.  To ensure backward compatibility, the type 8000 SHOULD be accepted as well and treated as if it were type 0306.  The remaining six bytes of the Attribute are encoded as follows:"
+      },
+      "fields": [
+        {
+          "name": "Type",
+          "bits": 16,
+          "explain": "The two-byte type identifies the OSPF Route Type attribute. Type 0306 is assigned, while 8000 is accepted for backward compatibility.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "It is encoded with a two-byte type field, and its type is 0306.  To ensure backward compatibility, the type 8000 SHOULD be accepted as well and treated as if it were type 0306."
+          }
+        },
+        {
+          "name": "Area Number",
+          "bits": 32,
+          "explain": "The four-byte area number identifies the area for internal routes. External routes use zero, and area numbers are relative to the OSPF domain.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "Area Number: 4 bytes, encoding a 32-bit area number.  For AS-external routes, the value is 0.  A non-zero value identifies the route as being internal to the OSPF domain, and as being within the identified area.  Area numbers are relative to a particular OSPF domain."
+          }
+        },
+        {
+          "name": "Route Type",
+          "bits": 8,
+          "explain": "The one-byte field records the OSPF route type: 1 or 2 for intra-area, 3 for inter-area, 5 for external, and 7 for NSSA routes.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "OSPF Route Type: 1 byte, encoded as follows:\n\n            ** 1 or 2 for intra-area routes (depending on whether the\n               route came from a type 1 or a type 2 LSA).\n\n            ** 3 for inter-area routes.\n\n            ** 5 for external routes (area number must be 0).\n\n            ** 7 for NSSA routes."
+          }
+        },
+        {
+          "name": "Options",
+          "bits": 8,
+          "explain": "The one-byte options field is currently used for route types 5 and 7. Its least significant bit indicates a type 2 metric.",
+          "cite": {
+            "section": "4.2.6",
+            "quote": "Options: 1 byte.  Currently, this is only used if the route type is 5 or 7.  Setting the least significant bit in the field indicates that the route carries a type 2 metric."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "OSPF adjacency states and base OSPF packet formats defined by RFC 2328",
+    "Sham-link creation, OSPF treatment, and forwarding exceptions",
+    "Route Target matching and detailed BGP and VRF decision procedures from RFC 4364",
+    "Per-deployment route filtering, summarization, metric, and authentication configuration",
+    "The OSPF Router ID extended community and detailed MED encoding"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:38:03.584Z",
+    "dropped": 0
+  }
+}

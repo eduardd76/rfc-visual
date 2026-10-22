@@ -1,0 +1,170 @@
+{
+  "rfc": 8365,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "mass-withdrawal",
+      "title": "Multihomed Segment Failure and Mass Withdrawal",
+      "participants": {
+        "a": "Attached NVE",
+        "b": "Remote NVE"
+      },
+      "intro": {
+        "section": "8.1.2",
+        "quote": "EVPN defines a mechanism to efficiently and quickly signal, to remote NVEs, the need to update their forwarding tables upon the occurrence of a failure in connectivity to an ES (e.g., a link or a port failure)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Ethernet A-D route per ES",
+          "explain": "The attached NVE advertises an Ethernet A-D route for the locally attached Ethernet segment.",
+          "cite": {
+            "section": "8.1.2",
+            "quote": "This is done by having each NVE advertise an Ethernet A-D route per ES for each locally attached segment."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "corresponding Ethernet A-D route",
+          "explain": "When connectivity to the segment fails, the NVE withdraws that route. Receiving NVEs update their next-hop adjacencies for the MAC addresses associated with the segment.",
+          "cite": {
+            "section": "8.1.2",
+            "quote": "Upon a failure in connectivity to the attached segment, the NVE withdraws the corresponding Ethernet A-D route. This triggers all NVEs that receive the withdrawal to update their next-hop adjacencies for all MAC addresses associated with the ES in question."
+          }
+        }
+      ]
+    },
+    {
+      "id": "vxlan-nvgre-split-horizon",
+      "title": "VXLAN and NVGRE Split-Horizon Filtering",
+      "participants": {
+        "a": "Ingress NVE",
+        "b": "Egress NVE"
+      },
+      "intro": {
+        "section": "8.3.1",
+        "quote": "Since VXLAN and NVGRE encapsulations do not include the ESI label, other means of performing the split-horizon filtering function must be devised for these encapsulations."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "multi-destination frame",
+          "explain": "The egress NVE examines the source IP address in the tunnel header, which identifies the ingress NVE. It filters the frame on local interfaces connected to Ethernet segments shared with the ingress NVE.",
+          "cite": {
+            "section": "8.3.1",
+            "quote": "When the NVE receives a multi-destination frame from the overlay network, it examines the source IP address in the tunnel header (which corresponds to the ingress NVE) and filters out the frame on all local interfaces connected to ESs that are shared with the ingress NVE."
+          }
+        }
+      ]
+    },
+    {
+      "id": "inter-as-per-evi-withdrawal",
+      "title": "Inter-AS Option B Per-EVI Withdrawal",
+      "participants": {
+        "a": "Withdrawing PE",
+        "b": "Remote PE"
+      },
+      "intro": {
+        "section": "10.2.2",
+        "quote": "In summary, it can be seen that Aliasing (and Backup Path) functionality should work as is for inter-AS Option B without requiring any additional functionality in ASBRs or PEs. However, the mass withdrawal functionality falls back from per-ES mode to per-EVI mode for inter-AS Option B."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Ethernet A-D per EVI routes",
+          "explain": "The originating multihomed NVE sends a per-EVI route for Aliasing and a per-ES route for mass withdrawal.",
+          "cite": {
+            "section": "10.2.2",
+            "quote": "When NVEs reside in ToR switches and operate in multihoming redundancy mode, there is a need, as described in Section 8, for the originating multihoming NVE to send Ethernet A-D per ES route(s) (used for mass withdrawal) and Ethernet A-D per EVI routes (used for Aliasing)."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "NLRI withdrawal for Ethernet A-D per EVI routes",
+          "explain": "After the attachment fails, the withdrawing PE sends an NLRI withdrawal for the per-EVI routes. The remote PE removes the Aliasing route and the withdrawing PE's path from its path list.",
+          "cite": {
+            "section": "10.2.2",
+            "quote": "When the AC between the PE2 and the CE fails and PE2 sends NLRI withdrawal for Ethernet A-D per EVI routes, and these withdrawals get propagated and received by the PE3, the PE3 removes the Aliasing route and updates the path list; that is, it removes the path corresponding to the PE2."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "auto-derived-rt",
+      "title": "Auto-Derived Route Target Encoding",
+      "intro": {
+        "section": "5.1.2.1",
+        "quote": "In order to simplify configuration, when the option of a single VNI per EVI is used, the RT used for EVPN can be auto-derived."
+      },
+      "fields": [
+        {
+          "name": "Global Administrator",
+          "bits": 16,
+          "explain": "It contains an AS number assigned by IANA.",
+          "cite": {
+            "section": "5.1.2.1",
+            "quote": "Global Administrator sub-field: 2 octets."
+          }
+        },
+        {
+          "name": "A",
+          "bits": 1,
+          "explain": "It indicates whether the route target was derived automatically.",
+          "cite": {
+            "section": "5.1.2.1",
+            "quote": "A: A single-bit field indicating if this RT is auto-derived"
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 3,
+          "explain": "It identifies the numbering space in which the other bytes are defined.",
+          "cite": {
+            "section": "5.1.2.1",
+            "quote": "Type: A 3-bit field that identifies the space in which the other 3 bytes are defined."
+          }
+        },
+        {
+          "name": "D-ID",
+          "bits": 4,
+          "explain": "It identifies the domain ID for the route target.",
+          "cite": {
+            "section": "5.1.2.1",
+            "quote": "D-ID: A 4-bit field that identifies domain-id."
+          }
+        },
+        {
+          "name": "Service ID",
+          "bits": 24,
+          "explain": "It carries the VNI, VSID, I-SID, or VID.",
+          "cite": {
+            "section": "5.1.2.1",
+            "quote": "Service ID: This 3-octet field is set to VNI, VSID, I-SID, or VID."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "A dedicated state machine, because the RFC specifies overlay mappings and procedures rather than a session state machine",
+    "Detailed EVPN NLRI, Ethernet Tag, VNI-field, Next Hop, and extended-community encodings inherited from RFC 7432 and RFC 5512",
+    "The on-wire VXLAN and NVGRE packet headers, which are defined by RFC 7348 and RFC 7637",
+    "Single-homing NVE procedures and the reduced EVPN route set used by hypervisor-resident NVEs",
+    "Designated Forwarder election, full Aliasing and Backup Path behavior, Unknown Unicast Traffic Designation, and the Local Bias local-replication requirement",
+    "The next-hop-rewrite ambiguity that prevents per-ES mass withdrawal from working across ASBRs",
+    "EVPN multicast discovery and setup with IMET, PIM-SM, PIM-SSM, and BIDIR-PIM",
+    "Gateway-based DCI procedures, MPLS-over-GRE details, and GENEVE-specific incremental work",
+    "Security considerations and the IANA tunnel-type registry entries"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T01:55:51.405Z",
+    "dropped": 0
+  }
+}

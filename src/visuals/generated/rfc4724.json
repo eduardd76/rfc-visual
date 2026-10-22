@@ -1,0 +1,167 @@
+{
+  "rfc": 4724,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "graceful-restart-exchange",
+      "title": "Graceful Restart Exchange",
+      "participants": {
+        "a": "Restarting Speaker",
+        "b": "Receiving Speaker"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "Once the session between the Restarting Speaker and the Receiving Speaker is re-established, the Restarting Speaker will receive and process BGP messages from its peers. However, it MUST defer route selection for an address family until it either (a) receives the End-of-RIB marker from all its peers (excluding the ones with the \"Restart State\" bit set in the received capability and excluding the ones that do not advertise the graceful restart capability) or (b) the Selection_Deferral_Timer referred to below has expired."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPEN message",
+          "explain": "The restarted speaker includes the capability in the OPEN message and sets the Restart State bit. The Forwarding State bit may be set only when forwarding state for that address family was actually preserved.",
+          "cite": {
+            "section": "4.1",
+            "quote": "of the OPEN message. Unless allowed via configuration, the \"Forwarding State\" bit for an address family in the capability can be set only if the forwarding state has indeed been preserved for that address family during the restart."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "OPEN message",
+          "explain": "The receiving speaker must not set the Restart State bit in its OPEN message unless it also restarted.",
+          "cite": {
+            "section": "4.2",
+            "quote": "In re-establishing the session, the \"Restart State\" bit in the Graceful Restart Capability of the OPEN message sent by the Receiving Speaker MUST NOT be set unless the Receiving Speaker has restarted."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "End-of-RIB marker",
+          "explain": "After completing its initial update for an address family, the receiving speaker sends the End-of-RIB marker to the restarting speaker, even if it has no routes to send.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The Receiving Speaker MUST send the End-of-RIB marker once it completes the initial update for an address family (including the case that it has no routes to send) to the peer."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "routing updates",
+          "explain": "The restarting speaker's routing updates replace the stale routes that the receiving speaker retained for that peer.",
+          "cite": {
+            "section": "4.2",
+            "quote": "The Receiving Speaker MUST replace the stale routes by the routing updates received from the peer."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "End-of-RIB marker",
+          "explain": "The restarting speaker sends the End-of-RIB marker after its initial update is complete, including when there is no update to send.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Once the initial update is complete for an address family (including the case that there is no routing update to send), the End-of-RIB marker MUST be sent."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "graceful-restart-base",
+      "title": "Graceful Restart Capability Base",
+      "intro": {
+        "section": "3",
+        "quote": "Capability value: Consists of the \"Restart Flags\" field, \"Restart Time\" field, and 0 to 63 of the tuples <AFI, SAFI, Flags for address family> as follows:"
+      },
+      "fields": [
+        {
+          "name": "Restart State (R)",
+          "bits": 1,
+          "explain": "When set, this bit says that the speaker has restarted and tells its peer not to wait for the speaker's End-of-RIB marker before advertising routing information.",
+          "cite": {
+            "section": "3",
+            "quote": "The most significant bit is defined as the Restart State (R) bit, which can be used to avoid possible deadlock caused by waiting for the End-of-RIB marker when multiple BGP speakers peering with each other restart. When set (value 1), this bit indicates that the BGP speaker has restarted, and its peer MUST NOT wait for the End-of-RIB marker from the speaker before advertising routing information to the speaker."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 3,
+          "explain": "These bits are reserved, must be sent as zero, and are ignored on receipt.",
+          "cite": {
+            "section": "3",
+            "quote": "The remaining bits are reserved and MUST be set to zero by the sender and ignored by the receiver."
+          }
+        },
+        {
+          "name": "Restart Time",
+          "bits": 12,
+          "explain": "The speaker's estimate of how long the BGP session will take to re-establish after a restart.",
+          "cite": {
+            "section": "3",
+            "quote": "Restart Time: This is the estimated time (in seconds) it will take for the BGP session to be re-established after a restart. This can be used to speed up routing convergence by its peer in case that the BGP speaker does not come back after a restart."
+          }
+        }
+      ]
+    },
+    {
+      "id": "graceful-restart-address-family-tuple",
+      "title": "Optional Graceful Restart Address Family Tuple",
+      "intro": {
+        "section": "3",
+        "quote": "Capability value: Consists of the \"Restart Flags\" field, \"Restart Time\" field, and 0 to 63 of the tuples <AFI, SAFI, Flags for address family> as follows:"
+      },
+      "fields": [
+        {
+          "name": "Address Family Identifier (AFI)",
+          "bits": 16,
+          "explain": "Together with SAFI, it identifies the route family for which Graceful Restart is supported.",
+          "cite": {
+            "section": "3",
+            "quote": "Address Family Identifier (AFI), Subsequent Address Family Identifier (SAFI): The AFI and SAFI, taken in combination, indicate that Graceful Restart is supported for routes that are advertised with the same AFI and SAFI."
+          }
+        },
+        {
+          "name": "Subsequent Address Family Identifier (SAFI)",
+          "bits": 8,
+          "explain": "Together with AFI, it identifies the route family for which Graceful Restart is supported.",
+          "cite": {
+            "section": "3",
+            "quote": "Address Family Identifier (AFI), Subsequent Address Family Identifier (SAFI): The AFI and SAFI, taken in combination, indicate that Graceful Restart is supported for routes that are advertised with the same AFI and SAFI."
+          }
+        },
+        {
+          "name": "Forwarding State (F)",
+          "bits": 1,
+          "explain": "When set, this bit says that forwarding state for routes in the address family was preserved during the previous BGP restart.",
+          "cite": {
+            "section": "3",
+            "quote": "The most significant bit is defined as the Forwarding State (F) bit, which can be used to indicate whether the forwarding state for routes that were advertised with the given AFI and SAFI has indeed been preserved during the previous BGP restart. When set (value 1), the bit indicates that the forwarding state has been preserved."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 7,
+          "explain": "These bits are reserved, must be sent as zero, and are ignored on receipt.",
+          "cite": {
+            "section": "3",
+            "quote": "The remaining bits are reserved and MUST be set to zero by the sender and ignored by the receiver."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The generic BGP capability envelope, including Capability Code 64 and the capability-length encoding inherited from RFC 3392",
+    "The complete BGP finite-state-machine view, including unchanged RFC 4271 states and the Section 5 modifications",
+    "The complete stale-route retention, replacement, and removal procedures on the Receiving Speaker",
+    "Detailed Selection_Deferral_Timer and Restart Time expiry handling",
+    "The no-AFI/SAFI form of the capability and the rule for duplicate capability instances",
+    "Deployment, security, and IANA considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:03:12.538Z",
+    "dropped": 0
+  }
+}

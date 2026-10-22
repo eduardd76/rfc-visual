@@ -1,0 +1,44 @@
+{
+  "rfc": 6987,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "max-link-metric-advertisement",
+      "title": "MaxLinkMetric Stub Router Advertisement",
+      "participants": {
+        "a": "Router X",
+        "b": "Neighboring Routers"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "The metric value indicating that a router-LSA link (see Section 2) should not be used for transit traffic. It is defined to be the 16-bit binary value of all ones: 0xffff."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "router-LSA",
+          "explain": "Router X advertises its router-LSA to neighboring routers with MaxLinkMetric on every non-stub link. This technique applies to both OSPFv2 and OSPFv3 and discourages transit forwarding through Router X while preserving access to directly connected prefixes.",
+          "cite": {
+            "section": "2",
+            "quote": "To address both problems, router X announces its router-LSA to the neighbors with the cost of all non-stub links (links of the types other than 3) being set to MaxLinkMetric (defined in Section 3). The solution above applies to both OSPFv2 [RFC2328] and OSPFv3 [RFC5340]."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [],
+  "notShown": [
+    "OSPFv3 R-bit alternative and its behavioral difference when the stub-router path is the only available path",
+    "Mixed-deployment behavior between implementations that discard MaxLinkMetric links and implementations that treat them as reachable",
+    "OSPFv2 and OSPFv3 packet, LSA, and link-record header layouts"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:34:22.552Z",
+    "dropped": 0
+  }
+}

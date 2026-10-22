@@ -1,0 +1,151 @@
+{
+  "rfc": 4456,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "rr-receives-route",
+      "title": "Route Reception at a Route Reflector",
+      "participants": {
+        "a": "IBGP peer",
+        "b": "Route reflector"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "When an RR receives a route from an IBGP peer, it selects the best path based on its path selection rule."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "route",
+          "explain": "The IBGP peer supplies the route to the route reflector, which selects the best path.",
+          "cite": {
+            "section": "6",
+            "quote": "When an RR receives a route from an IBGP peer, it selects the best path based on its path selection rule."
+          }
+        }
+      ]
+    },
+    {
+      "id": "non-client-route-reflection",
+      "title": "Reflecting a Non-Client Route to Clients",
+      "participants": {
+        "a": "Route reflector",
+        "b": "Client peers"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "When an RR receives a route from an IBGP peer, it selects the best path based on its path selection rule."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "route",
+          "explain": "For a route received from a non-client peer, the route reflector reflects the route to all client peers.",
+          "cite": {
+            "section": "6",
+            "quote": "A route from a Non-Client IBGP peer: Reflect to all the Clients."
+          }
+        }
+      ]
+    },
+    {
+      "id": "client-route-reflection",
+      "title": "Reflecting a Client Route",
+      "participants": {
+        "a": "Route reflector",
+        "b": "Non-Client and Client peers"
+      },
+      "intro": {
+        "section": "6",
+        "quote": "When an RR receives a route from an IBGP peer, it selects the best path based on its path selection rule."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "route",
+          "explain": "For a route received from a client peer, the route reflector reflects the route to all non-client peers and also to the client peers.",
+          "cite": {
+            "section": "6",
+            "quote": "A route from a Client peer: Reflect to all the Non-Client peers and also to the Client peers."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "originator-id",
+      "title": "ORIGINATOR_ID Path Attribute",
+      "intro": {
+        "section": "8",
+        "quote": "ORIGINATOR_ID is a new optional, non-transitive BGP attribute of Type code 9."
+      },
+      "fields": [
+        {
+          "name": "ORIGINATOR_ID",
+          "bits": 32,
+          "explain": "A route reflector creates this optional, non-transitive attribute when reflecting a route, and it carries the BGP Identifier of the route originator in the local AS. A router that recognizes it should ignore a route whose ORIGINATOR_ID is its own BGP Identifier.",
+          "cite": {
+            "section": "8",
+            "quote": "ORIGINATOR_ID is a new optional, non-transitive BGP attribute of Type code 9. This attribute is 4 bytes long and it will be created by an RR in reflecting a route. This attribute will carry the BGP Identifier of the originator of the route in the local AS. A BGP speaker SHOULD NOT create an ORIGINATOR_ID attribute if one already exists. A router that recognizes the ORIGINATOR_ID attribute SHOULD ignore a route received with its BGP Identifier as the ORIGINATOR_ID."
+          }
+        }
+      ]
+    },
+    {
+      "id": "cluster-list",
+      "title": "CLUSTER_LIST Path Attribute",
+      "intro": {
+        "section": "8",
+        "quote": "CLUSTER_LIST is a new, optional, non-transitive BGP attribute of Type code 10. It is a sequence of CLUSTER_ID values representing the reflection path that the route has passed."
+      },
+      "fields": [
+        {
+          "name": "CLUSTER_LIST",
+          "bits": "var",
+          "explain": "This variable-length attribute records the route's reflection path as a sequence of cluster identifiers. A route reflector prepends its local identifier, and it should ignore an advertisement when that identifier is already in the list.",
+          "cite": {
+            "section": "8",
+            "quote": "CLUSTER_LIST is a new, optional, non-transitive BGP attribute of Type code 10. It is a sequence of CLUSTER_ID values representing the reflection path that the route has passed. When an RR reflects a route, it MUST prepend the local CLUSTER_ID to the CLUSTER_LIST. If the CLUSTER_LIST is empty, it MUST create a new one. Using this attribute an RR can identify if the routing information has looped back to the same cluster due to misconfiguration. If the local CLUSTER_ID is found in the CLUSTER_LIST, the advertisement received SHOULD be ignored."
+          }
+        }
+      ]
+    },
+    {
+      "id": "cluster-id-entry",
+      "title": "CLUSTER_ID Entry",
+      "intro": {
+        "section": "7",
+        "quote": "However, this represents a single point of failure so to make it possible to have multiple RRs in the same cluster, all RRs in the same cluster can be configured with a 4-byte CLUSTER_ID so that an RR can discard routes from other RRs in the same cluster."
+      },
+      "fields": [
+        {
+          "name": "CLUSTER_ID",
+          "bits": 32,
+          "explain": "Within one cluster, route reflectors can use a four-byte identifier so that a route reflector can discard routes from other route reflectors in that cluster.",
+          "cite": {
+            "section": "7",
+            "quote": "However, this represents a single point of failure so to make it possible to have multiple RRs in the same cluster, all RRs in the same cluster can be configured with a 4-byte CLUSTER_ID so that an RR can discard routes from other RRs in the same cluster."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The complete BGP UPDATE and standard path-attribute envelope, which RFC 4456 references rather than reproduces",
+    "The rule that an RR should not create an ORIGINATOR_ID attribute when one already exists",
+    "Route-selection tie-breaking changes involving ORIGINATOR_ID and CLUSTER_LIST",
+    "Detailed cluster topologies, redundant route reflector configuration, and migration from full-mesh IBGP",
+    "Deployment guidance involving MED, IGP metrics, topology design, and community policies",
+    "Security considerations inherited from the underlying IBGP deployment"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:30:39.452Z",
+    "dropped": 0
+  }
+}

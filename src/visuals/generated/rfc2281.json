@@ -1,0 +1,278 @@
+{
+  "rfc": 2281,
+  "reviewed": false,
+  "initial": "Initial",
+  "terminal": [],
+  "stateMachineTitle": "HSRP FSM",
+  "states": [
+    {
+      "id": "Initial",
+      "cite": {
+        "section": "5.3",
+        "quote": "1. Initial This is the starting state and indicates that HSRP is not running. This state is entered via a configuration change or when an interface first comes up."
+      }
+    },
+    {
+      "id": "Learn",
+      "cite": {
+        "section": "5.3",
+        "quote": "2. Learn The router has not determined the virtual IP address, and not yet seen an authenticated Hello message from the active router. In this state the router is still waiting to hear from the active router."
+      }
+    },
+    {
+      "id": "Listen",
+      "cite": {
+        "section": "5.3",
+        "quote": "3. Listen The router knows the virtual IP address, but is neither the active router nor the standby router. It listens for Hello messages from those routers."
+      }
+    },
+    {
+      "id": "Speak",
+      "cite": {
+        "section": "5.3",
+        "quote": "4. Speak The router sends periodic Hello messages and is actively participating in the election of the active and/or standby router. A router cannot enter Speak state unless it has the virtual IP address."
+      }
+    },
+    {
+      "id": "Standby",
+      "cite": {
+        "section": "5.3",
+        "quote": "5. Standby The router is a candidate to become the next active router and sends periodic Hello messages. Excluding transient conditions, there MUST be at most one router in the group in Standby state."
+      }
+    },
+    {
+      "id": "Active",
+      "cite": {
+        "section": "5.3",
+        "quote": "6. Active The router is currently forwarding packets that are sent to the group's virtual MAC address. The router sends periodic Hello messages. Excluding transient conditions, there MUST be at most one router in Active state in the group."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Initial",
+      "to": "Learn",
+      "event": "HSRP configured",
+      "action": "Start Active and Standby timers",
+      "layer": "happy",
+      "cite": {
+        "section": "5.3",
+        "quote": "All routers begin in the Initial state. This section discusses the intent of each state. For specific details on the actions taken in each state, please see the state transition table in section 5.7. 1. Initial This is the starting state and indicates that HSRP is not running. This state is entered via a configuration change or when an interface first comes up. 2. Learn The router has not determined the virtual IP address, and not yet seen an authenticated Hello message from the active router. In this state the router is still waiting to hear from the active router."
+      }
+    },
+    {
+      "from": "Learn",
+      "to": "Listen",
+      "event": "Higher-priority Hello from active",
+      "action": "Learn parameters and start timers",
+      "layer": "happy",
+      "cite": {
+        "section": "5.3",
+        "quote": "2. Learn The router has not determined the virtual IP address, and not yet seen an authenticated Hello message from the active router. In this state the router is still waiting to hear from the active router. 3. Listen The router knows the virtual IP address, but is neither the active router nor the standby router. It listens for Hello messages from those routers."
+      }
+    },
+    {
+      "from": "Listen",
+      "to": "Speak",
+      "event": "Active timer expiry",
+      "action": "Start Active and Standby timers",
+      "layer": "happy",
+      "cite": {
+        "section": "5.3",
+        "quote": "4. Speak The router sends periodic Hello messages and is actively participating in the election of the active and/or standby router. A router cannot enter Speak state unless it has the virtual IP address."
+      }
+    },
+    {
+      "from": "Speak",
+      "to": "Standby",
+      "event": "Standby timer expiry",
+      "action": "Stop Standby timer",
+      "layer": "happy",
+      "cite": {
+        "section": "5.3",
+        "quote": "4. Speak The router sends periodic Hello messages and is actively participating in the election of the active and/or standby router. A router cannot enter Speak state unless it has the virtual IP address. 5. Standby The router is a candidate to become the next active router and sends periodic Hello messages. Excluding transient conditions, there MUST be at most one router in the group in Standby state."
+      }
+    },
+    {
+      "from": "Standby",
+      "to": "Active",
+      "event": "Active timer expiry",
+      "action": "Stop timers and send Hello and gratuitous ARP",
+      "layer": "happy",
+      "cite": {
+        "section": "5.3",
+        "quote": "5. Standby The router is a candidate to become the next active router and sends periodic Hello messages. Excluding transient conditions, there MUST be at most one router in the group in Standby state. 6. Active The router is currently forwarding packets that are sent to the group's virtual MAC address. The router sends periodic Hello messages. Excluding transient conditions, there MUST be at most one router in Active state in the group."
+      }
+    },
+    {
+      "from": "Active",
+      "to": "Speak",
+      "event": "Coup received",
+      "action": "Start timers and send Resign",
+      "layer": "happy",
+      "cite": {
+        "section": "5.5",
+        "quote": "f - Receipt of a Hello message of higher priority from a router in Speak state. g - Receipt of a Hello message of higher priority from the active router. h - Receipt of a Hello message of lower priority from the active router. i - Receipt of a Resign message from the active router. j - Receipt of a Coup message from a higher priority router."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "priority-takeover",
+      "title": "Priority Takeover Exchange",
+      "participants": {
+        "a": "Active router",
+        "b": "Higher-priority router"
+      },
+      "intro": {
+        "section": "5.1",
+        "quote": "Coup messages are sent when a router wishes to become the active router."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "Hello message",
+          "explain": "B sends a Hello message with its current state, Hellotime, and Holdtime.",
+          "cite": {
+            "section": "5.6",
+            "quote": "The router sends a Hello message with its current State, Hellotime and Holdtime."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Coup message",
+          "explain": "B sends a Coup message to tell the active router that a higher-priority router is available.",
+          "cite": {
+            "section": "5.6",
+            "quote": "The router sends a Coup message to inform the active router that there is a higher priority router available."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Resign message",
+          "explain": "A sends a Resign message so another router can become the active router.",
+          "cite": {
+            "section": "5.6",
+            "quote": "The router sends a Resign message to allow another router to become the active router."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "hsrp-message",
+      "title": "HSRP UDP Data Portion",
+      "intro": {
+        "section": "5.1",
+        "quote": "The format of the data portion of the UDP datagram is:"
+      },
+      "fields": [
+        {
+          "name": "Version",
+          "bits": 8,
+          "explain": "Identifies the HSRP message version; this RFC describes version 0.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Version: 1 octet The version of the HSRP messages. This document describes version 0."
+          }
+        },
+        {
+          "name": "Op Code",
+          "bits": 8,
+          "explain": "Identifies the message type. The defined types are Hello, Coup, and Resign.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Op Code: 1 octet The Op Code describes the type of message contained in this packet. Possible values are: 0 - Hello 1 - Coup 2 - Resign"
+          }
+        },
+        {
+          "name": "State",
+          "bits": 8,
+          "explain": "Carries the sending router's current state in the HSRP state machine.",
+          "cite": {
+            "section": "5.1",
+            "quote": "State: 1 octet Internally, each router in the standby group implements a state machine. The State field describes the current state of the router sending the message."
+          }
+        },
+        {
+          "name": "Hellotime",
+          "bits": 8,
+          "explain": "Gives the approximate interval between the router's Hello messages, in seconds.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Hellotime: 1 octet This field is only meaningful in Hello messages. It contains the approximate period between the Hello messages that the router sends. The time is given in seconds."
+          }
+        },
+        {
+          "name": "Holdtime",
+          "bits": 8,
+          "explain": "Gives how long the current Hello message should remain valid, in seconds.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Holdtime: 1 octet This field is only meaningful in Hello messages. It contains the amount of time that the current Hello message should be considered valid. The time is given in seconds."
+          }
+        },
+        {
+          "name": "Priority",
+          "bits": 8,
+          "explain": "A higher value wins the election; if priorities tie, the router with the higher IP address wins.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Priority: 1 octet This field is used to elect the active and standby routers. When comparing priorities of two different routers, the router with the numerically higher priority wins. In the case of routers with equal priority the router with the higher IP address wins."
+          }
+        },
+        {
+          "name": "Group",
+          "bits": 8,
+          "explain": "Identifies the standby group to which the message belongs.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Group: 1 octet This field identifies the standby group. For Token Ring, values between 0 and 2 inclusive are valid. For other media values between 0 and 255 inclusive are valid."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "Reserved octet in the HSRP packet format.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Reserved"
+          }
+        },
+        {
+          "name": "Authentication Data",
+          "bits": 64,
+          "explain": "Contains the clear-text eight-character reused password.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Authentication Data: 8 octets This field contains a clear-text 8 character reused password."
+          }
+        },
+        {
+          "name": "Virtual IP Address",
+          "bits": 32,
+          "explain": "Carries the virtual IP address used by the standby group.",
+          "cite": {
+            "section": "5.1",
+            "quote": "Virtual IP Address: 4 octets The virtual IP address used by this group."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Alternative branches in the section 5.7 transition table, including the Initial-to-Listen path, interface-disable reset to Initial, and preemption and lower-priority handling",
+    "The numeric encodings used by the State header field",
+    "Detailed Active, Standby, and Hello timer behavior",
+    "UDP and IP encapsulation, multicast delivery, and the use of real interface source addresses",
+    "Virtual MAC derivation and movement, address-filter constraints, ICMP Redirect restrictions, and proxy ARP rules",
+    "The protocol's security limitations and possible denial-of-service effects"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:22:23.216Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "rfc": 7606,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "treat-as-withdraw",
+      "title": "Treat a Malformed UPDATE as a Withdrawal",
+      "participants": {
+        "a": "BGP peer",
+        "b": "BGP speaker"
+      },
+      "intro": {
+        "section": "1",
+        "quote": "The goal for revising the error handling for UPDATE messages is to minimize the impact on routing by a malformed UPDATE message while maintaining protocol correctness to the extent possible. This can be achieved largely by maintaining the established session and keeping the valid routes exchanged but removing the routes carried in the malformed UPDATE message from the routing system."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The peer sends an UPDATE containing a malformed path attribute. The speaker treats all routes in that message as withdrawn and removes them from the Adj-RIB-In.",
+          "cite": {
+            "section": "2",
+            "quote": "Treat-as-withdraw: In this approach, the UPDATE message containing the path attribute in question MUST be treated as though all contained routes had been withdrawn just as if they had been listed in the WITHDRAWN ROUTES field (or in the MP_UNREACH_NLRI attribute if appropriate) of the UPDATE message, thus causing them to be removed from the Adj-RIB-In according to the procedures of [RFC4271]."
+          }
+        }
+      ]
+    },
+    {
+      "id": "attribute-discard",
+      "title": "Discard an Eligible Malformed Attribute",
+      "participants": {
+        "a": "BGP peer",
+        "b": "BGP speaker"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "Attribute discard: In this approach, the malformed attribute MUST be discarded and the UPDATE message continues to be processed. This approach MUST NOT be used except in the case of an attribute that has no effect on route selection or installation."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The peer sends an UPDATE containing a malformed attribute that has no effect on route selection or installation. The speaker discards the attribute and continues processing the UPDATE.",
+          "cite": {
+            "section": "2",
+            "quote": "Attribute discard: In this approach, the malformed attribute MUST be discarded and the UPDATE message continues to be processed. This approach MUST NOT be used except in the case of an attribute that has no effect on route selection or installation."
+          }
+        }
+      ]
+    },
+    {
+      "id": "unparseable-update",
+      "title": "Use Reset or AFI/SAFI Disable When Parsing Fails",
+      "participants": {
+        "a": "BGP peer",
+        "b": "BGP speaker"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "Finally, we observe that in order to use the approach of \"treat-as-withdraw\", the entire NLRI field and/or the MP_REACH_NLRI and MP_UNREACH_NLRI attributes need to be successfully parsed -- what this entails is discussed in more detail in Section 5. If this is not possible, the procedures of [RFC4271] and/or [RFC4760] continue to apply, meaning that the \"session reset\" approach (or the \"AFI/SAFI disable\" approach) MUST be followed."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The peer sends an UPDATE that cannot be parsed well enough to use treat-as-withdraw. The speaker follows the session-reset or AFI/SAFI-disable approach.",
+          "cite": {
+            "section": "3",
+            "quote": "When multiple attribute errors exist in an UPDATE message, if the same approach (as described in Section 2) is specified for the handling of these malformed attributes, then the specified approach MUST be used. Otherwise, the approach with the strongest action MUST be used. i. The Withdrawn Routes field MUST be checked for syntactic correctness in the same manner as the NLRI field. This is discussed further below and in Section 5.3. j. Finally, we observe that in order to use the approach of \"treat-as-withdraw\", the entire NLRI field and/or the MP_REACH_NLRI and MP_UNREACH_NLRI attributes need to be successfully parsed -- what this entails is discussed in more detail in Section 5. If this is not possible, the procedures of [RFC4271] and/or [RFC4760] continue to apply, meaning that the \"session reset\" approach (or the \"AFI/SAFI disable\" approach) MUST be followed."
+          }
+        }
+      ]
+    },
+    {
+      "id": "duplicate-mp-attribute",
+      "title": "Reset After a Duplicate MP Attribute",
+      "participants": {
+        "a": "BGP peer",
+        "b": "BGP speaker"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "Session reset: This is the approach used throughout the base BGP specification [RFC4271], where a NOTIFICATION is sent and the session terminated."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The peer sends an UPDATE in which MP_REACH_NLRI or MP_UNREACH_NLRI appears more than once.",
+          "cite": {
+            "section": "3",
+            "quote": "If the MP_REACH_NLRI attribute or the MP_UNREACH_NLRI [RFC4760] attribute appears more than once in the UPDATE message, then a NOTIFICATION message MUST be sent with the Error Subcode \"Malformed Attribute List\"."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "NOTIFICATION message",
+          "explain": "The speaker sends a NOTIFICATION with the Malformed Attribute List error subcode.",
+          "cite": {
+            "section": "3",
+            "quote": "If the MP_REACH_NLRI attribute or the MP_UNREACH_NLRI [RFC4760] attribute appears more than once in the UPDATE message, then a NOTIFICATION message MUST be sent with the Error Subcode \"Malformed Attribute List\"."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [],
+  "notShown": [
+    "The complete per-attribute malformation checks and handling outcomes in Section 7.",
+    "Attribute length conflicts, NLRI syntax checks, and typed NLRI handling in Sections 4 and 5.",
+    "Attribute flag conflicts, missing well-known mandatory attributes, and zero-length attribute handling.",
+    "The specific handling of duplicate non-MP attributes.",
+    "Operational guidance for IBGP consistency, debugging facilities, and security implications."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:05:43.271Z",
+    "dropped": 0
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "rfc": 5250,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "opaque-capability-and-flooding",
+      "title": "Opaque Capability Negotiation and Selective Flooding",
+      "participants": {
+        "a": "Opaque-capable OSPF Router",
+        "b": "OSPF Neighbor"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "When opaque-capable routers and non-opaque-capable OSPF routers are mixed together in a routing domain, the Opaque LSAs are typically not flooded to the non-opaque-capable routers."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Link State Update packets",
+          "explain": "The router floods Opaque LSAs only to opaque-capable neighbors. A non-capable neighbor may still receive a multicast Link State Update and discards the Opaque LSA.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Opaque LSAs MUST be placed on the link-state retransmission lists of opaque-capable neighbors and MUST NOT be placed on the link-state retransmission lists of non-opaque-capable neighbors. However, when sending Link State Update packets as multicasts, a non-opaque-capable neighbor may (inadvertently) receive Opaque LSAs. The non-opaque-capable router will then simply discard the LSA (see Section 13 of [OSPF] regarding receiving LSAs having unknown LS types)."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "opaque-lsa",
+      "title": "Opaque LSA",
+      "intro": {
+        "section": "A.2",
+        "quote": "Opaque LSAs contain some number of octets (of application-specific data) padded to 32-bit alignment. Like any other LSA, the Opaque LSA uses the link-state database distribution mechanism for flooding this information throughout the topology."
+      },
+      "fields": [
+        {
+          "name": "LS age",
+          "bits": 16,
+          "explain": "The age carried by the link-state advertisement.",
+          "cite": {
+            "section": "A.2",
+            "quote": "LS age"
+          }
+        },
+        {
+          "name": "Options",
+          "bits": 8,
+          "explain": "The standard LSA header's Options field, used to communicate optional OSPF capabilities.",
+          "cite": {
+            "section": "A.1",
+            "quote": "The Options field enables OSPF routers to support (or not support) optional capabilities, and to communicate their capability level to other OSPF routers."
+          }
+        },
+        {
+          "name": "Opaque Type",
+          "bits": 8,
+          "explain": "The first 8 bits of the link-state ID carry the Opaque type.",
+          "cite": {
+            "section": "A.2",
+            "quote": "The link-state ID of the Opaque LSA is divided into an Opaque Type field (the first 8 bits) and an Opaque ID (the remaining 24 bits)."
+          }
+        },
+        {
+          "name": "Opaque ID",
+          "bits": 24,
+          "explain": "The remaining 24 bits of the link-state ID carry the type-specific Opaque ID.",
+          "cite": {
+            "section": "A.2",
+            "quote": "The link-state ID of the Opaque LSA is divided into an Opaque Type field (the first 8 bits) and an Opaque ID (the remaining 24 bits)."
+          }
+        },
+        {
+          "name": "Advertising Router",
+          "bits": 32,
+          "explain": "Identifies the advertising router.",
+          "cite": {
+            "section": "A.2",
+            "quote": "Advertising Router"
+          }
+        },
+        {
+          "name": "LS Sequence Number",
+          "bits": 32,
+          "explain": "Carries the LSA's sequence number.",
+          "cite": {
+            "section": "A.2",
+            "quote": "LS Sequence Number"
+          }
+        },
+        {
+          "name": "LS checksum",
+          "bits": 16,
+          "explain": "Carries the LSA's checksum.",
+          "cite": {
+            "section": "A.2",
+            "quote": "LS checksum"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 16,
+          "explain": "Carries the LSA's length.",
+          "cite": {
+            "section": "A.2",
+            "quote": "Length"
+          }
+        },
+        {
+          "name": "Opaque Information",
+          "bits": "var",
+          "explain": "Holds variable-length application-specific data and is padded to 32-bit alignment.",
+          "cite": {
+            "section": "A.2",
+            "quote": "Opaque Information"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ospf-options",
+      "title": "OSPF Options Field",
+      "intro": {
+        "section": "A.1",
+        "quote": "The Options field enables OSPF routers to support (or not support) optional capabilities, and to communicate their capability level to other OSPF routers."
+      },
+      "fields": [
+        {
+          "name": "DN-bit",
+          "bits": 1,
+          "explain": "Prevents looping in BGP/MPLS IP VPNs.",
+          "cite": {
+            "section": "A.1",
+            "quote": "DN-bit This bit is used to prevent looping in BGP/MPLS IP VPNs, as specified in [RFC4576]."
+          }
+        },
+        {
+          "name": "O-bit",
+          "bits": 1,
+          "explain": "Indicates willingness to receive and forward Opaque LSAs.",
+          "cite": {
+            "section": "A.1",
+            "quote": "O-bit This bit describes the router's willingness to receive and forward Opaque LSAs as specified in this document."
+          }
+        },
+        {
+          "name": "DC-bit",
+          "bits": 1,
+          "explain": "Describes the router's handling of demand circuits.",
+          "cite": {
+            "section": "A.1",
+            "quote": "DC-bit This bit describes the router's handling of demand circuits, as specified in [DEMD]."
+          }
+        },
+        {
+          "name": "EA-bit",
+          "bits": 1,
+          "explain": "Indicates willingness to receive and forward External-Attributes-LSAs; its defining documents have expired.",
+          "cite": {
+            "section": "A.1",
+            "quote": "EA-bit This bit describes the router's willingness to receive and forward External-Attributes-LSAs. While defined, the documents specifying this bit have all expired. The use of this bit may be deprecated in the future."
+          }
+        },
+        {
+          "name": "N/P-bit",
+          "bits": 1,
+          "explain": "Describes the handling of Type-7 LSAs.",
+          "cite": {
+            "section": "A.1",
+            "quote": "N/P-bit This bit describes the handling of Type-7 LSAs, as specified in [NSSA]."
+          }
+        },
+        {
+          "name": "MC-bit",
+          "bits": 1,
+          "explain": "Describes whether IP multicast datagrams are forwarded according to MOSPF.",
+          "cite": {
+            "section": "A.1",
+            "quote": "MC-bit This bit describes whether IP multicast datagrams are forwarded according to the specifications in [MOSPF]."
+          }
+        },
+        {
+          "name": "E-bit",
+          "bits": 1,
+          "explain": "Describes the way AS-External LSAs are flooded.",
+          "cite": {
+            "section": "A.1",
+            "quote": "E-bit This bit describes the way AS-External LSAs are flooded, as described in Sections 3.6, 9.5, 10.8, and 12.1.2 of [OSPF]."
+          }
+        },
+        {
+          "name": "MT-bit",
+          "bits": 1,
+          "explain": "Describes the router's multi-topology link-excluding capability.",
+          "cite": {
+            "section": "A.1",
+            "quote": "MT-bit This bit describes the router's multi-topology link-excluding capability, as described in [OSPF-MT]."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The RFC 2328 neighbor state machine and the modified ExStart database-summary action",
+    "Detailed scope enforcement for discarding or withholding type-9, type-10, and type-11 LSAs",
+    "AS-scope type-11 originator reachability validation using ASBR Summary LSAs",
+    "Opaque type allocation and the IANA registry",
+    "OSPF MIB, security, and database-overflow considerations",
+    "Backward-compatibility behavior for RFC 2370 implementations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:25:31.136Z",
+    "dropped": 2
+  }
+}

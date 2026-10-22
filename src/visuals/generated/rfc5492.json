@@ -1,0 +1,159 @@
+{
+  "rfc": 5492,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "open-capability-advertisement",
+      "title": "Capabilities Advertisement in OPEN",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "A BGP speaker that supports a particular capability may use this capability with its peer after the speaker determines (as described above) that the peer supports this capability. Simply put, a given capability can be used on a peering if that capability has been advertised by both peers. If either peer has not advertised it, the capability cannot be used."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPEN message",
+          "explain": "Speaker A may include the Capabilities Optional Parameter in the OPEN message to advertise the capabilities it supports.",
+          "cite": {
+            "section": "3",
+            "quote": "When a BGP speaker [RFC4271] that supports capabilities advertisement sends an OPEN message to its BGP peer, the message MAY include an Optional Parameter, called Capabilities. The parameter lists the capabilities supported by the speaker."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "OPEN message",
+          "explain": "Speaker B may include the Capabilities Optional Parameter in the OPEN message to advertise the capabilities it supports.",
+          "cite": {
+            "section": "3",
+            "quote": "When a BGP speaker [RFC4271] that supports capabilities advertisement sends an OPEN message to its BGP peer, the message MAY include an Optional Parameter, called Capabilities. The parameter lists the capabilities supported by the speaker."
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-optional-parameter",
+      "title": "Fallback When the Peer Rejects the Optional Parameter",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "A BGP speaker determines that its peer doesn't support capabilities advertisement if, in response to an OPEN message that carries the Capabilities Optional Parameter, the speaker receives a NOTIFICATION message with the Error Subcode set to Unsupported Optional Parameter."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "OPEN message",
+          "explain": "Speaker A sends an OPEN message that carries the Capabilities Optional Parameter.",
+          "cite": {
+            "section": "3",
+            "quote": "A BGP speaker determines that its peer doesn't support capabilities advertisement if, in response to an OPEN message that carries the Capabilities Optional Parameter, the speaker receives a NOTIFICATION message with the Error Subcode set to Unsupported Optional Parameter."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "NOTIFICATION message",
+          "explain": "Speaker B returns a NOTIFICATION message whose Error Subcode is Unsupported Optional Parameter.",
+          "cite": {
+            "section": "3",
+            "quote": "A BGP speaker determines that its peer doesn't support capabilities advertisement if, in response to an OPEN message that carries the Capabilities Optional Parameter, the speaker receives a NOTIFICATION message with the Error Subcode set to Unsupported Optional Parameter."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "OPEN message",
+          "explain": "Speaker A should try to re-establish the connection without sending the Capabilities Optional Parameter.",
+          "cite": {
+            "section": "3",
+            "quote": "A BGP speaker determines that its peer doesn't support capabilities advertisement if, in response to an OPEN message that carries the Capabilities Optional Parameter, the speaker receives a NOTIFICATION message with the Error Subcode set to Unsupported Optional Parameter. (This is a consequence of the base BGP-4 specification [RFC4271] and not a new requirement.) In this case, the speaker SHOULD attempt to re-establish a BGP connection with the peer without sending to the peer the Capabilities Optional Parameter."
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-required-capability",
+      "title": "Unsupported Required Capability",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "5",
+        "quote": "As explained in the \"Overview of Operations\" section, the Unsupported Capability NOTIFICATION is a way for a BGP speaker to complain that its peer does not support a required capability without which the peering cannot proceed."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "NOTIFICATION message",
+          "explain": "Speaker B may send the notification and terminate the peering when Speaker A lacks a required capability. The notification identifies the capabilities responsible for the error.",
+          "cite": {
+            "section": "3",
+            "quote": "If a BGP speaker that supports a certain capability determines that its peer doesn't support this capability, the speaker MAY send a NOTIFICATION message to the peer and terminate peering (see Section \"Extensions to Error Handling\" for more details). For example, a BGP speaker may need to terminate peering if it established peering to exchange IPv6 routes and determines that its peer does not support Multiprotocol Extensions for BGP-4 [RFC4760]. The Error Subcode in the NOTIFICATION message is then set to Unsupported Capability. The message MUST contain the capability or capabilities that cause the speaker to send the message."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "capability-tlv",
+      "title": "Capability Triple in the Capabilities Optional Parameter",
+      "intro": {
+        "section": "4",
+        "quote": "This is an Optional Parameter that is used by a BGP speaker to convey to its BGP peer the list of capabilities supported by the speaker. The encoding of BGP Optional Parameters is specified in Section 4.2 of [RFC4271]. The parameter type of the Capabilities Optional Parameter is 2.\n\nThe parameter contains one or more triples <Capability Code, Capability Length, Capability Value>, where each triple is encoded as shown below:"
+      },
+      "fields": [
+        {
+          "name": "Capability Code",
+          "bits": 8,
+          "explain": "Identifies the individual capability being advertised.",
+          "cite": {
+            "section": "4",
+            "quote": "Capability Code is a one-octet unsigned binary integer that unambiguously identifies individual capabilities."
+          }
+        },
+        {
+          "name": "Capability Length",
+          "bits": 8,
+          "explain": "Specifies the size of the Capability Value in octets.",
+          "cite": {
+            "section": "4",
+            "quote": "Capability Length is a one-octet unsigned binary integer that contains the length of the Capability Value field in octets."
+          }
+        },
+        {
+          "name": "Capability Value",
+          "bits": "var",
+          "explain": "Carries data whose interpretation depends on the Capability Code.",
+          "cite": {
+            "section": "4",
+            "quote": "Capability Value is a variable-length field that is interpreted according to the value of the Capability Code field."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The base BGP-4 state machine and the OPEN, KEEPALIVE, and NOTIFICATION wire formats defined by RFC 4271.",
+    "The outer BGP Optional Parameter envelope from RFC 4271.",
+    "The IANA registries and assignment policies for Capability Code values and OPEN Optional Parameter Types.",
+    "Capability payload formats and processing rules defined by extension RFCs.",
+    "Duplicate-capability instances and multiple Capabilities Optional Parameters, including the required backward-compatible processing.",
+    "The rule to ignore an unrecognized capability without terminating the peering.",
+    "The Data-field encoding rule and automatic re-establishment policy for the Unsupported Capability notification."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:46:58.902Z",
+    "dropped": 0
+  }
+}

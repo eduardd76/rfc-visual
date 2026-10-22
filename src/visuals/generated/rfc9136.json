@@ -1,0 +1,289 @@
+{
+  "rfc": 9136,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "gw-ip-overlay-index",
+      "title": "GW IP Overlay Index Advertisement and Forwarding",
+      "participants": {
+        "a": "NVE2",
+        "b": "DGW1"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "In this case, a GW IP is used as an Overlay Index. Although a different Overlay Index type could have been used, this use case assumes that the operator knows the VA's IP addresses beforehand, whereas the VA's MAC address is unknown and the VA's ESI is zero. Because of this, the GW IP is the suitable Overlay Index to be used with the RT-5s. The NVEs know the GW IP to be used for a given prefix by policy."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Route type 2 (MAC/IP Advertisement route)",
+          "explain": "NVE2 advertises TS2's MAC and IP address with the corresponding tunnel type. The addresses may be learned through ARP snooping.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Route type 2 (MAC/IP Advertisement route) containing: ML = 48 (MAC address length), M = M2 (MAC address), IPL = 32 (IP prefix length), IP = IP2, and BGP Encapsulation Extended Community [RFC9012] with the corresponding tunnel type. The MAC and IP addresses may be learned via ARP snooping."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Route type 5 (IP Prefix route)",
+          "explain": "NVE2 advertises SN1 with a 24-bit prefix length, a zero ESI, and IP2 as the gateway IP overlay index. The prefix and gateway IP are learned by policy.",
+          "cite": {
+            "section": "4.1",
+            "quote": "Route type 5 (IP Prefix route) containing: IPL = 24, IP = SN1, ESI = 0, and GW IP address = IP2. The prefix and GW IP are learned by policy."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "IP packet destined to IPx",
+          "explain": "DGW1 finds IP2 as the overlay index, resolves it to the MAC and tunnel information, and encapsulates the packet for the overlay egress.",
+          "cite": {
+            "section": "4.1",
+            "quote": "The IP packet destined to IPx is encapsulated with:"
+          }
+        }
+      ]
+    },
+    {
+      "id": "floating-ip-ownership",
+      "title": "Floating IP Ownership Change",
+      "participants": {
+        "a": "Advertising NVEs",
+        "b": "Receiving DGWs"
+      },
+      "intro": {
+        "section": "4.2",
+        "quote": "In this use case, a GW IP is used as an Overlay Index for the same reasons as in Section 4.1. However, this GW IP is a floating IP that belongs to the active TS. Assuming TS2 is the active TS and owns vIP23:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Route type 5 (IP Prefix route)",
+          "explain": "The advertising NVE associates SN1's 24-bit prefix with the floating IP vIP23 as its overlay index. The prefix and gateway IP are learned by policy.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Route type 5 (IP Prefix route) containing: IPL = 24, IP = SN1, ESI = 0, and GW IP address = vIP23. The prefix and GW IP are learned by policy."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "Route type 2 (MAC/IP Advertisement route)",
+          "explain": "The active owner advertises its MAC M2 and the floating IP vIP23 in a MAC/IP Advertisement route. The addresses may be learned through ARP snooping.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Route type 2 (MAC/IP Advertisement route) containing: ML = 48, M = M2, IPL = 32, and IP = vIP23 (as well as BGP Encapsulation Extended Community). The MAC and IP addresses may be learned via ARP snooping."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "route type 2",
+          "explain": "When ownership changes, NVE3 issues a route type 2 for M3/vIP23 and NVE2 withdraws its route for M2/vIP23. The DGWs update their ARP entries, while the IP-VRF table remains unchanged.",
+          "cite": {
+            "section": "4.2",
+            "quote": "Upon receiving the new owner's notification, NVE3 will issue a route type 2 for M3/vIP23, and NVE2 will withdraw the RT-2 for M2/vIP23. DGW1 and DGW2 will update their ARP tables with the new MAC resolving the floating IP. No changes are made in the IP-VRF table."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "bgp-evpn-nlri",
+      "title": "BGP EVPN NLRI Envelope",
+      "intro": {
+        "section": "3",
+        "quote": "The BGP EVPN NLRI as defined in [RFC7432] is shown below:"
+      },
+      "fields": [
+        {
+          "name": "Route Type",
+          "bits": 8,
+          "explain": "The route type selects the EVPN route format. This document assigns route type 5 to IP Prefix advertisements.",
+          "cite": {
+            "section": "3",
+            "quote": "This document defines an additional route type (RT-5) in the IANA \"EVPN Route Types\" registry [EVPNRouteTypes] to be used for the advertisement of EVPN routes using IP prefixes: Value: 5 Description: IP Prefix"
+          }
+        },
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "For an RT-5, the length is 34 for IPv4 or 58 for IPv6. The prefix and gateway address must use the same address family.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Length field of the BGP EVPN NLRI for an EVPN IP Prefix route MUST be either 34 (if IPv4 addresses are carried) or 58 (if IPv6 addresses are carried). The IP prefix and gateway IP address MUST be from the same IP address family."
+          }
+        },
+        {
+          "name": "Route Type specific",
+          "bits": "var",
+          "explain": "This variable portion carries the fields selected by the route type.",
+          "cite": {
+            "section": "3",
+            "quote": "Route Type specific (variable)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rt5-ipv4",
+      "title": "EVPN IP Prefix Route NLRI for IPv4",
+      "intro": {
+        "section": "3.1",
+        "quote": "An IP Prefix route type for IPv4 has the Length field set to 34 and consists of the following fields:"
+      },
+      "fields": [
+        {
+          "name": "RD",
+          "bits": 64,
+          "explain": "The route distinguisher is unique per MAC-VRF or IP-VRF.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Route Distinguisher (RD) and Ethernet Tag ID MUST be used as defined in [RFC7432] and [RFC8365]. In particular, the RD is unique per MAC-VRF (or IP-VRF)."
+          }
+        },
+        {
+          "name": "Ethernet Segment Identifier",
+          "bits": 80,
+          "explain": "The ESI is a non-zero 10-octet overlay index when it is used, and otherwise all its bytes are zero.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Ethernet Segment Identifier MUST be a non-zero 10-octet identifier if the ESI is used as an Overlay Index (see the definition of \"Overlay Index\" in Section 3.2). It MUST be all bytes zero otherwise. The ESI format is described in [RFC7432]."
+          }
+        },
+        {
+          "name": "Ethernet Tag ID",
+          "bits": 32,
+          "explain": "The Ethernet Tag ID is used as defined in RFC 7432 and RFC 8365.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Route Distinguisher (RD) and Ethernet Tag ID MUST be used as defined in [RFC7432] and [RFC8365]. In particular, the RD is unique per MAC-VRF (or IP-VRF)."
+          }
+        },
+        {
+          "name": "IP Prefix Length",
+          "bits": 8,
+          "explain": "This field gives the number of prefix bits. IPv4 permits a value from 0 through 32.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IP prefix length can be set to a value between 0 and 32 (bits) for IPv4 and between 0 and 128 for IPv6, and it specifies the number of bits in the prefix. The value MUST NOT be greater than 128."
+          }
+        },
+        {
+          "name": "IP Prefix",
+          "bits": 32,
+          "explain": "The IPv4 prefix is encoded in a four-octet field.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IP prefix is a 4- or 16-octet field (IPv4 or IPv6)."
+          }
+        },
+        {
+          "name": "GW IP Address",
+          "bits": 32,
+          "explain": "The IPv4 gateway address can serve as the overlay index for the prefix. It must be all zero when it is not used as an overlay index.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The GW IP Address field is a 4- or 16-octet field (IPv4 or IPv6) and will encode a valid IP address as an Overlay Index for the IP prefixes. The GW IP field MUST be all bytes zero if it is not used as an Overlay Index. Refer to Section 3.2 for the definition and use of the Overlay Index."
+          }
+        },
+        {
+          "name": "MPLS Label",
+          "bits": 24,
+          "explain": "The label uses three octets, with the label value in the high-order 20 bits. A zero value is expected when recursive resolution uses an overlay index.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The MPLS Label field is encoded as 3 octets, where the high-order 20 bits contain the label value, as per [RFC7432]. When sending, the label value SHOULD be zero if a recursive resolution based on an Overlay Index is used."
+          }
+        }
+      ]
+    },
+    {
+      "id": "rt5-ipv6",
+      "title": "EVPN IP Prefix Route NLRI for IPv6",
+      "intro": {
+        "section": "3.1",
+        "quote": "An IP Prefix route type for IPv6 has the Length field set to 58 and consists of the following fields:"
+      },
+      "fields": [
+        {
+          "name": "RD",
+          "bits": 64,
+          "explain": "The route distinguisher is unique per MAC-VRF or IP-VRF.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Route Distinguisher (RD) and Ethernet Tag ID MUST be used as defined in [RFC7432] and [RFC8365]. In particular, the RD is unique per MAC-VRF (or IP-VRF)."
+          }
+        },
+        {
+          "name": "Ethernet Segment Identifier",
+          "bits": 80,
+          "explain": "The ESI is a non-zero 10-octet overlay index when it is used, and otherwise all its bytes are zero.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Ethernet Segment Identifier MUST be a non-zero 10-octet identifier if the ESI is used as an Overlay Index (see the definition of \"Overlay Index\" in Section 3.2). It MUST be all bytes zero otherwise. The ESI format is described in [RFC7432]."
+          }
+        },
+        {
+          "name": "Ethernet Tag ID",
+          "bits": 32,
+          "explain": "The Ethernet Tag ID is used as defined in RFC 7432 and RFC 8365.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The Route Distinguisher (RD) and Ethernet Tag ID MUST be used as defined in [RFC7432] and [RFC8365]. In particular, the RD is unique per MAC-VRF (or IP-VRF)."
+          }
+        },
+        {
+          "name": "IP Prefix Length",
+          "bits": 8,
+          "explain": "This field gives the number of prefix bits. IPv6 permits a value from 0 through 128.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IP prefix length can be set to a value between 0 and 32 (bits) for IPv4 and between 0 and 128 for IPv6, and it specifies the number of bits in the prefix. The value MUST NOT be greater than 128."
+          }
+        },
+        {
+          "name": "IP Prefix",
+          "bits": 128,
+          "explain": "The IPv6 prefix is encoded in a 16-octet field.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The IP prefix is a 4- or 16-octet field (IPv4 or IPv6)."
+          }
+        },
+        {
+          "name": "GW IP Address",
+          "bits": 128,
+          "explain": "The IPv6 gateway address can serve as the overlay index for the prefix. It must be all zero when it is not used as an overlay index.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The GW IP Address field is a 4- or 16-octet field (IPv4 or IPv6) and will encode a valid IP address as an Overlay Index for the IP prefixes. The GW IP field MUST be all bytes zero if it is not used as an Overlay Index. Refer to Section 3.2 for the definition and use of the Overlay Index."
+          }
+        },
+        {
+          "name": "MPLS Label",
+          "bits": 24,
+          "explain": "The label uses three octets, with the label value in the high-order 20 bits. A zero value is expected when recursive resolution uses an overlay index.",
+          "cite": {
+            "section": "3.1",
+            "quote": "The MPLS Label field is encoded as 3 octets, where the high-order 20 bits contain the label value, as per [RFC7432]. When sending, the label value SHOULD be zero if a recursive resolution based on an Overlay Index is used."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The detailed EVPN RT-1 and RT-2 route encodings and their RFC 7432 processing procedures",
+    "The ESI-based bump-in-the-wire use case and its active/standby failover procedure",
+    "The interface-less, SBD IRB, and unnumbered SBD IRB IP-VRF-to-IP-VRF models",
+    "The complete RT-5 Overlay Index field-combination and treat-as-withdraw validation rules",
+    "Security considerations and IANA registry procedures"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:00:00.938Z",
+    "dropped": 0
+  }
+}

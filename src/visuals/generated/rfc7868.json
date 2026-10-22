@@ -1,0 +1,233 @@
+{
+  "rfc": 7868,
+  "reviewed": false,
+  "initial": "PASSIVE",
+  "terminal": [],
+  "stateMachineTitle": "DUAL FSM",
+  "states": [
+    {
+      "id": "PASSIVE",
+      "cite": {
+        "section": "3.2",
+        "quote": "A route is considered to be in the Passive state when at least one neighbor that provides the current least-total-cost path passes the Feasibility Condition check that guarantees loop freedom. A route in the PASSIVE state is usable and its next hop is perceived to be a downstream router."
+      }
+    },
+    {
+      "id": "ACTIVE",
+      "cite": {
+        "section": "3.2",
+        "quote": "A route is considered to be in the ACTIVE state if neighbors that do not pass the Feasibility Condition check provide lowest-cost path, and therefore the path cannot be guaranteed loop free."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "PASSIVE",
+      "to": "ACTIVE",
+      "event": "topology change leaves no Feasible Successor",
+      "layer": "happy",
+      "cite": {
+        "section": "3.3",
+        "quote": "Based on the result of the Feasibility Condition check after a topology change is detected, the route may either remain PASSIVE (if, after the topology change, the neighbor providing the least cost path meets the Feasibility Condition) or it needs to enter the ACTIVE state (if the topology change resulted in none of the neighbors providing the least cost path to meet the Feasibility Condition)."
+      }
+    },
+    {
+      "from": "ACTIVE",
+      "to": "PASSIVE",
+      "event": "all replies received and Feasible Successor exists",
+      "action": "snd REPLY to successor if required",
+      "layer": "happy",
+      "cite": {
+        "section": "3.5",
+        "quote": "If a route for a destination is in ACTIVE state because of a QUERY received from the current successor or there was an increase in distance while in ACTIVE state, the last REPLY was received from all neighbors, and a Feasible Successor exists for the destination, the route can go into PASSIVE state and a REPLY is sent to the successor if oij indicates that QUERY was received from the successor."
+      }
+    },
+    {
+      "from": "PASSIVE",
+      "to": "PASSIVE",
+      "event": "rcv QUERY from non-successor",
+      "action": "snd REPLY to originator",
+      "layer": "happy",
+      "cite": {
+        "section": "3.5",
+        "quote": "A QUERY is received from a neighbor that is not the current successor. The route is currently in PASSIVE state. As the successor is not affected by the QUERY, and a Feasible Successor exists, the route remains in PASSIVE state. Since a Feasible Successor exists, a REPLY MUST be sent back to the originator of the QUERY."
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "dual-query-reply",
+      "title": "DUAL query and reply exchange",
+      "participants": {
+        "a": "Router D",
+        "b": "Router C"
+      },
+      "intro": {
+        "section": "3.6",
+        "quote": "The following topology (Figure 2) will be used to provide an example of how DUAL is used to reroute after a link failure. Each node is labeled with its costs to destination N. The arrows indicate the successor (next hop) used to reach destination N. The least-cost path is selected."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "QUERY",
+          "stateA": "ACTIVE",
+          "explain": "Router D enters the ACTIVE state and sends a QUERY to all of its neighbors, including Router C.",
+          "cite": {
+            "section": "3.6",
+            "quote": "Only observing the destination provided by node N, D enters the ACTIVE state and sends a QUERY to all its neighbors, in this case node C."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "REPLY",
+          "stateB": "PASSIVE",
+          "explain": "Router C finds a feasible successor and replies immediately. Router D receives the reply and can leave ACTIVE after all replies arrive, while Router C's route remains PASSIVE.",
+          "cite": {
+            "section": "3.6",
+            "quote": "C determines that it has a Feasible Successor and replies immediately with metric 3. C changes its old successor of D to its new single successor B and the route to N stays in PASSIVE state. D receives the REPLY and can transition out of ACTIVE state since it received replies from all its neighbors."
+          }
+        }
+      ]
+    },
+    {
+      "id": "neighbor-formation",
+      "title": "Neighbor formation handshake",
+      "participants": {
+        "a": "Router A",
+        "b": "Router B"
+      },
+      "intro": {
+        "section": "5.3.5",
+        "quote": "To prevent packets from being sent to a neighbor prior to verifying multicast and unicast packet delivery is reliable, a three-way handshake is utilized."
+      },
+      "steps": [
+        {
+          "from": "B",
+          "segment": "multicast HELLO",
+          "explain": "Router A receives Router B's first multicast hello and places Router B in the pending state.",
+          "cite": {
+            "section": "5.3.5",
+            "quote": "when Router A receives the first multicast HELLO from Router B, it places Router B in the pending state and transmits a unicast UPDATE containing no topology information and SHALL set the initialization bit."
+          }
+        },
+        {
+          "from": "A",
+          "segment": "unicast UPDATE",
+          "explain": "Router A sends a unicast update with no topology information and sets the initialization bit.",
+          "cite": {
+            "section": "5.3.5",
+            "quote": "when Router A receives the first multicast HELLO from Router B, it places Router B in the pending state and transmits a unicast UPDATE containing no topology information and SHALL set the initialization bit."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "unicast acknowledgment",
+          "explain": "Router B's unicast acknowledgment lets Router A change the neighbor from pending to up.",
+          "cite": {
+            "section": "5.3.5",
+            "quote": "When Router A receives the unicast acknowledgment from Router B, it will change the state from \"pending\" to \"up\"."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "eigrp-packet-header",
+      "title": "EIGRP Packet Header",
+      "intro": {
+        "section": "6.5",
+        "quote": "The basic EIGRP packet payload format is identical for both IPv4 and IPv6, although there are some protocol-specific variations. Packets consist of a header, followed by a set of variable-length fields consisting of Type/Length/Value (TLV) triplets."
+      },
+      "fields": [
+        {
+          "name": "Header Version",
+          "bits": 8,
+          "explain": "Identifies the version of the EIGRP packet header format.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Header Version: EIGRP Packet Header Format version. Current Version is 2. This field is not the same as the TLV Version field."
+          }
+        },
+        {
+          "name": "Opcode",
+          "bits": 8,
+          "explain": "Identifies the type of EIGRP message carried in the packet.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Opcode: Indicates the type of the message. It will be one of the following values:"
+          }
+        },
+        {
+          "name": "Checksum",
+          "bits": 16,
+          "explain": "Protects the entire packet, and a packet with a failed checksum is discarded.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Checksum: Each packet will include a checksum for the entire contents of the packet. The checksum will be the standard ones' complement of the ones' complement sum. For purposes of computing the checksum, the value of the checksum field is zero. The packet is discarded if the packet checksum fails."
+          }
+        },
+        {
+          "name": "Flags",
+          "bits": 32,
+          "explain": "Carries four bits that request special handling of the packet.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Flags: Defines special handling of the packet. There are currently four defined flag bits."
+          }
+        },
+        {
+          "name": "Sequence Number",
+          "bits": 32,
+          "explain": "Identifies packets from one sending router, and zero means an acknowledgment is not required.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Sequence Number: Each packet that is transmitted will have a 32-bit sequence number that is unique with respect to a sending router. A value of 0 means that an acknowledgment is not required."
+          }
+        },
+        {
+          "name": "Acknowledgment Number",
+          "bits": 32,
+          "explain": "Names the receiver sequence number being acknowledged, and zero means no acknowledgment is present.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Acknowledgment Number: The 32-bit sequence number that is being acknowledged with respect to the receiver of the packet. If the value is 0, there is no acknowledgment present. A non-zero value can only be present in unicast-addressed packets. A HELLO packet with a non-zero ACK field should be decoded as an ACK packet rather than a HELLO packet."
+          }
+        },
+        {
+          "name": "Virtual Router Identifier",
+          "bits": 16,
+          "explain": "Identifies the virtual router associated with the packet, and unknown values are discarded.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Virtual Router Identifier (VRID): A 16-bit number that identifies the virtual router with which this packet is associated. Packets received with an unknown, or unsupported, value will be discarded."
+          }
+        },
+        {
+          "name": "Autonomous System Number",
+          "bits": 16,
+          "explain": "Identifies the sending autonomous system and must match the neighbor's AS number.",
+          "cite": {
+            "section": "6.5",
+            "quote": "Autonomous System Number: 16-bit unsigned number of the sending system. This field is indirectly used as an authentication value. That is, a router that receives and accepts a packet from a neighbor must have the same AS number or the packet is ignored. The range of valid AS numbers is 1 through 65,535."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The DUAL QUERY-origin and REPLY-status flag sub-states and the full sixteen-transition FSM",
+    "Reliable transport retransmission, acknowledgment, and conditional receive behavior",
+    "Stuck In Active handling with SIA-QUERY and SIA-REPLY",
+    "Route management, split horizon, and poison reverse behavior",
+    "Classic and wide metric calculations",
+    "Generic TLV framing and the classic, IPv4, IPv6, and multiprotocol route TLVs",
+    "Authentication, communities, extended metrics, and AddPath encodings"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:06:34.284Z",
+    "dropped": 0
+  }
+}

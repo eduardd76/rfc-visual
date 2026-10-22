@@ -1,0 +1,141 @@
+{
+  "rfc": 8538,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "notification-support-negotiation",
+      "title": "Advertising Graceful Notification Support",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "2",
+        "quote": "A BGP speaker indicates support for the procedures in this document by advertising a Graceful Restart Capability with its \"N\" bit set (value 1)."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Graceful Restart Capability",
+          "explain": "Speaker A advertises the capability with the N bit set to signal support for the procedures in this document.",
+          "cite": {
+            "section": "2",
+            "quote": "A BGP speaker indicates support for the procedures in this document by advertising a Graceful Restart Capability with its \"N\" bit set (value 1)."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Graceful Restart Capability",
+          "explain": "Speaker B advertises the capability with the N bit set to signal support for the procedures in this document.",
+          "cite": {
+            "section": "2",
+            "quote": "A BGP speaker indicates support for the procedures in this document by advertising a Graceful Restart Capability with its \"N\" bit set (value 1)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "graceful-notification",
+      "title": "Graceful NOTIFICATION Handling",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "4",
+        "quote": "When such a BGP speaker has received the \"N\" bit from its peer, and receives from that peer a BGP NOTIFICATION message other than a Hard Reset, it MUST follow the rules for the Receiving Speaker mentioned in Section 4.1. The BGP speaker generating the BGP NOTIFICATION message MUST also follow the rules for the Receiving Speaker."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "BGP NOTIFICATION message",
+          "stateA": "Receiving Speaker",
+          "stateB": "Receiving Speaker",
+          "explain": "After the N bit has been received from the peer, both speakers follow the Receiving Speaker rules for a NOTIFICATION that is not a Hard Reset.",
+          "cite": {
+            "section": "4",
+            "quote": "When such a BGP speaker has received the \"N\" bit from its peer, and receives from that peer a BGP NOTIFICATION message other than a Hard Reset, it MUST follow the rules for the Receiving Speaker mentioned in Section 4.1. The BGP speaker generating the BGP NOTIFICATION message MUST also follow the rules for the Receiving Speaker."
+          }
+        }
+      ]
+    },
+    {
+      "id": "hard-reset",
+      "title": "Hard Reset Handling",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "3.1",
+        "quote": "When the \"N\" bit has been exchanged, a Hard Reset message is used to indicate to the peer that the session is to be fully terminated."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Hard Reset",
+          "explain": "The receiver must terminate the BGP session by following the standard BGP procedures.",
+          "cite": {
+            "section": "3.2",
+            "quote": "Whenever a BGP speaker receives a Hard Reset, the speaker MUST terminate the BGP session following the standard procedures in [RFC4271]."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "hard-reset-data",
+      "title": "Hard Reset NOTIFICATION Data Portion",
+      "intro": {
+        "section": "3.1",
+        "quote": "When sending a Hard Reset, the data portion of the NOTIFICATION message is encoded as follows:"
+      },
+      "fields": [
+        {
+          "name": "ErrCode",
+          "bits": 8,
+          "explain": "The error code identifies the reason for the Hard Reset.",
+          "cite": {
+            "section": "3.1",
+            "quote": "ErrCode is a BGP Error Code (as documented in the IANA \"BGP Error (Notification) Codes\" registry) that indicates the reason for the Hard Reset."
+          }
+        },
+        {
+          "name": "Subcode",
+          "bits": 8,
+          "explain": "The subcode identifies the error subcode appropriate for the error code.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Subcode is a BGP Error Subcode (as documented in the IANA \"BGP Error Subcodes\" registry) as appropriate for the ErrCode."
+          }
+        },
+        {
+          "name": "Data",
+          "bits": "var",
+          "explain": "The data is appropriate for the error code and subcode and encapsulates another NOTIFICATION message.",
+          "cite": {
+            "section": "3.1",
+            "quote": "Similarly, Data is as appropriate for the ErrCode and Subcode. In short, the Hard Reset encapsulates another NOTIFICATION message in its data portion."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The Restart Flags field layout, including the R and N bits and the unassigned positions.",
+    "The complete RFC 4724 Receiving Speaker procedures, including route retention, stale marking, stale-timer expiry, and route re-establishment details.",
+    "Address-family Forwarding State behavior and the route-flushing consequences when that bit is not set.",
+    "The suggested choice between Hard Reset and Graceful Cease for each Cease subcode.",
+    "Management reporting, operational cautions, and security analysis."
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:07:59.086Z",
+    "dropped": 0
+  }
+}

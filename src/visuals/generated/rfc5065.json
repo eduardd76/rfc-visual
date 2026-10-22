@@ -1,0 +1,115 @@
+{
+  "rfc": 5065,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "same-member-as-update",
+      "title": "Route Origination Within a Member-AS",
+      "participants": {
+        "a": "Originating BGP speaker",
+        "b": "Speaker in the same Member-AS"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "When a BGP speaker originates a route then:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The originating speaker sends the UPDATE with an empty AS_PATH to a speaker in the same Member-AS. An empty AS_PATH has a length field of zero.",
+          "cite": {
+            "section": "4.1",
+            "quote": "the originating speaker includes an empty AS_PATH attribute in all UPDATE messages sent to BGP speakers residing within the same Member-AS. (An empty AS_PATH attribute is one whose length field contains the value zero)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "neighboring-member-as-update",
+      "title": "Route Origination Toward a Member-AS",
+      "participants": {
+        "a": "Originating BGP speaker",
+        "b": "Speaker in a neighboring Member-AS"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "When a BGP speaker originates a route then:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The originating speaker sends the UPDATE with its Member-AS Number in an AS_CONFED_SEQUENCE segment that is the only segment in AS_PATH.",
+          "cite": {
+            "section": "4.1",
+            "quote": "the originating speaker includes its own Member-AS Number in a path segment, of type AS_CONFED_SEQUENCE, in the AS_PATH attribute of all UPDATE messages sent to BGP speakers located in neighboring Member Autonomous Systems that are members of the local confederation. In this case, the Member-AS Number of the originating speaker's autonomous system will be the only entry the path segment, and this path segment will be the only segment in the AS_PATH attribute."
+          }
+        }
+      ]
+    },
+    {
+      "id": "external-update",
+      "title": "Route Origination Outside the Confederation",
+      "participants": {
+        "a": "Originating BGP speaker",
+        "b": "Speaker in a neighboring non-member AS"
+      },
+      "intro": {
+        "section": "4.1",
+        "quote": "When a BGP speaker originates a route then:"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "UPDATE message",
+          "explain": "The originating speaker sends the UPDATE with the AS Confederation Identifier in an AS_SEQUENCE segment that is the only segment in AS_PATH.",
+          "cite": {
+            "section": "4.1",
+            "quote": "the originating speaker includes its own AS Confederation Identifier in a path segment, of type AS_SEQUENCE, in the AS_PATH attribute of all UPDATE messages sent to BGP speakers located in neighboring autonomous systems that are not members of the local confederation. In this case, the AS Confederation Identifier of the originating speaker's autonomous system will be the only entry the path segment, and this path segment will be the only segment in the AS_PATH attribute."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "as-path-segment-type-extension",
+      "title": "AS_PATH Segment Type Extension",
+      "intro": {
+        "section": "3",
+        "quote": "Currently, BGP specifies that the AS_PATH attribute is a well-known mandatory attribute that is composed of a sequence of AS path segments. Each AS path segment is represented by a triple <path segment type, path segment length, path segment value>."
+      },
+      "fields": [
+        {
+          "name": "Path segment type",
+          "bits": 8,
+          "explain": "The one-octet path segment type selects the segment encoding. This RFC adds AS_CONFED_SEQUENCE for an ordered set and AS_CONFED_SET for an unordered set of member autonomous systems traversed in the local confederation.",
+          "cite": {
+            "section": "3",
+            "quote": "Each AS path segment is represented by a triple <path segment type, path segment length, path segment value>. In [BGP-4], the path segment type is a 1-octet field with the two following values defined: Value Segment Type 1 AS_SET: unordered set of autonomous systems that a route in the UPDATE message has traversed 2 AS_SEQUENCE: ordered set of autonomous systems that a route in the UPDATE message has traversed This document specifies two additional segment types: 3 AS_CONFED_SEQUENCE: ordered set of Member Autonomous Systems in the local confederation that the UPDATE message has traversed 4 AS_CONFED_SET: unordered set of Member Autonomous Systems in the local confederation that the UPDATE message has traversed"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "AS_PATH modification when advertising a route learned from another BGP speaker, including removal of confederation segments before export outside the confederation",
+    "The inherited path segment length and value fields",
+    "The use of the AS Confederation Identifier in OPEN messages",
+    "Malformed AS_PATH error handling and compatibility notifications for speakers that do not support confederation segment types",
+    "MED and LOCAL_PREF handling",
+    "Confederation path selection, neighbor-AS interpretation, and AS_PATH length rules",
+    "Route aggregation within confederations",
+    "Deployment, routing-policy, and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T03:17:22.684Z",
+    "dropped": 0
+  }
+}

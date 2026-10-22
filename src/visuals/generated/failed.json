@@ -11,6 +11,10 @@
     "at": "2026-10-20T02:35:34.164Z",
     "reason": "withheld: 11 issue(s), e.g. state negative answer: section 5 - Caching Negative Answers not found"
   },
+  "3101": {
+    "at": "2026-10-22T03:23:13.871Z",
+    "reason": "withheld: 17 issue(s), e.g. header nssa-options intro: section Appendix A not found"
+  },
   "4034": {
     "at": "2026-10-20T02:44:25.601Z",
     "reason": "withheld: 1 issue(s), e.g. header rrsig-rdata: field order differs from the RFC diagram (Signature is drawn before Key Tag)"

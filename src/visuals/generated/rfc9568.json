@@ -1,0 +1,254 @@
+{
+  "rfc": 9568,
+  "reviewed": false,
+  "initial": "Initialize",
+  "terminal": [],
+  "stateMachineTitle": "VRRP State Machine",
+  "states": [
+    {
+      "id": "Initialize",
+      "cite": {
+        "section": "6.4.1",
+        "quote": "6.4.1.  Initialize\n\n   The purpose of this state is to wait for a Startup event, that is, an\n   implementation-defined mechanism that initiates the protocol once it\n   has been configured."
+      }
+    },
+    {
+      "id": "Backup",
+      "cite": {
+        "section": "6.4.2",
+        "quote": "The purpose of the {Backup} state is to monitor the availability and state of the Active Router."
+      }
+    },
+    {
+      "id": "Active",
+      "cite": {
+        "section": "6.4.3",
+        "quote": "While in the {Active} state, the router functions as the forwarding router for the IPvX address(es) associated with the Virtual Router."
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "Initialize",
+      "to": "Active",
+      "event": "Startup as address owner",
+      "action": "snd ADVERTISEMENT and set Adver_Timer",
+      "layer": "happy",
+      "cite": {
+        "section": "6.4.1",
+        "quote": "-  Set the Adver_Timer to Advertisement_Interval\n\n      -  Transition to the {Active} state"
+      }
+    },
+    {
+      "from": "Initialize",
+      "to": "Backup",
+      "event": "Startup as non-owner",
+      "action": "set Active_Adver_Interval and Active_Down_Timer",
+      "layer": "happy",
+      "cite": {
+        "section": "6.4.1",
+        "quote": "-  Set the Active_Down_Timer to Active_Down_Interval\n\n      -  Transition to the {Backup} state"
+      }
+    },
+    {
+      "from": "Backup",
+      "to": "Active",
+      "event": "Active_Down_Timer fires",
+      "action": "snd ADVERTISEMENT and set Adver_Timer",
+      "layer": "happy",
+      "cite": {
+        "section": "6.4.2",
+        "quote": "-  Set the Adver_Timer to Advertisement_Interval\n\n      -  Transition to the {Active} state"
+      },
+      "note": "The timer firing means the Backup Router has declared the Active Router down."
+    },
+    {
+      "from": "Active",
+      "to": "Backup",
+      "event": "receive higher ranked ADVERTISEMENT",
+      "action": "cancel Adver_Timer and set Active_Down_Timer",
+      "layer": "happy",
+      "cite": {
+        "section": "6.4.3",
+        "quote": "+  Set the Active_Down_Timer to Active_Down_Interval\n\n            +  Transition to the {Backup} state"
+      },
+      "note": "A higher priority, or equal priority with a higher primary IPvX address, makes the received advertisement take precedence."
+    },
+    {
+      "from": "Backup",
+      "to": "Initialize",
+      "event": "Shutdown",
+      "action": "cancel Active_Down_Timer",
+      "layer": "rst",
+      "cite": {
+        "section": "6.4.2",
+        "quote": "*  If a Shutdown event is received, then:\n\n      -  Cancel the Active_Down_Timer\n\n      -  Transition to the {Initialize} state"
+      }
+    },
+    {
+      "from": "Active",
+      "to": "Initialize",
+      "event": "Shutdown",
+      "action": "cancel Adver_Timer and snd priority 0 ADVERTISEMENT",
+      "layer": "rst",
+      "cite": {
+        "section": "6.4.3",
+        "quote": "*  If a Shutdown event is received, then:\n\n      -  Cancel the Adver_Timer\n\n      -  Send an ADVERTISEMENT with Priority = 0\n\n      -  Transition to the {Initialize} state"
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "id": "advertisement-and-failover",
+      "title": "Periodic Advertisement and Failover",
+      "participants": {
+        "a": "Active Router",
+        "b": "Backup Router"
+      },
+      "intro": {
+        "section": "3",
+        "quote": "To minimize network traffic, only the Active Router for each Virtual Router sends periodic VRRP Advertisement messages. A Backup Router will not attempt to preempt the Active Router unless the Backup Router has a higher priority."
+      },
+      "start": {
+        "stateA": "Active",
+        "stateB": "Backup"
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "ADVERTISEMENT",
+          "explain": "The active router sends a VRRP advertisement when its advertisement timer expires, then resets that timer.",
+          "cite": {
+            "section": "6.4.3",
+            "quote": "*  If the Adver_Timer fires, then:\n\n      -  Send an ADVERTISEMENT\n\n      -  Reset the Adver_Timer to Advertisement_Interval"
+          }
+        },
+        {
+          "from": "B",
+          "segment": "ADVERTISEMENT",
+          "explain": "The backup router sends a VRRP advertisement when its Active_Down_Timer expires, taking over the active role after the active router is declared down.",
+          "cite": {
+            "section": "6.4.2",
+            "quote": "*  If the Active_Down_Timer fires, then:\n\n      -  Send an ADVERTISEMENT"
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "vrrp-advertisement",
+      "title": "IPv4/IPv6 VRRP Advertisement Packet Format",
+      "intro": {
+        "section": "5",
+        "quote": "The purpose of the VRRP Advertisement is to communicate to all VRRP Routers the priority, Maximum Advertisement Interval, and IPvX addresses of the Active Router associated with the VRID."
+      },
+      "fields": [
+        {
+          "name": "IPv4 Fields or IPv6 Fields",
+          "bits": "var",
+          "explain": "Holds the enclosing IPv4 or IPv6 header fields used to carry the VRRP packet.",
+          "cite": {
+            "section": "5.1",
+            "quote": "IPv4 Fields or IPv6 Fields"
+          }
+        },
+        {
+          "name": "Version",
+          "bits": 4,
+          "explain": "Identifies the VRRP protocol version. This document defines version 3.",
+          "cite": {
+            "section": "5.2.1",
+            "quote": "The Version field specifies the VRRP protocol version of this packet. This document defines version 3."
+          }
+        },
+        {
+          "name": "Type",
+          "bits": 4,
+          "explain": "Identifies the packet type. ADVERTISEMENT is the only type defined for this version.",
+          "cite": {
+            "section": "5.2.2",
+            "quote": "The Type field specifies the type of this VRRP packet. The only packet type defined in this version of the protocol is: 1  - ADVERTISEMENT"
+          }
+        },
+        {
+          "name": "Virtual Rtr ID",
+          "bits": 8,
+          "explain": "Identifies the Virtual Router for which the packet reports status.",
+          "cite": {
+            "section": "5.2.3",
+            "quote": "The Virtual Rtr ID field identifies the Virtual Router for which this packet is reporting status."
+          }
+        },
+        {
+          "name": "Priority",
+          "bits": 8,
+          "explain": "Indicates the sending router's priority. Higher values mean higher priority.",
+          "cite": {
+            "section": "5.2.4",
+            "quote": "The Priority field specifies sending the VRRP Router's priority for the Virtual Router. Higher values indicate higher priority. This field is an 8-bit unsigned integer field."
+          }
+        },
+        {
+          "name": "IPvX Addr Count",
+          "bits": 8,
+          "explain": "Gives the number of IPv4 or IPv6 addresses included in the advertisement.",
+          "cite": {
+            "section": "5.2.5",
+            "quote": "The IPvX Addr Count field is the number of either IPv4 addresses or IPv6 addresses contained in this VRRP advertisement. The minimum value is 1. If the received count is 0, the VRRP advertisement MUST be ignored."
+          }
+        },
+        {
+          "name": "Reserve",
+          "bits": 4,
+          "explain": "Must be set to zero on transmission and ignored on reception.",
+          "cite": {
+            "section": "5.2.6",
+            "quote": "The Reserve field MUST be set to zero on transmission and ignored on reception."
+          }
+        },
+        {
+          "name": "Max Advertise Interval",
+          "bits": 12,
+          "explain": "Specifies the interval in centiseconds between advertisements.",
+          "cite": {
+            "section": "5.2.7",
+            "quote": "The Max Advertise Interval is a 12-bit field that indicates the time interval (in centiseconds) between advertisements. The default is 100 centiseconds (1 second)."
+          }
+        },
+        {
+          "name": "Checksum",
+          "bits": 16,
+          "explain": "Detects data corruption in the VRRP message.",
+          "cite": {
+            "section": "5.2.8",
+            "quote": "The Checksum field is used to detect data corruption in the VRRP message."
+          }
+        },
+        {
+          "name": "IPvX Address(es)",
+          "bits": "var",
+          "explain": "Carries one or more addresses associated with the Virtual Router. The IPvX Addr Count field gives how many are present.",
+          "cite": {
+            "section": "5.1",
+            "quote": "IPvX Address(es)"
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "Detailed IPv4 and IPv6 encapsulation headers beyond the generic outer-header block",
+    "IPv4 and IPv6 source-address, destination-address, TTL, Hop Limit, and Next Header rules",
+    "Packet-receive validation rules and misconfiguration checks from Section 7.1",
+    "Exact skew-time and Active_Down_Interval calculations and the full preemption policy",
+    "ARP, ICMP Redirect, Neighbor Discovery, and Router Advertisement operational procedures",
+    "VRRPv2 interoperability and security considerations"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:13:22.163Z",
+    "dropped": 0
+  }
+}

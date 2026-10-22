@@ -1,0 +1,223 @@
+{
+  "rfc": 4760,
+  "reviewed": false,
+  "terminal": [],
+  "states": [],
+  "transitions": [],
+  "sequences": [
+    {
+      "id": "capability-exchange",
+      "title": "Multiprotocol Capability Exchange",
+      "participants": {
+        "a": "BGP speaker A",
+        "b": "BGP speaker B"
+      },
+      "intro": {
+        "section": "8",
+        "quote": "To have a bi-directional exchange of routing information for a particular <AFI, SAFI> between a pair of BGP speakers, each such speaker MUST advertise to the other (via the Capability Advertisement mechanism) the capability to support that particular <AFI, SAFI> route."
+      },
+      "steps": [
+        {
+          "from": "A",
+          "segment": "Capability Advertisement",
+          "explain": "BGP speaker A advertises to BGP speaker B that it supports the selected address family for multiprotocol routing exchange.",
+          "cite": {
+            "section": "8",
+            "quote": "To have a bi-directional exchange of routing information for a particular <AFI, SAFI> between a pair of BGP speakers, each such speaker MUST advertise to the other (via the Capability Advertisement mechanism) the capability to support that particular <AFI, SAFI> route."
+          }
+        },
+        {
+          "from": "B",
+          "segment": "Capability Advertisement",
+          "explain": "BGP speaker B makes the reciprocal advertisement. Both speakers must advertise support before they can exchange routing information for that address family.",
+          "cite": {
+            "section": "8",
+            "quote": "To have a bi-directional exchange of routing information for a particular <AFI, SAFI> between a pair of BGP speakers, each such speaker MUST advertise to the other (via the Capability Advertisement mechanism) the capability to support that particular <AFI, SAFI> route."
+          }
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "id": "mp-reach-nlri",
+      "title": "MP_REACH_NLRI Path Attribute",
+      "intro": {
+        "section": "1",
+        "quote": "The first one (MP_REACH_NLRI) is used to carry the set of reachable destinations together with the next hop information to be used for forwarding to these destinations."
+      },
+      "fields": [
+        {
+          "name": "Address Family Identifier",
+          "bits": 16,
+          "explain": "Together with the Subsequent Address Family Identifier, it identifies the network-layer protocols, next-hop address encoding, and NLRI semantics.",
+          "cite": {
+            "section": "3",
+            "quote": "Address Family Identifier (AFI): This field in combination with the Subsequent Address Family Identifier field identifies the set of Network Layer protocols to which the address carried in the Next Hop field must belong, the way in which the address of the next hop is encoded, and the semantics of the Network Layer Reachability Information that follows."
+          }
+        },
+        {
+          "name": "Subsequent Address Family Identifier",
+          "bits": 8,
+          "explain": "Together with the Address Family Identifier, it identifies the network-layer protocols, next-hop address encoding, and NLRI semantics.",
+          "cite": {
+            "section": "3",
+            "quote": "Subsequent Address Family Identifier (SAFI): This field in combination with the Address Family Identifier field identifies the set of Network Layer protocols to which the address carried in the Next Hop must belong, the way in which the address of the next hop is encoded, and the semantics of the Network Layer Reachability Information that follows."
+          }
+        },
+        {
+          "name": "Length of Next Hop Network Address",
+          "bits": 8,
+          "explain": "Gives the length in octets of the Network Address of Next Hop field.",
+          "cite": {
+            "section": "3",
+            "quote": "Length of Next Hop Network Address: A 1-octet field whose value expresses the length of the \"Network Address of Next Hop\" field, measured in octets."
+          }
+        },
+        {
+          "name": "Network Address of Next Hop",
+          "bits": "var",
+          "explain": "Contains the network address of the next router on the path to the destination. The AFI and SAFI identify its associated network-layer protocol.",
+          "cite": {
+            "section": "3",
+            "quote": "Network Address of Next Hop: A variable-length field that contains the Network Address of the next router on the path to the destination system. The Network Layer protocol associated with the Network Address of the Next Hop is identified by a combination of <AFI, SAFI> carried in the attribute."
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "This field must be set to zero and should be ignored when received.",
+          "cite": {
+            "section": "3",
+            "quote": "Reserved: A 1 octet field that MUST be set to 0, and SHOULD be ignored upon receipt."
+          }
+        },
+        {
+          "name": "Network Layer Reachability Information (NLRI)",
+          "bits": "var",
+          "explain": "Lists the NLRI for feasible routes advertised by the attribute. The AFI and SAFI determine its semantics.",
+          "cite": {
+            "section": "3",
+            "quote": "Network Layer Reachability Information (NLRI): A variable length field that lists NLRI for the feasible routes that are being advertised in this attribute. The semantics of NLRI is identified by a combination of <AFI, SAFI> carried in the attribute."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mp-unreach-nlri",
+      "title": "MP_UNREACH_NLRI Path Attribute",
+      "intro": {
+        "section": "1",
+        "quote": "The second one (MP_UNREACH_NLRI) is used to carry the set of unreachable destinations."
+      },
+      "fields": [
+        {
+          "name": "Address Family Identifier",
+          "bits": 16,
+          "explain": "Together with the Subsequent Address Family Identifier, it identifies the network-layer protocols and the semantics of the unreachable NLRI.",
+          "cite": {
+            "section": "4",
+            "quote": "Address Family Identifier (AFI): This field in combination with the Subsequent Address Family Identifier field identifies the set of Network Layer protocols to which the address carried in the Next Hop field must belong, the way in which the address of the next hop is encoded, and the semantics of the Network Layer Reachability Information that follows."
+          }
+        },
+        {
+          "name": "Subsequent Address Family Identifier",
+          "bits": 8,
+          "explain": "Together with the Address Family Identifier, it identifies the network-layer protocols and the semantics of the unreachable NLRI.",
+          "cite": {
+            "section": "4",
+            "quote": "Subsequent Address Family Identifier (SAFI): This field in combination with the Address Family Identifier field identifies the set of Network Layer protocols to which the address carried in the Next Hop must belong, the way in which the address of the next hop is encoded, and the semantics of the Network Layer Reachability Information that follows."
+          }
+        },
+        {
+          "name": "Withdrawn Routes",
+          "bits": "var",
+          "explain": "Lists the NLRI for routes being withdrawn from service. The AFI and SAFI determine the NLRI semantics.",
+          "cite": {
+            "section": "4",
+            "quote": "Withdrawn Routes Network Layer Reachability Information: A variable-length field that lists NLRI for the routes that are being withdrawn from service. The semantics of NLRI is identified by a combination of <AFI, SAFI> carried in the attribute."
+          }
+        }
+      ]
+    },
+    {
+      "id": "nlri-encoding",
+      "title": "Multiprotocol NLRI Encoding",
+      "intro": {
+        "section": "5",
+        "quote": "The Network Layer Reachability information is encoded as one or more 2-tuples of the form <length, prefix>, whose fields are described below:"
+      },
+      "fields": [
+        {
+          "name": "Length",
+          "bits": 8,
+          "explain": "Specifies the address-prefix length in bits. A length of zero matches all addresses in the address family.",
+          "cite": {
+            "section": "5",
+            "quote": "a) Length: The Length field indicates the length, in bits, of the address prefix. A length of zero indicates a prefix that matches all (as specified by the address family) addresses (with prefix, itself, of zero octets)."
+          }
+        },
+        {
+          "name": "Prefix",
+          "bits": "var",
+          "explain": "Contains an address prefix followed by enough trailing bits to reach an octet boundary. The trailing-bit values are irrelevant.",
+          "cite": {
+            "section": "5",
+            "quote": "b) Prefix: The Prefix field contains an address prefix followed by enough trailing bits to make the end of the field fall on an octet boundary. Note that the value of trailing bits is irrelevant."
+          }
+        }
+      ]
+    },
+    {
+      "id": "capability-value",
+      "title": "Multiprotocol Extensions Capability Value",
+      "intro": {
+        "section": "8",
+        "quote": "The Capability Value field is defined as:"
+      },
+      "fields": [
+        {
+          "name": "Address Family Identifier",
+          "bits": 16,
+          "explain": "Identifies the address family and uses the same encoding as the AFI in the multiprotocol extensions.",
+          "cite": {
+            "section": "8",
+            "quote": "AFI  - Address Family Identifier (16 bit), encoded the same way as in the Multiprotocol Extensions"
+          }
+        },
+        {
+          "name": "Reserved",
+          "bits": 8,
+          "explain": "This field should be set to zero by the sender and ignored by the receiver.",
+          "cite": {
+            "section": "8",
+            "quote": "Res. - Reserved (8 bit) field. SHOULD be set to 0 by the sender and ignored by the receiver."
+          }
+        },
+        {
+          "name": "Subsequent Address Family Identifier",
+          "bits": 8,
+          "explain": "Identifies the subsequent address family and uses the same encoding as the SAFI in the multiprotocol extensions.",
+          "cite": {
+            "section": "8",
+            "quote": "SAFI - Subsequent Address Family Identifier (8 bit), encoded the same way as in the Multiprotocol Extensions."
+          }
+        }
+      ]
+    }
+  ],
+  "notShown": [
+    "The BGP-4 session state machine and base UPDATE processing from RFC 4271",
+    "The outer Capabilities Optional Parameter encoding from RFC 3392",
+    "Backward-compatible handling by a peer that lacks multiprotocol support",
+    "Route deletion and optional session termination after an incorrect MP_REACH_NLRI or MP_UNREACH_NLRI attribute",
+    "Address-family-specific NLRI encodings and semantics beyond the generic length-and-prefix form",
+    "IANA AFI and SAFI registry assignments and comparisons with earlier RFCs"
+  ],
+  "provenance": {
+    "kind": "generated",
+    "model": "minimax/minimax-m3.1-flash:free",
+    "generatedAt": "2026-10-22T02:27:57.090Z",
+    "dropped": 0
+  }
+}

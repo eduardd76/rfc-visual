@@ -203,12 +203,24 @@
     "at": "2026-10-23T01:52:35.529Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "3608": {
+    "at": "2026-11-09T01:39:58.269Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "3618": {
     "at": "2026-10-23T01:52:34.885Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "3620": {
+    "at": "2026-11-09T01:39:58.072Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "3630": {
     "at": "2026-11-02T01:40:08.233Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3640": {
+    "at": "2026-11-09T01:39:57.864Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "3704": {
@@ -219,12 +231,44 @@
     "at": "2026-10-31T01:39:14.358Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "3723": {
+    "at": "2026-11-09T01:39:57.622Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "3748": {
     "at": "2026-10-23T01:52:35.238Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "3749": {
     "at": "2026-11-02T01:40:08.055Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3776": {
+    "at": "2026-11-09T01:39:57.334Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3811": {
+    "at": "2026-11-09T01:39:57.067Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3821": {
+    "at": "2026-11-09T01:39:56.888Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3822": {
+    "at": "2026-11-09T01:39:56.662Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3828": {
+    "at": "2026-11-09T01:39:56.489Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3843": {
+    "at": "2026-11-09T01:39:56.323Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3945": {
+    "at": "2026-11-09T01:39:56.162Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "3947": {
@@ -239,8 +283,36 @@
     "at": "2026-10-28T01:40:54.456Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "3956": {
+    "at": "2026-11-09T01:39:55.984Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3970": {
+    "at": "2026-11-09T01:39:55.828Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "3977": {
+    "at": "2026-11-09T01:39:55.628Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "4007": {
     "at": "2026-11-02T01:40:07.901Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4012": {
+    "at": "2026-11-09T01:39:55.421Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4014": {
+    "at": "2026-11-09T01:39:55.236Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4019": {
+    "at": "2026-11-09T01:39:55.075Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4023": {
+    "at": "2026-11-09T01:39:54.816Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "4033": {
@@ -255,8 +327,20 @@
     "at": "2026-10-24T01:49:50.932Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "4145": {
+    "at": "2026-11-09T01:39:54.666Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "4162": {
     "at": "2026-11-02T01:40:07.334Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4168": {
+    "at": "2026-11-09T01:39:54.450Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4174": {
+    "at": "2026-11-09T01:39:54.270Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "4182": {
@@ -279,8 +363,24 @@
     "at": "2026-10-31T01:39:14.120Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
+  "4204": {
+    "at": "2026-11-09T01:39:54.084Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
   "4206": {
     "at": "2026-11-02T01:40:06.983Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4207": {
+    "at": "2026-11-09T01:39:53.876Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4209": {
+    "at": "2026-11-09T01:39:53.679Z",
+    "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
+  },
+  "4233": {
+    "at": "2026-11-09T01:39:53.493Z",
     "reason": "minimax/minimax-m3.1-flash:free: HTTP 404 {\"error\":{\"message\":\"The free launch period for MiniMax M3.1 Flash ended on Oct 22, 2026. The `:free` variant has been retired; use `minimax/minimax-m3.1-flas"
   },
   "4238": {
